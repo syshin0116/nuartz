@@ -1,0 +1,32 @@
+{
+  "name": "quartz-nextjs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Next.js integration for Quartz - Obsidian-compatible digital garden",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/quartz-nextjs.git"
+  },
+  "license": "MIT",
+  "author": "Syshin",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "sync-quartz": "bun run scripts/sync-quartz.ts",
+    "sync-quartz:check": "bun run scripts/sync-quartz.ts --dry-run",
+    "build": "bun run --filter='./packages/*' build",
+    "dev": "bun run --filter='./examples/basic' dev",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18",
+    "bun": ">=1.0"
+  }
+}

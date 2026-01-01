@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Upstream Quartz (not tracked - synced via script)
+upstream/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Testing
+coverage/
+
+# Environment
+.env
+.env.local
+.env.production.local
+.env.development.local
+
+# Misc
+.DS_Store
+*.log
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
