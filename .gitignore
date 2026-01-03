@@ -6,6 +6,9 @@ node_modules/
 # Upstream Quartz (not tracked - synced via script)
 upstream/
 
+# Content (managed separately)
+content/
+
 # Build outputs
 dist/
 build/

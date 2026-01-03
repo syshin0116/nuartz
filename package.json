@@ -1,23 +1,21 @@
 {
-  "name": "quartz-nextjs",
+  "name": "nuartz",
   "version": "0.1.0",
   "private": true,
-  "description": "Next.js integration for Quartz - Obsidian-compatible digital garden",
+  "description": "Nuartz - Next.js + Quartz = Obsidian-compatible digital garden with shadcn/ui",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/quartz-nextjs.git"
+    "url": "https://github.com/syshin0116/nuartz.git"
   },
   "license": "MIT",
   "author": "Syshin",
   "workspaces": [
-    "packages/*",
-    "examples/*"
+    "packages/*"
   ],
   "scripts": {
     "sync-quartz": "bun run scripts/sync-quartz.ts",
     "sync-quartz:check": "bun run scripts/sync-quartz.ts --dry-run",
     "build": "bun run --filter='./packages/*' build",
-    "dev": "bun run --filter='./examples/basic' dev",
     "test": "bun test"
   },
   "devDependencies": {
