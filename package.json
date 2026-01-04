@@ -10,11 +10,13 @@
   "license": "MIT",
   "author": "Syshin",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "sync-quartz": "bun run scripts/sync-quartz.ts",
     "sync-quartz:check": "bun run scripts/sync-quartz.ts --dry-run",
+    "dev": "bun run --filter='@nuartz/www' dev",
     "build": "bun run --filter='./packages/*' build",
     "test": "bun test"
   },
