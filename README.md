@@ -1,63 +1,49 @@
-# quartz-nextjs
+# nuartz
 
-Next.js integration for [Quartz](https://github.com/jackyzha0/quartz) - Build Obsidian-compatible digital gardens with Next.js and shadcn/ui.
+> Obsidian-compatible digital garden built on Next.js + shadcn/ui
 
-> **Status**: 🚧 Early Development
+nuartz turns your Obsidian vault into a modern web app — wikilinks, callouts, backlinks, and all — without compromising on UI quality.
+
+## Why nuartz?
+
+[Quartz](https://quartz.jzhao.xyz) is an excellent Obsidian-to-web tool with deep OFM support. nuartz is built on the same parsing foundation — wikilinks, callouts, backlinks — but packages it as a composable remark/rehype plugin set that plugs into any Next.js app.
+
+If you want Obsidian fidelity with full control over your React UI, nuartz is for you.
 
 ## Features
 
-- ✅ **Full Obsidian Compatibility**: Wikilinks, callouts, block references, embeds
-- ✅ **All Quartz Plugins**: 13 transformers, 2 filters, full markdown processing
-- ✅ **Auto-sync with Quartz**: Stay up-to-date with upstream Quartz features
-- ✅ **Next.js App Router**: Modern React Server Components
-- ✅ **shadcn/ui**: Beautiful, accessible UI components
-- ✅ **TypeScript**: Full type safety
+- **Wikilinks** — `[[page]]`, `[[page|alias]]`, `[[page#heading]]`
+- **Callouts** — `> [!note]`, `> [!warning]`, `> [!tip]`, and more
+- **Tags** — `#tag` inline tags rendered as links
+- **Backlinks** — automatic backlink index per page
+- **Math** — KaTeX inline and block
+- **Syntax highlighting** — Shiki-based code blocks
+- **Full-text search** — client-side with FlexSearch
+- **Dark mode** — system-aware with manual toggle
+- **shadcn/ui** — all components built on Radix primitives
 
-## Packages
+## Stack
 
-- `@quartz-nextjs/core` - Core Quartz plugins and utilities
-- `@quartz-nextjs/react` - React components (Search, Graph, Explorer, etc.)
-- `@quartz-nextjs/shadcn` - shadcn/ui styled components
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 15 (App Router) |
+| UI | shadcn/ui + Radix UI |
+| Styling | Tailwind CSS v4 |
+| Markdown | unified / remark / rehype |
+| Search | FlexSearch |
+| Runtime | Bun |
 
-## Quick Start
+## Roadmap
 
-```bash
-bun install @quartz-nextjs/core
-```
-
-```typescript
-// app/blog/[...slug]/page.tsx
-import { parseObsidianMarkdown } from '@quartz-nextjs/core'
-
-export default async function BlogPost({ params }) {
-  const content = await parseObsidianMarkdown(params.slug)
-  return <div>{content}</div>
-}
-```
-
-## Development
-
-```bash
-# Clone Quartz and sync plugins
-bun run sync-quartz
-
-# Run example
-bun run dev
-
-# Build all packages
-bun run build
-```
-
-## Sync with Upstream Quartz
-
-This project automatically syncs with the latest Quartz release:
-
-```bash
-bun run sync-quartz
-```
+- [x] OFM markdown pipeline (wikilinks, callouts, tags)
+- [x] Backlink index
+- [x] shadcn/ui layout (sidebar, TOC, breadcrumbs)
+- [x] Dark mode
+- [x] Full-text search
+- [ ] Graph view
+- [ ] AI chat (LangGraph Python)
+- [ ] File-based semantic search
 
 ## License
 
-MIT - See [LICENSE](LICENSE)
-
-Includes code from [Quartz](https://github.com/jackyzha0/quartz) (MIT)
+MIT
