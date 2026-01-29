@@ -1,0 +1,12 @@
+{
+  "name": "nuartz-workspace",
+  "private": true,
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "dev": "bun run --cwd apps/www dev",
+    "build": "bun run build:pkg && bun run build:app",
+    "build:pkg": "bun run --cwd packages/nuartz build",
+    "build:app": "bun run --cwd apps/www build",
+    "typecheck": "bun run --cwd packages/nuartz typecheck && bun run --cwd apps/www typecheck"
+  }
+}
