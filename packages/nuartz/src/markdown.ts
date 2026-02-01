@@ -16,6 +16,7 @@ import type { Plugin } from "unified"
 
 import { remarkCallout } from "./plugins/callout.js"
 import { remarkTag } from "./plugins/tag.js"
+import { remarkWikilink } from "./plugins/wikilink.js"
 import type { Frontmatter, RenderResult, RenderOptions, TocEntry } from "./types.js"
 
 // Rehype plugin that extracts headings into vfile.data.toc
@@ -79,6 +80,7 @@ export async function renderMarkdown(
     .use(remarkFrontmatter, ["yaml", "toml"])
     .use(remarkGfm)
     .use(remarkMath)
+    .use(remarkWikilink, { baseUrl, resolveLink })
     .use(remarkCallout)
     .use(remarkTag)
     .use(remarkRehype, { allowDangerousHtml: true })
