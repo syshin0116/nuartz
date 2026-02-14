@@ -1,4 +1,6 @@
 export { renderMarkdown } from "./markdown.js"
+export { buildBacklinkIndex, getBacklinks } from "./backlinks.js"
+export type { BacklinkEntry, BacklinkIndex } from "./backlinks.js"
 export { remarkCallout } from "./plugins/callout.js"
 export { remarkTag } from "./plugins/tag.js"
 export { remarkWikilink } from "./plugins/wikilink.js"
