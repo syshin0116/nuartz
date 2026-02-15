@@ -1,5 +1,7 @@
 export { renderMarkdown } from "./markdown.js"
 export { buildBacklinkIndex, getBacklinks } from "./backlinks.js"
+export { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree } from "./fs.js"
+export type { MarkdownFile, FileTreeNode } from "./fs.js"
 export type { BacklinkEntry, BacklinkIndex } from "./backlinks.js"
 export { remarkCallout } from "./plugins/callout.js"
 export { remarkTag } from "./plugins/tag.js"
