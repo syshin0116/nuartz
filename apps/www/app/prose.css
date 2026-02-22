@@ -1,0 +1,64 @@
+/* Prose styles — markdown content rendering */
+.prose {
+  @apply text-foreground leading-7;
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-foreground scroll-mt-20;
+  }
+  h1 { @apply text-3xl mt-8 mb-4; }
+  h2 { @apply text-2xl mt-8 mb-3 border-b pb-2; }
+  h3 { @apply text-xl mt-6 mb-2; }
+  h4 { @apply text-base mt-4 mb-2; }
+
+  p    { @apply my-4; }
+  ul   { @apply my-4 ml-6 list-disc space-y-1; }
+  ol   { @apply my-4 ml-6 list-decimal space-y-1; }
+  li   { @apply leading-7; }
+
+  a {
+    @apply text-blue-600 dark:text-blue-400 underline decoration-dotted
+           hover:decoration-solid transition-all;
+  }
+
+  blockquote {
+    @apply my-4 border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground;
+  }
+
+  code {
+    @apply rounded bg-muted px-1.5 py-0.5 text-sm font-mono
+           before:content-none after:content-none;
+  }
+
+  pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-muted p-4;
+
+    code {
+      @apply bg-transparent p-0 text-sm;
+    }
+  }
+
+  table {
+    @apply my-4 w-full border-collapse text-sm;
+
+    th {
+      @apply border px-3 py-2 text-left font-semibold bg-muted;
+    }
+    td {
+      @apply border px-3 py-2;
+    }
+    tr:nth-child(even) td {
+      @apply bg-muted/40;
+    }
+  }
+
+  hr { @apply my-8 border-border; }
+
+  img {
+    @apply my-4 rounded-lg max-w-full;
+  }
+
+  /* Task list checkboxes */
+  input[type="checkbox"] {
+    @apply mr-2 accent-foreground;
+  }
+}
