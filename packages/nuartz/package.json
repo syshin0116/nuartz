@@ -13,7 +13,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -33,6 +36,8 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "typescript": "^5"
+    "@vitest/coverage-v8": "^4.0.18",
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   }
 }
