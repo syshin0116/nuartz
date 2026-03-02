@@ -19,9 +19,9 @@ export async function getAllMarkdownFiles(
   const results: MarkdownFile[] = []
 
   async function walk(dir: string) {
-    let entries: Awaited<ReturnType<typeof fs.readdir>>
+    let entries: { name: string; isDirectory(): boolean }[]
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true })
+      entries = await fs.readdir(dir, { withFileTypes: true }) as { name: string; isDirectory(): boolean }[]
     } catch {
       return
     }
