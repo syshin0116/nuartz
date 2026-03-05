@@ -17,10 +17,12 @@ export interface WikilinkOptions {
   baseUrl?: string
   /** Custom resolver: transforms raw target string into a URL path */
   resolve?: (target: string, heading?: string) => string
+  /** Known slugs for dead-link detection. If provided, unresolved targets get class "broken". */
+  knownSlugs?: Set<string>
 }
 
 export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) => {
-  const { baseUrl = "/", resolve } = options
+  const { baseUrl = "/", resolve, knownSlugs } = options
 
   const defaultResolve = (target: string, heading?: string): string => {
     const slug = target
@@ -71,12 +73,16 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
           })
         } else {
           outgoingLinks.push(target)
+          const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
+          const isKnown = !knownSlugs || [...knownSlugs].some(
+            (s) => s === normalized || s.endsWith("/" + normalized)
+          )
           nodes.push({
             type: "link",
             url: href,
             data: {
               hProperties: {
-                className: "wikilink",
+                className: isKnown ? "wikilink" : "wikilink broken",
                 "data-target": target,
                 ...(heading ? { "data-heading": heading } : {}),
               },

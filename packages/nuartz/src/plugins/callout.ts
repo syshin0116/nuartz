@@ -40,6 +40,15 @@ export const remarkCallout: Plugin<[], Root> = () => {
         firstInline.value = remainder
       } else {
         firstChild.children.shift()
+        // remarkBreaks runs before this plugin and converts the line break after
+        // [!type] into a break node — remove any leading break nodes
+        while (firstChild.children.length > 0 && firstChild.children[0].type === "break") {
+          firstChild.children.shift()
+        }
+      }
+      // If the first paragraph is now empty, remove it entirely
+      if (firstChild.children.length === 0) {
+        node.children.shift()
       }
 
       const title = titleText?.trim() ?? type.charAt(0).toUpperCase() + type.slice(1)

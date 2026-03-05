@@ -28,6 +28,8 @@ export interface RenderOptions {
   baseUrl?: string
   /** Resolve wikilink target to URL path */
   resolveLink?: (target: string) => string
+  /** Known slugs for dead-link detection */
+  knownSlugs?: Set<string>
   /** Whether to strip draft pages (default: false) */
   stripDrafts?: boolean
 }

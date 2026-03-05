@@ -76,7 +76,7 @@ export async function renderMarkdown(
   content: string,
   options: RenderOptions = {}
 ): Promise<RenderResult> {
-  const { baseUrl = "/", resolveLink = (t) => t } = options
+  const { baseUrl = "/", resolveLink = (t) => t, knownSlugs } = options
 
   // Parse frontmatter with gray-matter
   const { data: frontmatter, content: body } = matter(content)
@@ -88,7 +88,7 @@ export async function renderMarkdown(
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkBreaks)
-    .use(remarkWikilink, { baseUrl, resolve: resolveLink })
+    .use(remarkWikilink, { baseUrl, resolve: resolveLink, knownSlugs })
     .use(remarkCallout)
     .use(remarkTag)
     .use(remarkHighlight)

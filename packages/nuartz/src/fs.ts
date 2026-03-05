@@ -33,6 +33,10 @@ export async function getAllMarkdownFiles(
       } else if (entry.name.endsWith(".md") && !entry.name.startsWith("_")) {
         const raw = await fs.readFile(fullPath, "utf-8")
         const { data } = matter(raw)
+
+        // Skip draft or unpublished files
+        if (data.draft === true || data.published === false) continue
+
         const relative = path.relative(contentDir, fullPath)
         const slug = relative.replace(/\.md$/, "").replace(/\\/g, "/")
         results.push({
@@ -111,5 +115,17 @@ export function buildFileTree(files: MarkdownFile[]): FileTreeNode[] {
     }
   }
 
-  return root
+  // Sort each level: folders first, then files; alphabetically within each group
+  function sortNodes(nodes: FileTreeNode[]): FileTreeNode[] {
+    nodes.sort((a, b) => {
+      if (a.type !== b.type) return a.type === "folder" ? -1 : 1
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+    })
+    for (const node of nodes) {
+      if (node.children) sortNodes(node.children)
+    }
+    return nodes
+  }
+
+  return sortNodes(root)
 }
