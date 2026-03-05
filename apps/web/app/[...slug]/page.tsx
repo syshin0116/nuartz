@@ -13,6 +13,9 @@ import { Backlinks } from "@/components/backlinks"
 import { MermaidRenderer } from "@/components/mermaid-renderer"
 import { GraphView } from "@/components/graph-view"
 import { HeadingAnchors } from "@/components/heading-anchors"
+import { PopoverPreview } from "@/components/popover-preview"
+import { CopyCode } from "@/components/copy-code"
+import { GiscusComments } from "@/components/giscus"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
@@ -120,9 +123,23 @@ export async function generateMetadata({
   const raw = await getMarkdownFile(slug)
   if (!raw) return {}
   const { data } = matter(raw)
+  const title = data.title ?? slug[slug.length - 1]
+  const description = data.description ?? ""
+  const ogParams = new URLSearchParams({ title, ...(description && { description }) })
   return {
-    title: data.title ?? slug[slug.length - 1],
-    description: data.description,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [`/og?${ogParams.toString()}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`/og?${ogParams.toString()}`],
+    },
   }
 }
 
@@ -189,6 +206,12 @@ export default async function NotePage({
     notFound()
   }
 
+  // Filter out draft pages
+  const { data: rawFrontmatter } = matter(raw)
+  if (rawFrontmatter.draft === true || rawFrontmatter.published === false) {
+    notFound()
+  }
+
   const files = await getAllMarkdownFiles(CONTENT_DIR)
 
   // Build filename → full slug lookup for Obsidian-style wikilink resolution
@@ -206,7 +229,8 @@ export default async function NotePage({
     return `/${normalized}`
   }
 
-  const result = await renderMarkdown(raw, { resolveLink })
+  const knownSlugs = new Set(files.map((f) => f.slug))
+  const result = await renderMarkdown(raw, { resolveLink, knownSlugs })
 
   // Build backlink index: render all files to extract their outgoing wikilinks
   const slugStr = slug.join("/")
@@ -276,13 +300,16 @@ export default async function NotePage({
         <Separator className="mb-8" />
 
         <HeadingAnchors />
+        <PopoverPreview />
         <article
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: result.html }}
         />
         <MermaidRenderer />
+        <CopyCode />
 
         <Backlinks backlinks={backlinks} />
+        <GiscusComments />
       </div>
 
       {/* Right sidebar */}

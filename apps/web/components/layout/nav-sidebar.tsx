@@ -61,7 +61,7 @@ function NavNode({
         >
           <button
             onClick={() => setOpen((o) => !o)}
-            className="flex items-center py-1.5 shrink-0 text-muted-foreground hover:text-foreground"
+            className="flex items-center py-1.5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <ChevronRight
               className={cn(
@@ -73,7 +73,7 @@ function NavNode({
           <Link
             href={`/${node.path}`}
             className={cn(
-              "flex-1 min-w-0 py-1.5 text-sm font-medium truncate",
+              "flex-1 min-w-0 py-1.5 text-xs font-semibold uppercase tracking-wider truncate",
               isAncestor
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"

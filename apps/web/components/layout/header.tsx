@@ -5,6 +5,7 @@ import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MobileNav } from "./mobile-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { ReaderModeToggle } from "@/components/reader-mode-toggle"
 import type { FileTreeNode } from "nuartz"
 
 interface HeaderProps {
@@ -50,6 +51,7 @@ export function Header({ title = "nuartz", tree }: HeaderProps) {
           <Search className="h-4 w-4" />
         </Button>
 
+        <ReaderModeToggle />
         <ThemeToggle />
       </div>
     </header>

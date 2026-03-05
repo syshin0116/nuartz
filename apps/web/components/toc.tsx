@@ -46,12 +46,12 @@ export function TableOfContents({ toc, className, children }: TocProps) {
         {/* Graph view sits at the top */}
         {children}
         {toc.length > 0 && (
-          <>
-            <p className="mb-3 mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <nav aria-label="Table of contents">
+            <p className="mb-3 mt-4 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/70">
               On this page
             </p>
             <TocList entries={toc} activeId={activeId} depth={0} />
-          </>
+          </nav>
         )}
       </div>
     </aside>
@@ -74,17 +74,18 @@ function TocList({
   }
 
   return (
-    <ul className="space-y-1">
+    <ul className={cn("space-y-0.5", depth > 0 && "ml-3")}>
       {entries.map((entry) => (
-        <li key={entry.id} style={{ paddingLeft: `${depth * 12}px` }}>
+        <li key={entry.id}>
           <a
             href={`#${entry.id}`}
             onClick={(e) => scrollTo(e, entry.id)}
             className={cn(
-              "block text-sm leading-snug transition-colors hover:text-foreground",
+              "block border-l-2 py-1 pl-3 transition-colors duration-150 hover:text-foreground",
+              depth === 0 ? "text-[13px]" : "text-xs",
               activeId === entry.id
-                ? "font-medium text-foreground"
-                : "text-muted-foreground"
+                ? "border-primary font-medium text-foreground"
+                : "border-transparent text-muted-foreground"
             )}
           >
             {entry.text}
