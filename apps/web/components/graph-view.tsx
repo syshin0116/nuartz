@@ -60,6 +60,9 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
         .translate((w - scale * (minX + maxX)) / 2, (h - scale * (minY + maxY)) / 2)
         .scale(scale)
 
+      // g must be declared before zoomBehavior references it
+      const g = svg.append("g")
+
       const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.2, 4])
         .on("zoom", e => g.attr("transform", e.transform))
@@ -73,8 +76,6 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       )
 
       sim.restart()
-
-      const g = svg.append("g")
 
       const link = g.append("g")
         .selectAll("line")
