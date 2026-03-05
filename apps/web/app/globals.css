@@ -244,7 +244,7 @@ mark {
 
 /* Wikilinks */
 .wikilink {
-  @apply underline underline-offset-2 decoration-foreground/30 hover:decoration-foreground/70 transition-[text-decoration-color];
+  @apply text-foreground underline underline-offset-2 decoration-foreground/30 hover:decoration-foreground/70 transition-[text-decoration-color];
 }
 
 /* Inline tags */
@@ -283,7 +283,7 @@ a.tag {
   li   { @apply leading-7; }
 
   a {
-    @apply underline underline-offset-2 decoration-foreground/30
+    @apply text-foreground underline underline-offset-2 decoration-foreground/30
            hover:decoration-foreground/70 transition-[text-decoration-color];
   }
 

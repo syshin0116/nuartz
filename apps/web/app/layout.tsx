@@ -35,7 +35,7 @@ export default async function RootLayout({
           <div className="flex min-h-screen flex-col">
             <Header tree={tree} />
             <div className="flex flex-1 mx-auto w-full max-w-[1440px]">
-              <aside className="hidden lg:block w-[var(--sidebar-width)] shrink-0 bg-sidebar sticky top-14 self-start h-[calc(100vh-3.5rem)] overflow-y-auto">
+              <aside className="hidden lg:block w-[var(--sidebar-width)] shrink-0 sticky top-14 self-start h-[calc(100vh-3.5rem)] overflow-y-auto">
                 <div className="pl-6 pr-4 pt-4 pb-6">
                   <NavSidebar tree={tree} />
                 </div>

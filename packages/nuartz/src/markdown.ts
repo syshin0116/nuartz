@@ -88,7 +88,7 @@ export async function renderMarkdown(
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkBreaks)
-    .use(remarkWikilink, { baseUrl, resolveLink })
+    .use(remarkWikilink, { baseUrl, resolve: resolveLink })
     .use(remarkCallout)
     .use(remarkTag)
     .use(remarkHighlight)
