@@ -188,17 +188,31 @@ export default async function NotePage({
     notFound()
   }
 
-  const [result, files] = await Promise.all([
-    renderMarkdown(raw),
-    getAllMarkdownFiles(CONTENT_DIR),
-  ])
+  const files = await getAllMarkdownFiles(CONTENT_DIR)
+
+  // Build filename → full slug lookup for Obsidian-style wikilink resolution
+  const slugByName = new Map<string, string>()
+  for (const f of files) {
+    const name = f.slug.split("/").pop()!.toLowerCase().replace(/\s+/g, "-")
+    if (!slugByName.has(name)) slugByName.set(name, f.slug)
+  }
+  const resolveLink = (target: string): string => {
+    const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
+    const exact = files.find((f) => f.slug === normalized)
+    if (exact) return `/${exact.slug}`
+    const byName = slugByName.get(normalized.split("/").pop()!)
+    if (byName) return `/${byName}`
+    return `/${normalized}`
+  }
+
+  const result = await renderMarkdown(raw, { resolveLink })
 
   // Build backlink index: render all files to extract their outgoing wikilinks
   const slugStr = slug.join("/")
   const pages = new Map<string, { result: Awaited<ReturnType<typeof renderMarkdown>>; raw: string }>()
   await Promise.all(
     files.map(async (file) => {
-      const r = file.slug === slugStr ? result : await renderMarkdown(file.raw)
+      const r = file.slug === slugStr ? result : await renderMarkdown(file.raw, { resolveLink })
       pages.set(file.slug, { result: r, raw: file.raw })
     })
   )
@@ -261,7 +275,7 @@ export default async function NotePage({
         <Separator className="mb-8" />
 
         <article
-          className="prose prose-neutral dark:prose-invert max-w-none"
+          className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: result.html }}
         />
         <MermaidRenderer />
