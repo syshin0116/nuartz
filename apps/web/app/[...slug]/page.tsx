@@ -12,6 +12,7 @@ import { TableOfContents } from "@/components/toc"
 import { Backlinks } from "@/components/backlinks"
 import { MermaidRenderer } from "@/components/mermaid-renderer"
 import { GraphView } from "@/components/graph-view"
+import { HeadingAnchors } from "@/components/heading-anchors"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
@@ -274,6 +275,7 @@ export default async function NotePage({
 
         <Separator className="mb-8" />
 
+        <HeadingAnchors />
         <article
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: result.html }}

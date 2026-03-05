@@ -73,7 +73,7 @@ function NavNode({
           <Link
             href={`/${node.path}`}
             className={cn(
-              "flex-1 min-w-0 py-1.5 text-xs font-semibold uppercase tracking-wider truncate",
+              "flex-1 min-w-0 py-1.5 text-sm font-medium truncate",
               isAncestor
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"

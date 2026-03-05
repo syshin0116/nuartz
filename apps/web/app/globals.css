@@ -244,7 +244,7 @@ mark {
 
 /* Wikilinks */
 .wikilink {
-  @apply text-blue-600 dark:text-blue-400 underline decoration-dotted hover:decoration-solid;
+  @apply underline underline-offset-2 decoration-foreground/30 hover:decoration-foreground/70 transition-[text-decoration-color];
 }
 
 /* Inline tags */
@@ -258,18 +258,19 @@ a.tag {
 
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight text-foreground scroll-mt-20;
-    /* Heading anchor — # appears to the left, only on hover */
     a.heading-anchor {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       margin-right: 0.4em;
-      font-size: 0.85em;
-      font-weight: 400;
-      color: hsl(var(--muted-foreground) / 0.4);
+      color: hsl(var(--muted-foreground) / 0.45);
       text-decoration: none !important;
       opacity: 0;
-      transition: opacity 0.15s;
+      transition: opacity 0.15s, color 0.15s;
+      cursor: pointer;
+      svg { width: 0.8em; height: 0.8em; }
     }
     &:hover a.heading-anchor { opacity: 1; }
+    a.heading-anchor:hover { color: hsl(var(--foreground)); }
   }
   h1 { @apply text-3xl font-bold mt-8 mb-4; }
   h2 { @apply text-2xl font-semibold mt-8 mb-3; }
@@ -282,8 +283,8 @@ a.tag {
   li   { @apply leading-7; }
 
   a {
-    @apply text-blue-600 dark:text-blue-400 underline decoration-dotted
-           hover:decoration-solid transition-all;
+    @apply underline underline-offset-2 decoration-foreground/30
+           hover:decoration-foreground/70 transition-[text-decoration-color];
   }
 
   blockquote {
