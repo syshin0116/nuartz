@@ -7,9 +7,10 @@ import type { TocEntry } from "nuartz"
 interface TocProps {
   toc: TocEntry[]
   className?: string
+  children?: React.ReactNode
 }
 
-export function TableOfContents({ toc, className }: TocProps) {
+export function TableOfContents({ toc, className, children }: TocProps) {
   const [activeId, setActiveId] = useState<string>("")
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export function TableOfContents({ toc, className }: TocProps) {
           On this page
         </p>
         <TocList entries={toc} activeId={activeId} depth={0} />
+        {children}
       </div>
     </aside>
   )
