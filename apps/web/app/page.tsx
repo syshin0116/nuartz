@@ -32,7 +32,7 @@ export default async function HomePage() {
       <div className="space-y-2">
         {notes.map((file) => {
           const title = file.frontmatter.title ?? file.slug
-          const summary = file.frontmatter.summary ?? file.frontmatter.description
+          const summary = (file.frontmatter.summary ?? file.frontmatter.description) as string | undefined
           const tags: string[] = file.frontmatter.tags ?? []
           const date = file.frontmatter.date
             ? new Date(file.frontmatter.date).toLocaleDateString("en-CA")

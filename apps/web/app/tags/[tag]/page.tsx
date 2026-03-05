@@ -62,7 +62,7 @@ export default async function TagPage({
       <div className="space-y-2">
         {tagged.map((file) => {
           const title = file.frontmatter.title ?? file.slug
-          const summary = file.frontmatter.summary ?? file.frontmatter.description
+          const summary = (file.frontmatter.summary ?? file.frontmatter.description) as string | undefined
           const date = file.frontmatter.date
             ? new Date(file.frontmatter.date).toLocaleDateString("en-CA")
             : null
