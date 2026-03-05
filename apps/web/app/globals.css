@@ -176,19 +176,22 @@ mark {
 
 /* ── Callout styles ───────────────────────────────────── */
 .callout {
-  @apply my-4 rounded-lg border-l-4 p-4;
+  @apply my-4 rounded-lg border-l-4 p-4 text-sm;
 }
-.callout-note      { @apply border-blue-400 bg-blue-50 dark:bg-blue-950/30; }
-.callout-info      { @apply border-sky-400 bg-sky-50 dark:bg-sky-950/30; }
+.callout-note,
+.callout-info      { @apply border-blue-400 bg-blue-50 dark:bg-blue-950/30; }
 .callout-tip,
-.callout-hint,
-.callout-important { @apply border-teal-400 bg-teal-50 dark:bg-teal-950/30; }
+.callout-hint      { @apply border-teal-400 bg-teal-50 dark:bg-teal-950/30; }
+.callout-important { @apply border-purple-400 bg-purple-50 dark:bg-purple-950/30; }
 .callout-warning,
 .callout-caution,
 .callout-attention { @apply border-amber-400 bg-amber-50 dark:bg-amber-950/30; }
 .callout-danger,
 .callout-error,
-.callout-bug       { @apply border-red-400 bg-red-50 dark:bg-red-950/30; }
+.callout-bug,
+.callout-failure,
+.callout-fail,
+.callout-missing   { @apply border-red-400 bg-red-50 dark:bg-red-950/30; }
 .callout-success,
 .callout-check,
 .callout-done      { @apply border-green-400 bg-green-50 dark:bg-green-950/30; }
@@ -202,10 +205,42 @@ mark {
 .callout-abstract,
 .callout-summary,
 .callout-tldr      { @apply border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30; }
-.callout-failure,
-.callout-fail,
-.callout-missing   { @apply border-rose-400 bg-rose-50 dark:bg-rose-950/30; }
-.callout-title     { @apply mb-2 text-sm font-semibold capitalize; }
+
+/* Callout title with icon */
+.callout-title {
+  @apply mb-2 flex items-center gap-1.5 text-sm font-semibold capitalize;
+  &::before {
+    font-style: normal;
+    flex-shrink: 0;
+  }
+}
+.callout-note    .callout-title,
+.callout-info    .callout-title { @apply text-blue-700 dark:text-blue-400;   &::before { content: "ℹ"; } }
+.callout-tip     .callout-title,
+.callout-hint    .callout-title { @apply text-teal-700 dark:text-teal-400;   &::before { content: "💡"; } }
+.callout-important .callout-title { @apply text-purple-700 dark:text-purple-400; &::before { content: "📌"; } }
+.callout-warning .callout-title,
+.callout-caution .callout-title,
+.callout-attention .callout-title { @apply text-amber-700 dark:text-amber-400; &::before { content: "⚠"; } }
+.callout-danger  .callout-title,
+.callout-error   .callout-title,
+.callout-bug     .callout-title,
+.callout-failure .callout-title,
+.callout-fail    .callout-title,
+.callout-missing .callout-title { @apply text-red-700 dark:text-red-400;     &::before { content: "✕"; } }
+.callout-success .callout-title,
+.callout-check   .callout-title,
+.callout-done    .callout-title { @apply text-green-700 dark:text-green-400; &::before { content: "✓"; } }
+.callout-question .callout-title,
+.callout-faq     .callout-title,
+.callout-help    .callout-title { @apply text-purple-700 dark:text-purple-400; &::before { content: "?"; } }
+.callout-quote   .callout-title,
+.callout-cite    .callout-title { @apply text-neutral-600 dark:text-neutral-400; &::before { content: '"'; } }
+.callout-todo    .callout-title { @apply text-blue-700 dark:text-blue-400;   &::before { content: "○"; } }
+.callout-abstract .callout-title,
+.callout-summary .callout-title,
+.callout-tldr    .callout-title { @apply text-cyan-700 dark:text-cyan-400;   &::before { content: "≡"; } }
+.callout-example .callout-title { @apply text-orange-700 dark:text-orange-400; &::before { content: "⊞"; } }
 
 /* Wikilinks */
 .wikilink {
