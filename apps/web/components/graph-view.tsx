@@ -44,15 +44,35 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
         .force("center", d3.forceCenter(w / 2, h / 2))
         .force("collision", d3.forceCollide(14))
 
+      // Pre-run ticks so initial positions are stable
+      sim.stop()
+      for (let i = 0; i < 200; i++) sim.tick()
+
+      // Fit graph to viewport
+      const xs = nodesCopy.map(d => d.x ?? 0)
+      const ys = nodesCopy.map(d => d.y ?? 0)
+      const minX = Math.min(...xs), maxX = Math.max(...xs)
+      const minY = Math.min(...ys), maxY = Math.max(...ys)
+      const gw = maxX - minX || w, gh = maxY - minY || h
+      const pad = 28
+      const scale = Math.min((w - pad * 2) / gw, (h - pad * 2) / gh, 2.5)
+      const initTransform = d3.zoomIdentity
+        .translate((w - scale * (minX + maxX)) / 2, (h - scale * (minY + maxY)) / 2)
+        .scale(scale)
+
       const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.2, 4])
         .on("zoom", e => g.attr("transform", e.transform))
 
       svg.call(zoomBehavior)
+      svg.call(zoomBehavior.transform, initTransform)
+
       // Double-click to reset zoom
       svg.on("dblclick.zoom", () =>
-        svg.transition().duration(350).call(zoomBehavior.transform, d3.zoomIdentity)
+        svg.transition().duration(350).call(zoomBehavior.transform, initTransform)
       )
+
+      sim.restart()
 
       const g = svg.append("g")
 
@@ -86,7 +106,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
 
           node.selectAll<SVGCircleElement, GraphNode>("circle")
             .attr("opacity", n => connected.has(n.id) ? 1 : 0.12)
-            .attr("r", n => n.type === "tag" ? 4 : (n.id === d.id ? 7 : n.id === currentSlug ? 7 : 4))
+            .attr("r", n => n.type === "tag" ? 3 : (n.id === d.id ? 8 : n.id === currentSlug ? 8 : 5))
 
           link
             .attr("stroke-opacity", l => {
@@ -106,7 +126,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           setHoveredId(null)
           node.selectAll<SVGCircleElement, GraphNode>("circle")
             .attr("opacity", 1)
-            .attr("r", n => n.type === "tag" ? 4 : n.id === currentSlug ? 7 : 4)
+            .attr("r", n => n.type === "tag" ? 3 : n.id === currentSlug ? 8 : 5)
           link.attr("stroke-opacity", 0.2).attr("stroke-width", 1)
           label.attr("opacity", 0)
         })
@@ -115,18 +135,17 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y })
           .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null }))
 
-      // Notes: filled circle; Tags: outlined circle with accent color
+      // Notes: prominent filled circle; Tags: small subtle outlined circle
       node.append("circle")
-        .attr("r", d => d.type === "tag" ? 4 : d.id === currentSlug ? 7 : 4)
+        .attr("r", d => d.type === "tag" ? 3 : d.id === currentSlug ? 8 : 5)
         .attr("fill", d => {
           if (d.type === "tag") return "transparent"
-          return d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+          return d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--foreground))"
         })
-        .attr("stroke", d => {
-          if (d.type === "tag") return "hsl(var(--chart-1))"
-          return "hsl(var(--background))"
-        })
-        .attr("stroke-width", d => d.type === "tag" ? 2 : 1.5)
+        .attr("fill-opacity", d => d.type === "tag" ? 0 : d.id === currentSlug ? 1 : 0.55)
+        .attr("stroke", d => d.type === "tag" ? "hsl(var(--muted-foreground))" : "hsl(var(--background))")
+        .attr("stroke-width", d => d.type === "tag" ? 1.5 : 1.5)
+        .attr("stroke-opacity", d => d.type === "tag" ? 0.5 : 1)
 
       const label = g.append("g")
         .selectAll<SVGTextElement, GraphNode>("text")

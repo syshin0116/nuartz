@@ -33,7 +33,7 @@ export function TableOfContents({ toc, className, children }: TocProps) {
     return () => observer.disconnect()
   }, [])
 
-  if (!toc.length) return null
+  if (!toc.length && !children) return null
 
   return (
     <aside
@@ -43,11 +43,16 @@ export function TableOfContents({ toc, className, children }: TocProps) {
       )}
     >
       <div className="sticky top-14 h-[calc(100vh-3.5rem)] overflow-y-auto py-4 pl-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          On this page
-        </p>
-        <TocList entries={toc} activeId={activeId} depth={0} />
+        {/* Graph view sits at the top */}
         {children}
+        {toc.length > 0 && (
+          <>
+            <p className="mb-3 mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              On this page
+            </p>
+            <TocList entries={toc} activeId={activeId} depth={0} />
+          </>
+        )}
       </div>
     </aside>
   )
