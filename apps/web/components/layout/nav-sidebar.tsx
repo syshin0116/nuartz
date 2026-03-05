@@ -105,10 +105,10 @@ function NavNode({
       className={cn(
         "flex items-center gap-1.5 rounded-md py-1.5 text-sm transition-colors hover:bg-muted",
         isActive
-          ? "bg-muted/80 font-medium text-foreground border-l-2 border-primary"
+          ? "bg-primary/10 font-medium text-primary"
           : "text-muted-foreground hover:text-foreground"
       )}
-      style={{ paddingLeft: `${isActive ? 6 + indent : 8 + indent}px` }}
+      style={{ paddingLeft: `${8 + indent}px` }}
     >
       <FileText className="h-3.5 w-3.5 shrink-0 opacity-50" />
       <span className="truncate">{node.name}</span>

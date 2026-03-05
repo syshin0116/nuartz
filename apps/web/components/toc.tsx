@@ -62,12 +62,19 @@ function TocList({
   activeId: string
   depth: number
 }) {
+  function scrollTo(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
+    e.preventDefault()
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
+    history.pushState(null, "", `#${id}`)
+  }
+
   return (
     <ul className="space-y-1">
       {entries.map((entry) => (
         <li key={entry.id} style={{ paddingLeft: `${depth * 12}px` }}>
           <a
             href={`#${entry.id}`}
+            onClick={(e) => scrollTo(e, entry.id)}
             className={cn(
               "block text-sm leading-snug transition-colors hover:text-foreground",
               activeId === entry.id
