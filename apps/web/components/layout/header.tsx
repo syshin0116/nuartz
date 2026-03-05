@@ -13,7 +13,7 @@ interface HeaderProps {
   tree: FileTreeNode[]
 }
 
-export function Header({ title = "nuartz", tree }: HeaderProps) {
+export function Header({ title = "Nuartz", tree }: HeaderProps) {
   const openSearch = () => {
     document.dispatchEvent(
       new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true })

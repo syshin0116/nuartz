@@ -5,7 +5,7 @@ export const runtime = "edge"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const title = searchParams.get("title") ?? "nuartz"
+  const title = searchParams.get("title") ?? "Nuartz"
   const description = searchParams.get("description") ?? ""
 
   return new ImageResponse(
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
         }}
       >
         <div style={{ display: "flex", fontSize: 28, fontWeight: 700, color: "#a1a1aa" }}>
-          nuartz
+          Nuartz
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
             color: "#71717a",
           }}
         >
-          <span>nuartz.dev</span>
+          <span>Nuartz.dev</span>
         </div>
       </div>
     ),

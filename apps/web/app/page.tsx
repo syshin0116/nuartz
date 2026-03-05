@@ -7,7 +7,7 @@ import type { Metadata } from "next"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
-export const metadata: Metadata = { title: "nuartz" }
+export const metadata: Metadata = { title: "Nuartz" }
 
 export default async function HomePage() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)

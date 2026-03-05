@@ -18,7 +18,7 @@ export default async function OGImage() {
           color: "#fafafa",
         }}
       >
-        <div style={{ fontSize: 72, fontWeight: 700 }}>nuartz</div>
+        <div style={{ fontSize: 72, fontWeight: 700 }}>Nuartz</div>
         <div style={{ fontSize: 24, color: "#a1a1aa", marginTop: "16px" }}>
           Digital garden
         </div>

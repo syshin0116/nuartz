@@ -10,7 +10,7 @@ import path from "node:path"
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
 export const metadata: Metadata = {
-  title: "nuartz",
+  title: "Nuartz",
   description: "Personal knowledge base",
 }
 
