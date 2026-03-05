@@ -8,6 +8,7 @@ export default defineConfig({
     description: "Obsidian-compatible digital garden built on Next.js + shadcn/ui",
     baseUrl: "https://nuartz.vercel.app",
   },
+  homePage: "index",
   features: {
     wikilinks: true,
     callouts: true,

@@ -26,6 +26,13 @@ export interface NuartzConfig {
     darkMode?: boolean
   }
 
+  /**
+   * What to show on the home page (`/`).
+   * - `"index"` — render `content/index.md` (default). Falls back to recent notes if the file doesn't exist.
+   * - `"recent"` — show a list of all notes sorted by date.
+   */
+  homePage?: "index" | "recent"
+
   /** Navigation */
   nav?: {
     /** Extra links in the header */

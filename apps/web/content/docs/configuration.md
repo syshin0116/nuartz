@@ -20,6 +20,7 @@ import { defineConfig } from "nuartz"
 
 export default defineConfig({
   contentDir: path.join(process.cwd(), "content"),
+  homePage: "index",          // "index" | "recent"
   site: {
     title: "My Garden",
     description: "My personal notes",
@@ -47,6 +48,20 @@ export default defineConfig({
 ### `contentDir`
 
 Path to the directory containing your Markdown files. Defaults to `content/` in the project root.
+
+### `homePage`
+
+Controls what is shown at `/`:
+
+| Value | Behaviour |
+|-------|-----------|
+| `"index"` (default) | Renders `content/index.md` as a normal page. Falls back to recent notes if the file doesn't exist. |
+| `"recent"` | Shows a listing of all notes sorted by `date` frontmatter (most recent first). |
+
+```typescript
+homePage: "index"   // show content/index.md
+homePage: "recent"  // show recent notes list
+```
 
 ### `site`
 

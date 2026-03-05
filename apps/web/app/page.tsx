@@ -1,15 +1,38 @@
 import Link from "next/link"
-import { getAllMarkdownFiles } from "nuartz"
+import { getAllMarkdownFiles, getMarkdownBySlug, renderMarkdown } from "nuartz"
 import path from "node:path"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import type { Metadata } from "next"
+import config from "@/nuartz.config"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
 export const metadata: Metadata = { title: "Nuartz" }
 
 export default async function HomePage() {
+  const homePage = config.homePage ?? "index"
+
+  if (homePage === "index") {
+    const file = await getMarkdownBySlug(CONTENT_DIR, "index")
+    if (file) {
+      const { html } = await renderMarkdown(file.raw)
+      return (
+        <div className="mx-auto max-w-3xl px-6 py-10">
+          <article
+            className="prose prose-neutral dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: html }}
+          />
+        </div>
+      )
+    }
+    // fallthrough to recent notes if index.md doesn't exist
+  }
+
+  return <RecentNotes />
+}
+
+async function RecentNotes() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)
 
   const notes = files
