@@ -4,7 +4,7 @@ import { defineConfig } from "nuartz"
 export default defineConfig({
   contentDir: path.join(process.cwd(), "content"),
   site: {
-    title: "nuartz",
+    title: "Nuartz",
     description: "Obsidian-compatible digital garden built on Next.js + shadcn/ui",
     baseUrl: "https://nuartz.vercel.app",
   },

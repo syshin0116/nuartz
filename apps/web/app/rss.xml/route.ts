@@ -1,11 +1,12 @@
 import { getAllMarkdownFiles } from "nuartz"
 import path from "node:path"
 import { NextResponse } from "next/server"
+import config from "@/nuartz.config"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://nuartz.vercel.app"
-const SITE_TITLE = "nuartz"
-const SITE_DESCRIPTION = "Personal knowledge base"
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? config.site.baseUrl ?? "https://nuartz.vercel.app"
+const SITE_TITLE = config.site.title
+const SITE_DESCRIPTION = config.site.description ?? ""
 
 export const dynamic = "force-static"
 
