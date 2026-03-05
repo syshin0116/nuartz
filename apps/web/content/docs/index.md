@@ -1,5 +1,5 @@
 ---
-title: Welcome to Nuartz
+title: Documentation
 ---
 
 nuartz is a fast, minimalist digital garden template built on Next.js 15 and Tailwind CSS v4. It transforms plain Markdown files into a fully-functional, interconnected knowledge base.

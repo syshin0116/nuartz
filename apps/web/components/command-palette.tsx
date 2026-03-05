@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { FileText, Hash } from "lucide-react"
+import FlexSearch from "flexsearch"
 import {
   CommandDialog,
   CommandEmpty,
@@ -25,10 +26,56 @@ interface Result {
   type: "note" | "tag"
 }
 
+// CJK-aware tokenizer — each Korean/Japanese/Chinese character is its own token
+function cjkEncoder(str: string): string[] {
+  const tokens: string[] = []
+  let buf = ""
+  for (const char of str.toLowerCase()) {
+    const cp = char.codePointAt(0)!
+    const isCJK =
+      (cp >= 0x3040 && cp <= 0x309f) ||
+      (cp >= 0x30a0 && cp <= 0x30ff) ||
+      (cp >= 0x4e00 && cp <= 0x9fff) ||
+      (cp >= 0xac00 && cp <= 0xd7af)
+    const isSpace = cp === 32 || cp === 9 || cp === 10 || cp === 13
+    if (isCJK) {
+      if (buf) { tokens.push(buf); buf = "" }
+      tokens.push(char)
+    } else if (isSpace) {
+      if (buf) { tokens.push(buf); buf = "" }
+    } else {
+      buf += char
+    }
+  }
+  if (buf) tokens.push(buf)
+  return tokens
+}
+
+type IndexDoc = { id: number; slug: string; title: string; content: string; tags: string[] }
+
 export function CommandPalette({ entries }: CommandPaletteProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
+  const [results, setResults] = useState<{ notes: Result[]; tags: Result[] }>({ notes: [], tags: [] })
+  const indexRef = useRef<FlexSearch.Document<IndexDoc> | null>(null)
+
+  // Build FlexSearch index once
+  useEffect(() => {
+    const idx = new FlexSearch.Document<IndexDoc>({
+      encode: cjkEncoder,
+      document: {
+        id: "id",
+        index: [
+          { field: "title", tokenize: "forward" },
+          { field: "content", tokenize: "forward" },
+          { field: "tags", tokenize: "forward" },
+        ],
+      },
+    })
+    entries.forEach((e, i) => idx.add({ id: i, slug: e.slug, title: e.title, content: e.content, tags: e.tags }))
+    indexRef.current = idx
+  }, [entries])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -41,51 +88,56 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
     return () => document.removeEventListener("keydown", handler)
   }, [])
 
-  const getResults = useCallback(
-    (q: string): { notes: Result[]; tags: Result[] } => {
-      if (!q.trim()) return { notes: [], tags: [] }
+  const search = useCallback(
+    (q: string) => {
+      if (!q.trim()) { setResults({ notes: [], tags: [] }); return }
+
+      // Tag search mode
+      if (q.startsWith("#")) {
+        const lower = q.slice(1).toLowerCase()
+        const tags = [...new Set(entries.flatMap((e) => e.tags))]
+          .filter((t) => t.toLowerCase().includes(lower))
+          .slice(0, 5)
+          .map((t) => ({ slug: `tags/${t}`, title: `#${t}`, excerpt: "Browse tag", type: "tag" as const }))
+        setResults({ notes: [], tags })
+        return
+      }
+
+      // Full-text search
+      const idx = indexRef.current
+      if (!idx) return
+
+      const raw = idx.search(q, { limit: 8, enrich: false }) as Array<{ field: string; result: number[] }>
+      const seen = new Set<number>()
+      const ids: number[] = []
+      for (const r of raw) {
+        for (const id of r.result) {
+          if (!seen.has(id)) { seen.add(id); ids.push(id) }
+        }
+      }
+
       const lower = q.toLowerCase()
+      const notes: Result[] = ids.slice(0, 7).map((id) => {
+        const e = entries[id]
+        const pos = e.content.toLowerCase().indexOf(lower)
+        const start = Math.max(0, pos - 50)
+        const excerpt = pos >= 0
+          ? "…" + e.content.slice(start, start + 120) + "…"
+          : (e.description ?? e.content.slice(0, 120) + "…")
+        return { slug: e.slug, title: e.title, excerpt, type: "note" as const }
+      })
 
-      const notes: Result[] = entries
-        .filter(
-          (e) =>
-            e.title.toLowerCase().includes(lower) ||
-            e.content.toLowerCase().includes(lower) ||
-            e.tags.some((t) => t.toLowerCase().includes(lower))
-        )
-        .slice(0, 6)
-        .map((e) => {
-          const idx = e.content.toLowerCase().indexOf(lower)
-          const start = Math.max(0, idx - 50)
-          const excerpt =
-            idx >= 0
-              ? "…" + e.content.slice(start, start + 100) + "…"
-              : (e.description ?? e.content.slice(0, 100) + "…")
-          return { slug: e.slug, title: e.title, excerpt, type: "note" as const }
-        })
-
-      const tags: Result[] = q.startsWith("#")
-        ? [...new Set(entries.flatMap((e) => e.tags))]
-            .filter((t) => t.toLowerCase().includes(lower.slice(1)))
-            .slice(0, 4)
-            .map((t) => ({
-              slug: `tags/${t}`,
-              title: `#${t}`,
-              excerpt: "Browse tag",
-              type: "tag" as const,
-            }))
-        : []
-
-      return { notes, tags }
+      setResults({ notes, tags: [] })
     },
     [entries]
   )
 
-  const { notes, tags } = getResults(query)
+  useEffect(() => { search(query) }, [query, search])
 
   const handleSelect = (slug: string) => {
     router.push(`/${slug}`)
     setOpen(false)
+    setQuery("")
   }
 
   return (
@@ -97,9 +149,9 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
       />
       <CommandList>
         <CommandEmpty>No results for &ldquo;{query}&rdquo;</CommandEmpty>
-        {tags.length > 0 && (
+        {results.tags.length > 0 && (
           <CommandGroup heading="Tags">
-            {tags.map((r) => (
+            {results.tags.map((r) => (
               <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
                 <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
                 <span>{r.title}</span>
@@ -107,10 +159,10 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
             ))}
           </CommandGroup>
         )}
-        {tags.length > 0 && notes.length > 0 && <CommandSeparator />}
-        {notes.length > 0 && (
+        {results.tags.length > 0 && results.notes.length > 0 && <CommandSeparator />}
+        {results.notes.length > 0 && (
           <CommandGroup heading="Notes">
-            {notes.map((r) => (
+            {results.notes.map((r) => (
               <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
                 <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
                 <div className="min-w-0 flex-1">

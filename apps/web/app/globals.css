@@ -373,7 +373,7 @@ a.tag {
     a.heading-anchor {
       display: inline-flex;
       align-items: center;
-      margin-right: 0.4em;
+      margin-left: 0.4em;
       color: hsl(var(--muted-foreground) / 0.45);
       text-decoration: none !important;
       opacity: 0;

@@ -101,7 +101,7 @@ export async function renderMarkdown(
     })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, {
-      behavior: "prepend",
+      behavior: "append",
       properties: { className: "heading-anchor", ariaLabel: "Copy link to section" },
       content: {
         type: "element", tagName: "svg",
