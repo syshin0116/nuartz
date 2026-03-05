@@ -146,3 +146,122 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* ==highlight== */
+mark {
+  background-color: oklch(0.95 0.12 95);
+  color: inherit;
+  border-radius: 0.2em;
+  padding: 0.05em 0.2em;
+}
+.dark mark {
+  background-color: oklch(0.35 0.12 85);
+}
+
+/* rehype-pretty-code */
+[data-rehype-pretty-code-figure] pre {
+  overflow-x: auto;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+[data-line] {
+  padding: 0 0.5rem;
+}
+[data-highlighted-line] {
+  background-color: oklch(0.97 0.01 250 / 0.4);
+}
+
+/* ── Callout styles ───────────────────────────────────── */
+.callout {
+  @apply my-4 rounded-lg border-l-4 p-4;
+}
+.callout-note      { @apply border-blue-400 bg-blue-50 dark:bg-blue-950/30; }
+.callout-info      { @apply border-sky-400 bg-sky-50 dark:bg-sky-950/30; }
+.callout-tip,
+.callout-hint,
+.callout-important { @apply border-teal-400 bg-teal-50 dark:bg-teal-950/30; }
+.callout-warning,
+.callout-caution,
+.callout-attention { @apply border-amber-400 bg-amber-50 dark:bg-amber-950/30; }
+.callout-danger,
+.callout-error,
+.callout-bug       { @apply border-red-400 bg-red-50 dark:bg-red-950/30; }
+.callout-success,
+.callout-check,
+.callout-done      { @apply border-green-400 bg-green-50 dark:bg-green-950/30; }
+.callout-question,
+.callout-faq,
+.callout-help      { @apply border-purple-400 bg-purple-50 dark:bg-purple-950/30; }
+.callout-example   { @apply border-orange-400 bg-orange-50 dark:bg-orange-950/30; }
+.callout-quote,
+.callout-cite      { @apply border-neutral-400 bg-neutral-50 dark:bg-neutral-900/30; }
+.callout-todo      { @apply border-blue-400 bg-blue-50 dark:bg-blue-950/30; }
+.callout-abstract,
+.callout-summary,
+.callout-tldr      { @apply border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30; }
+.callout-failure,
+.callout-fail,
+.callout-missing   { @apply border-rose-400 bg-rose-50 dark:bg-rose-950/30; }
+.callout-title     { @apply mb-2 text-sm font-semibold capitalize; }
+
+/* Wikilinks */
+.wikilink {
+  @apply text-blue-600 dark:text-blue-400 underline decoration-dotted hover:decoration-solid;
+}
+
+/* Inline tags */
+a.tag {
+  @apply rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground no-underline hover:bg-muted/80;
+}
+
+/* ── Prose styles ─────────────────────────────────────── */
+.prose {
+  @apply text-foreground leading-7;
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight text-foreground scroll-mt-20;
+  }
+  h1 { @apply text-3xl mt-8 mb-4; }
+  h2 { @apply text-2xl mt-8 mb-3 border-b pb-2; }
+  h3 { @apply text-xl mt-6 mb-2; }
+  h4 { @apply text-base mt-4 mb-2; }
+
+  p    { @apply my-4; }
+  ul   { @apply my-4 ml-6 list-disc space-y-1; }
+  ol   { @apply my-4 ml-6 list-decimal space-y-1; }
+  li   { @apply leading-7; }
+
+  a {
+    @apply text-blue-600 dark:text-blue-400 underline decoration-dotted
+           hover:decoration-solid transition-all;
+  }
+
+  blockquote {
+    @apply my-4 border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground;
+  }
+
+  code {
+    @apply rounded bg-muted px-1.5 py-0.5 text-sm font-mono
+           before:content-none after:content-none;
+  }
+
+  pre {
+    @apply my-4 overflow-x-auto rounded-lg bg-muted p-4;
+    code { @apply bg-transparent p-0 text-sm; }
+  }
+
+  table {
+    @apply my-4 w-full border-collapse text-sm;
+    th { @apply border px-3 py-2 text-left font-semibold bg-muted; }
+    td { @apply border px-3 py-2; }
+    tr:nth-child(even) td { @apply bg-muted/40; }
+  }
+
+  hr  { @apply my-8 border-border; }
+  img { @apply my-4 rounded-lg max-w-full; }
+
+  input[type="checkbox"] { @apply mr-2 accent-foreground; }
+}
