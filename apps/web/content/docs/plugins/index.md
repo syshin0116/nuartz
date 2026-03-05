@@ -2,7 +2,7 @@
 title: Processing Pipeline
 ---
 
-nuartz processes Markdown through a **remark → rehype** pipeline. Each stage is handled by plugins that transform the abstract syntax tree (AST) before producing the final HTML.
+Nuartz processes Markdown through a **remark → rehype** pipeline. Each stage is handled by plugins that transform the abstract syntax tree (AST) before producing the final HTML.
 
 ## Pipeline Overview
 
@@ -16,7 +16,7 @@ Raw Markdown
 │  remarkBreaks       (soft line breaks → <br>)            │
 │  remarkCallout      (> [!note] callout syntax)           │
 │  remarkWikilink     (wikilinks → HTML links)             │
-│  remarkComment      (%% hidden comments %%)              │
+│  remarkObsidianComment (%% hidden comments %%)           │
 │  remarkHighlight    (==highlights== → <mark>)            │
 │  remarkTag          (#inline-tags)                       │
 └─────────────────────────────────┘
@@ -29,11 +29,11 @@ Raw Markdown
 │  rehypeKatex        (LaTeX rendering)                    │
 │  rehypeSlug         (heading IDs for anchor links)       │
 │  rehypeAutolinkHeadings (§ anchor links on headings)     │
-│  rehypeToc          (table of contents extraction)       │
+│  rehypeExtractToc   (table of contents extraction)       │
 └─────────────────────────────────┘
     │
     ▼
-HTML string + metadata (links, tags, toc, excerpt)
+HTML string + metadata (links, tags, toc)
 ```
 
 ## Entry Point
@@ -50,7 +50,6 @@ const result = await renderMarkdown(rawMarkdownString, {
 // result.toc       — table of contents entries
 // result.links     — outgoing wikilinks
 // result.tags      — all tags (frontmatter + inline)
-// result.excerpt   — auto-generated excerpt
 ```
 
 ## Plugin Reference

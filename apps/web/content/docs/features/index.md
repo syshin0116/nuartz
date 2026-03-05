@@ -1,9 +1,9 @@
 ---
 title: Features
-description: Overview of all nuartz features for your digital garden.
+description: Overview of all Nuartz features for your digital garden.
 ---
 
-nuartz includes a rich set of features for publishing and navigating your digital garden. Here's everything available:
+Nuartz includes a rich set of features for publishing and navigating your digital garden. Here's everything available:
 
 ## Writing & Syntax
 
@@ -13,8 +13,7 @@ nuartz includes a rich set of features for publishing and navigating your digita
 - [[syntax-highlighting]] — Code blocks with dual-theme highlighting
 - [[latex]] — Math equations with KaTeX
 - [[mermaid]] — Diagrams and flowcharts
-- [[comments]] — Obsidian `%%comment%%` syntax (stripped from output)
-- [[citations]] — Academic citation support
+- [[comments]] — Reader comments via Giscus (GitHub Discussions)
 
 ## Navigation & Discovery
 
@@ -39,8 +38,9 @@ nuartz includes a rich set of features for publishing and navigating your digita
 - [[rss-feed]] — RSS feed generation
 - [[social-images]] — Open Graph image generation
 - [[spa-routing]] — Client-side navigation
-- [[i18n]] — Internationalization support
 
 ## Planned
 
-- [[upcoming-features]] — Features on the nuartz roadmap
+- [[citations]] — Academic citation support (BibTeX)
+- [[i18n]] — Internationalization support
+- [[upcoming-features]] — Other features on the Nuartz roadmap

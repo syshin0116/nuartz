@@ -2,14 +2,14 @@
 title: Documentation
 ---
 
-nuartz is a fast, minimalist digital garden template built on Next.js 15 and Tailwind CSS v4. It transforms plain Markdown files into a fully-functional, interconnected knowledge base.
+Nuartz is a fast, minimalist digital garden template built on Next.js 15 and Tailwind CSS v4. It transforms plain Markdown files into a fully-functional, interconnected knowledge base.
 
 ## Get Started
 
-nuartz requires **Node.js v20+** (or Bun) and is structured as a monorepo.
+Nuartz uses **Bun** and is structured as a monorepo.
 
 ```shell
-git clone https://github.com/your-user/nuartz.git
+git clone https://github.com/syshin0116/nuartz.git
 cd nuartz
 bun install
 bun dev
@@ -28,7 +28,7 @@ Then drop your Markdown files into `apps/web/content/` and start writing.
 - [[features/wikilinks|Wikilinks]] and [[features/backlinks|backlinks]] for interconnected notes
 - [[features/graph-view|Interactive graph view]] showing relationships between notes
 - [[features/callouts|Callouts]], [[features/syntax-highlighting|syntax highlighting]], [[features/latex|LaTeX]], [[features/mermaid|Mermaid diagrams]]
-- [[features/search|Full-text search]] powered by Pagefind
+- [[features/search|Full-text search]] powered by FlexSearch (Cmd+K, CJK-aware)
 - [[features/table-of-contents|Table of contents]], [[features/breadcrumbs|breadcrumbs]], [[features/recent-notes|recent notes]]
 - [[features/rss-feed|RSS feed]], [[features/social-images|social images]], [[features/popover-previews|popover previews]]
 - [[features/dark-mode|Dark mode]] with system preference detection
