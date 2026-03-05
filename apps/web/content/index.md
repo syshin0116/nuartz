@@ -1,30 +1,43 @@
 ---
 title: Welcome to nuartz
-description: A demo of nuartz — Obsidian-compatible digital garden on Next.js
-tags: [nuartz, demo, obsidian]
+date: 2026-03-01
+tags:
+  - nuartz
+  - getting-started
+description: nuartz is a Next.js + shadcn/ui digital garden that renders Obsidian-flavored markdown beautifully.
 ---
 
-# Welcome to nuartz
+> [!info] What is nuartz?
+> **nuartz** = **N**ext.js + Q**uartz**. A digital garden built on Next.js + shadcn/ui that renders your Obsidian notes as a beautiful website.
 
-This is a demo of **nuartz** — an Obsidian-compatible digital garden built on Next.js + shadcn/ui.
+## Get Started
 
-## What you can do here
+1. [[docs/getting-started|Installation & Setup]]
+2. [[docs/authoring-content|Writing Content]]
+3. [[docs/configuration|Configuration]]
 
-- Write notes in Obsidian and publish them as a web app
-- Use [[wikilinks]] to connect notes
-- Add #tags to categorize content
-- Reference [[callouts#Callout Types|callout examples]] in your notes
+## Features
 
-## Callout Example
+- [[docs/features/wikilinks|Wikilinks]] — `[[note]]` syntax for linking notes
+- [[docs/features/callouts|Callouts]] — Obsidian-style callout blocks
+- [[docs/features/syntax-highlighting|Syntax Highlighting]] — Beautiful code blocks with Shiki
+- [[docs/features/mermaid|Mermaid Diagrams]] — Render diagrams from code
+- [[docs/features/graph-view|Graph View]] — Visualize note connections
+- Backlinks, Table of Contents, Full-text search (Cmd+K)
 
-> [!note]
-> This is a note callout. nuartz renders all Obsidian callout types.
+> [!tip] Quick Start
+> Drop your `.md` files in the `content/` directory and run `bun dev`. That's it.
 
-> [!tip] Getting started
-> Put your `.md` files in the `content/` directory and run `bun dev`.
+## Why nuartz?
 
-> [!warning]
-> This project is in active development. API may change.
+| Feature | nuartz | Static generators |
+|---------|--------|-------------------|
+| Framework | Next.js (React) | Hugo / 11ty / custom |
+| Styling | shadcn/ui + Tailwind | Custom CSS |
+| Obsidian syntax | Full support | Partial |
+| Search | Built-in (Cmd+K) | Requires plugins |
+| Dark mode | Built-in | Varies |
+| Deployment | Vercel, one click | Manual setup |
 
 ## Math Example
 
@@ -35,12 +48,3 @@ Block math:
 $$
 \int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
 $$
-
-## Task List
-
-- [x] Wikilinks
-- [x] Callouts
-- [x] Backlinks
-- [x] Search
-- [ ] Graph view
-- [ ] AI chat

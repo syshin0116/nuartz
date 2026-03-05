@@ -6,7 +6,7 @@
 import path from "node:path"
 import { getAllMarkdownFiles, renderMarkdown } from "nuartz"
 
-const CONTENT_DIR = path.resolve(process.argv[2] ?? "content")
+const CONTENT_DIR = path.resolve(process.argv[2] ?? "apps/web/content")
 
 async function main() {
   console.log(`\nValidating content in: ${CONTENT_DIR}\n`)
