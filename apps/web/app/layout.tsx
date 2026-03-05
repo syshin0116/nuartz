@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import "katex/dist/katex.min.css"
+import { Analytics } from "@vercel/analytics/next"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Header } from "@/components/layout/header"
 import { NavSidebar } from "@/components/layout/nav-sidebar"
@@ -48,6 +49,7 @@ export default async function RootLayout({
           </div>
           <CommandPalette entries={searchEntries} />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )
