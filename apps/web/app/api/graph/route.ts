@@ -21,32 +21,43 @@ export interface GraphLink {
 export async function GET() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)
 
-  const noteNodes: GraphNode[] = files.map((f) => ({
-    id: f.slug,
-    title: String(f.frontmatter.title ?? f.slug.split("/").pop() ?? f.slug),
-    tags: (f.frontmatter.tags as string[] | undefined) ?? [],
+  // Render all files to extract links and tags (includes inline #tag syntax)
+  const rendered = await Promise.all(
+    files.map(async (f) => ({ file: f, result: await renderMarkdown(f.raw) }))
+  )
+
+  const noteNodes: GraphNode[] = rendered.map(({ file, result }) => ({
+    id: file.slug,
+    title: String(file.frontmatter.title ?? file.slug.split("/").pop() ?? file.slug),
+    tags: result.tags, // includes both frontmatter tags AND inline #tag syntax
     type: "note",
   }))
 
+  const linkSet = new Set<string>()
   const links: GraphLink[] = []
 
-  // Note-to-note links (via wikilinks)
-  await Promise.all(
-    files.map(async (f) => {
-      const result = await renderMarkdown(f.raw)
-      for (const linkTarget of result.links) {
-        const normalized = linkTarget.toLowerCase().replace(/\s+/g, "-")
-        const match = files.find(
-          (other) => other.slug === normalized || other.slug.endsWith("/" + normalized)
-        )
-        if (match && match.slug !== f.slug) {
-          links.push({ source: f.slug, target: match.slug })
-        }
-      }
-    })
-  )
+  const addLink = (source: string, target: string) => {
+    const key = `${source}→${target}`
+    if (!linkSet.has(key)) {
+      linkSet.add(key)
+      links.push({ source, target })
+    }
+  }
 
-  // Tag nodes + note-to-tag links
+  // Note-to-note links (via wikilinks)
+  for (const { file, result } of rendered) {
+    for (const linkTarget of result.links) {
+      const normalized = linkTarget.toLowerCase().replace(/\s+/g, "-")
+      const match = files.find(
+        (other) => other.slug === normalized || other.slug.endsWith("/" + normalized)
+      )
+      if (match && match.slug !== file.slug) {
+        addLink(file.slug, match.slug)
+      }
+    }
+  }
+
+  // Tag nodes + note-to-tag links (uses result.tags for full coverage)
   const tagSet = new Set<string>()
   for (const node of noteNodes) {
     for (const tag of node.tags) tagSet.add(tag)
@@ -61,7 +72,7 @@ export async function GET() {
 
   for (const note of noteNodes) {
     for (const tag of note.tags) {
-      links.push({ source: note.id, target: `tag/${tag}` })
+      addLink(note.id, `tag/${tag}`)
     }
   }
 

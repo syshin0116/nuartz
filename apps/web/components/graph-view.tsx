@@ -38,27 +38,29 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       const nodesCopy = data!.nodes.map(n => ({ ...n }))
       const linksCopy = data!.links.map(l => ({ ...l }))
 
+      // Force center at origin (like Quartz) — nodes cluster around (0,0)
       const sim = d3.forceSimulation<GraphNode>(nodesCopy)
-        .force("link", d3.forceLink<GraphNode, GraphLink>(linksCopy).id(d => d.id).distance(50))
-        .force("charge", d3.forceManyBody().strength(-80))
-        .force("center", d3.forceCenter(w / 2, h / 2))
-        .force("collision", d3.forceCollide(14))
+        .force("link", d3.forceLink<GraphNode, GraphLink>(linksCopy).id(d => d.id).distance(35))
+        .force("charge", d3.forceManyBody().strength(-50))
+        .force("center", d3.forceCenter(0, 0))
+        .force("collision", d3.forceCollide(10))
 
-      // Pre-run ticks so initial positions are stable
+      // Pre-run to stable layout, keep stopped so positions don't drift
       sim.stop()
-      for (let i = 0; i < 200; i++) sim.tick()
+      for (let i = 0; i < 300; i++) sim.tick()
 
-      // Fit graph to viewport
+      // Compute scale to fit all nodes in viewport
       const xs = nodesCopy.map(d => d.x ?? 0)
       const ys = nodesCopy.map(d => d.y ?? 0)
       const minX = Math.min(...xs), maxX = Math.max(...xs)
       const minY = Math.min(...ys), maxY = Math.max(...ys)
-      const gw = maxX - minX || w, gh = maxY - minY || h
-      const pad = 28
-      const scale = Math.min((w - pad * 2) / gw, (h - pad * 2) / gh, 2.5)
-      const initTransform = d3.zoomIdentity
-        .translate((w - scale * (minX + maxX)) / 2, (h - scale * (minY + maxY)) / 2)
-        .scale(scale)
+      const gw = Math.max(maxX - minX, 1)
+      const gh = Math.max(maxY - minY, 1)
+      const pad = 24
+      const rawScale = Math.min((w - pad * 2) / gw, (h - pad * 2) / gh)
+      const fitScale = Math.min(Math.max(rawScale, 0.5), 2)
+      // translate(w/2, h/2) centers origin; then scale zooms around that center
+      const initTransform = d3.zoomIdentity.translate(w / 2, h / 2).scale(fitScale)
 
       // g must be declared before zoomBehavior references it
       const g = svg.append("g")
@@ -74,8 +76,6 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       svg.on("dblclick.zoom", () =>
         svg.transition().duration(350).call(zoomBehavior.transform, initTransform)
       )
-
-      sim.restart()
 
       const link = g.append("g")
         .selectAll("line")
@@ -105,9 +105,8 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
             if (t === d.id) connected.add(s)
           })
 
-          node.selectAll<SVGCircleElement, GraphNode>("circle")
+          node.selectAll<SVGCircleElement | SVGRectElement, GraphNode>("circle, rect")
             .attr("opacity", n => connected.has(n.id) ? 1 : 0.12)
-            .attr("r", n => n.type === "tag" ? 3 : (n.id === d.id ? 8 : n.id === currentSlug ? 8 : 5))
 
           link
             .attr("stroke-opacity", l => {
@@ -120,56 +119,54 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
               const t = (l.target as GraphNode).id
               return s === d.id || t === d.id ? 1.5 : 1
             })
-
-          label.attr("opacity", n => connected.has(n.id) ? 1 : 0)
         })
         .on("mouseleave", () => {
           setHoveredId(null)
-          node.selectAll<SVGCircleElement, GraphNode>("circle")
+          node.selectAll<SVGCircleElement | SVGRectElement, GraphNode>("circle, rect")
             .attr("opacity", 1)
-            .attr("r", n => n.type === "tag" ? 3 : n.id === currentSlug ? 8 : 5)
           link.attr("stroke-opacity", 0.2).attr("stroke-width", 1)
-          label.attr("opacity", 0)
         })
         .call(d3.drag<SVGGElement, GraphNode>()
           .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y })
           .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y })
           .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null }))
 
-      // Notes: prominent filled circle; Tags: small subtle outlined circle
-      node.append("circle")
-        .attr("r", d => d.type === "tag" ? 3 : d.id === currentSlug ? 8 : 5)
-        .attr("fill", d => {
-          if (d.type === "tag") return "transparent"
-          return d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--foreground))"
-        })
-        .attr("fill-opacity", d => d.type === "tag" ? 0 : d.id === currentSlug ? 1 : 0.55)
-        .attr("stroke", d => d.type === "tag" ? "hsl(var(--muted-foreground))" : "hsl(var(--background))")
-        .attr("stroke-width", d => d.type === "tag" ? 1.5 : 1.5)
-        .attr("stroke-opacity", d => d.type === "tag" ? 0.5 : 1)
+      // Notes: filled circles; Tags: diamond shape (rotated square) with accent color
+      node.each(function(d) {
+        const el = d3.select(this)
+        if (d.type === "tag") {
+          el.append("rect")
+            .attr("width", 7).attr("height", 7)
+            .attr("x", -3.5).attr("y", -3.5)
+            .attr("transform", "rotate(45)")
+            .attr("fill", "hsl(var(--chart-1))")
+            .attr("fill-opacity", 0.7)
+            .attr("stroke", "hsl(var(--chart-1))")
+            .attr("stroke-width", 1)
+            .attr("stroke-opacity", 0.9)
+        } else {
+          el.append("circle")
+            .attr("r", d.id === currentSlug ? 8 : 5)
+            .attr("fill", d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--foreground))")
+            .attr("fill-opacity", d.id === currentSlug ? 1 : 0.55)
+            .attr("stroke", "hsl(var(--background))")
+            .attr("stroke-width", 1.5)
+            .attr("stroke-opacity", 1)
+        }
+      })
 
-      const label = g.append("g")
-        .selectAll<SVGTextElement, GraphNode>("text")
-        .data(nodesCopy)
-        .join("text")
-        .text(d => d.title.length > 18 ? d.title.slice(0, 16) + "…" : d.title)
-        .attr("font-size", "9px")
-        .attr("fill", "currentColor")
-        .attr("text-anchor", "middle")
-        .attr("dy", "-8px")
-        .attr("pointer-events", "none")
-        .attr("opacity", 0)
-
-      sim.on("tick", () => {
+      const updatePositions = () => {
         link
           .attr("x1", d => (d.source as GraphNode).x!)
           .attr("y1", d => (d.source as GraphNode).y!)
           .attr("x2", d => (d.target as GraphNode).x!)
           .attr("y2", d => (d.target as GraphNode).y!)
-
         node.attr("transform", d => `translate(${d.x},${d.y})`)
-        label.attr("x", d => d.x!).attr("y", d => d.y!)
-      })
+      }
+
+      sim.on("tick", updatePositions)
+      // Apply positions immediately — sim is stopped so tick event never fires on its own
+      updatePositions()
     }
 
     renderGraph()
@@ -199,7 +196,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           style={{ height: 260 }}
         />
         {hoveredId && (
-          <div className="absolute bottom-2 left-2 right-2 rounded-md bg-background/90 px-2 py-1 text-xs text-foreground backdrop-blur pointer-events-none truncate border">
+          <div className="absolute bottom-2 left-2 right-2 rounded-md bg-background/95 px-2.5 py-1.5 text-sm text-foreground backdrop-blur pointer-events-none truncate border shadow-sm">
             {data.nodes.find(n => n.id === hoveredId)?.title ?? hoveredId}
           </div>
         )}
