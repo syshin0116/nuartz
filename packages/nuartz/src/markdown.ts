@@ -15,7 +15,7 @@ import type { Root as HastRoot, Element } from "hast"
 import type { Plugin } from "unified"
 
 import remarkBreaks from "remark-breaks"
-import rehypePrettyCode from "rehype-pretty-code"
+import { rehypePrettyCode } from "rehype-pretty-code"
 import { remarkCallout } from "./plugins/callout.js"
 import { remarkTag } from "./plugins/tag.js"
 import { remarkWikilink } from "./plugins/wikilink.js"
