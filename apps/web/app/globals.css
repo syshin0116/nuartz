@@ -223,7 +223,12 @@ a.tag {
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight text-foreground scroll-mt-20;
-    a { @apply text-inherit no-underline hover:text-inherit; }
+    a.heading-anchor {
+      @apply ml-2 text-muted-foreground/40 no-underline opacity-0 transition-opacity
+             hover:text-muted-foreground hover:no-underline;
+      font-size: 0.8em;
+    }
+    &:hover a.heading-anchor { @apply opacity-100; }
   }
   h1 { @apply text-3xl mt-8 mb-4; }
   h2 { @apply text-2xl mt-8 mb-3 border-b pb-2; }
