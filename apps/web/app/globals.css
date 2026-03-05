@@ -257,18 +257,20 @@ a.tag {
   @apply text-foreground leading-7;
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight text-foreground scroll-mt-20;
+    @apply tracking-tight text-foreground scroll-mt-20;
+    /* Anchor # appears to the left on hover */
     a.heading-anchor {
-      @apply ml-2 text-muted-foreground/40 no-underline opacity-0 transition-opacity
+      @apply mr-2 text-muted-foreground/30 no-underline opacity-0 transition-opacity
              hover:text-muted-foreground hover:no-underline;
-      font-size: 0.8em;
+      font-size: 0.85em;
+      font-weight: 400;
     }
     &:hover a.heading-anchor { @apply opacity-100; }
   }
-  h1 { @apply text-3xl mt-8 mb-4; }
-  h2 { @apply text-2xl mt-8 mb-3 border-b pb-2; }
-  h3 { @apply text-xl mt-6 mb-2; }
-  h4 { @apply text-base mt-4 mb-2; }
+  h1 { @apply text-3xl font-bold mt-8 mb-4; }
+  h2 { @apply text-2xl font-semibold mt-8 mb-3; }
+  h3 { @apply text-lg font-semibold mt-6 mb-2; }
+  h4 { @apply text-base font-medium mt-4 mb-2; }
 
   p    { @apply my-4; }
   ul   { @apply my-4 ml-6 list-disc space-y-1; }

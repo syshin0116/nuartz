@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Header } from "@/components/layout/header"
-import { CollapsibleSidebar } from "@/components/layout/collapsible-sidebar"
+import { LayoutShell } from "@/components/layout/layout-shell"
 import { CommandPalette } from "@/components/command-palette"
 import { getAllMarkdownFiles, buildFileTree, buildSearchIndex } from "nuartz"
 import path from "node:path"
@@ -32,15 +31,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen flex-col">
-            <Header tree={tree} />
-            <div className="flex flex-1">
-              <CollapsibleSidebar tree={tree} />
-              <main className="min-w-0 flex-1">
-                {children}
-              </main>
-            </div>
-          </div>
+          <LayoutShell tree={tree}>{children}</LayoutShell>
           <CommandPalette entries={searchEntries} />
         </ThemeProvider>
       </body>

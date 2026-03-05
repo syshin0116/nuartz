@@ -100,7 +100,7 @@ export async function renderMarkdown(
     })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, {
-      behavior: "append",
+      behavior: "prepend",
       properties: { className: "heading-anchor", ariaHidden: "true", tabIndex: -1 },
       content: { type: "text", value: "#" },
     })
