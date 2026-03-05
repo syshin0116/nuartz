@@ -7,13 +7,14 @@ import { Header } from "@/components/layout/header"
 import { NavSidebar } from "@/components/layout/nav-sidebar"
 import { CommandPalette } from "@/components/command-palette"
 import { getAllMarkdownFiles, buildFileTree, buildSearchIndex } from "nuartz"
+import config from "@/nuartz.config"
 import path from "node:path"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
 export const metadata: Metadata = {
-  title: "Nuartz",
-  description: "Personal knowledge base",
+  title: config.site.title,
+  description: config.site.description,
 }
 
 export default async function RootLayout({
