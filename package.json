@@ -7,6 +7,7 @@
     "build": "bun run build:pkg && bun run build:app",
     "build:pkg": "bun run --cwd packages/nuartz build",
     "build:app": "bun run --cwd apps/web build",
-    "typecheck": "bun run --cwd packages/nuartz typecheck && bun run --cwd apps/web typecheck"
+    "typecheck": "bun run --cwd packages/nuartz typecheck && bun run --cwd apps/web typecheck",
+    "validate": "bun scripts/validate-content.ts"
   }
 }

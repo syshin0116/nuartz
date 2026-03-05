@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 
 interface GraphNode {
@@ -13,17 +13,12 @@ interface GraphData { nodes: GraphNode[]; links: GraphLink[] }
 
 export function GraphView({ currentSlug }: { currentSlug?: string }) {
   const svgRef = useRef<SVGSVGElement>(null)
-  const zoomRef = useRef<((reset: boolean) => void) | null>(null)
   const [data, setData] = useState<GraphData | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
     fetch("/api/graph").then(r => r.json()).then(setData).catch(console.error)
-  }, [])
-
-  const resetZoom = useCallback(() => {
-    zoomRef.current?.(true)
   }, [])
 
   useEffect(() => {
@@ -38,37 +33,26 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       svg.selectAll("*").remove()
 
       const w = svgRef.current.clientWidth || 280
-      const h = 280
+      const h = 260
 
       const nodesCopy = data!.nodes.map(n => ({ ...n }))
       const linksCopy = data!.links.map(l => ({ ...l }))
 
-      // Build adjacency set for hover highlighting
-      const neighbors = new Map<string, Set<string>>()
-      for (const node of nodesCopy) neighbors.set(node.id, new Set())
-
       const sim = d3.forceSimulation<GraphNode>(nodesCopy)
-        .force("link", d3.forceLink<GraphNode, GraphLink>(linksCopy).id(d => d.id).distance(55))
-        .force("charge", d3.forceManyBody().strength(-90))
+        .force("link", d3.forceLink<GraphNode, GraphLink>(linksCopy).id(d => d.id).distance(50))
+        .force("charge", d3.forceManyBody().strength(-80))
         .force("center", d3.forceCenter(w / 2, h / 2))
-        .force("collision", d3.forceCollide(16))
+        .force("collision", d3.forceCollide(14))
 
-      // Zoom behaviour
       const zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
         .scaleExtent([0.2, 4])
         .on("zoom", e => g.attr("transform", e.transform))
 
       svg.call(zoomBehavior)
-
-      // Expose reset function
-      zoomRef.current = (reset: boolean) => {
-        if (reset) {
-          svg.transition().duration(400).call(
-            zoomBehavior.transform,
-            d3.zoomIdentity
-          )
-        }
-      }
+      // Double-click to reset zoom
+      svg.on("dblclick.zoom", () =>
+        svg.transition().duration(350).call(zoomBehavior.transform, d3.zoomIdentity)
+      )
 
       const g = svg.append("g")
 
@@ -77,7 +61,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
         .data(linksCopy)
         .join("line")
         .attr("stroke", "currentColor")
-        .attr("stroke-opacity", 0.25)
+        .attr("stroke-opacity", 0.2)
         .attr("stroke-width", 1)
 
       const node = g.append("g")
@@ -85,11 +69,13 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
         .data(nodesCopy)
         .join("g")
         .attr("cursor", "pointer")
-        .on("click", (_, d) => router.push(`/${d.id}`))
-        .on("mouseenter", (event, d) => {
+        .on("click", (_, d) => {
+          if (d.type === "tag") router.push(`/tags/${d.id.replace("tag/", "")}`)
+          else router.push(`/${d.id}`)
+        })
+        .on("mouseenter", (_, d) => {
           setHoveredId(d.id)
 
-          // Highlight connected nodes
           const connected = new Set<string>([d.id])
           linksCopy.forEach(l => {
             const s = (l.source as GraphNode).id
@@ -99,19 +85,14 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           })
 
           node.selectAll<SVGCircleElement, GraphNode>("circle")
-            .attr("opacity", n => connected.has(n.id) ? 1 : 0.15)
-            .attr("r", n => {
-              if (n.id === d.id) return n.id === currentSlug ? 9 : 7
-              return n.id === currentSlug ? 7 : 4
-            })
-          node.selectAll<SVGRectElement, GraphNode>("rect")
-            .attr("opacity", n => connected.has(n.id) ? 1 : 0.15)
+            .attr("opacity", n => connected.has(n.id) ? 1 : 0.12)
+            .attr("r", n => n.type === "tag" ? 4 : (n.id === d.id ? 7 : n.id === currentSlug ? 7 : 4))
 
           link
             .attr("stroke-opacity", l => {
               const s = (l.source as GraphNode).id
               const t = (l.target as GraphNode).id
-              return s === d.id || t === d.id ? 0.7 : 0.05
+              return s === d.id || t === d.id ? 0.65 : 0.05
             })
             .attr("stroke-width", l => {
               const s = (l.source as GraphNode).id
@@ -119,17 +100,14 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
               return s === d.id || t === d.id ? 1.5 : 1
             })
 
-          label
-            .attr("opacity", n => connected.has(n.id) ? 1 : 0)
+          label.attr("opacity", n => connected.has(n.id) ? 1 : 0)
         })
         .on("mouseleave", () => {
           setHoveredId(null)
           node.selectAll<SVGCircleElement, GraphNode>("circle")
             .attr("opacity", 1)
-            .attr("r", n => n.id === currentSlug ? 7 : 4)
-          node.selectAll<SVGRectElement, GraphNode>("rect")
-            .attr("opacity", 1)
-          link.attr("stroke-opacity", 0.25).attr("stroke-width", 1)
+            .attr("r", n => n.type === "tag" ? 4 : n.id === currentSlug ? 7 : 4)
+          link.attr("stroke-opacity", 0.2).attr("stroke-width", 1)
           label.attr("opacity", 0)
         })
         .call(d3.drag<SVGGElement, GraphNode>()
@@ -137,33 +115,24 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y })
           .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null }))
 
-      // Notes: circle; Tags: rotated square (diamond)
-      node.each(function(d) {
-        const el = d3.select(this)
-        if (d.type === "tag") {
-          const s = d.id === currentSlug ? 9 : 6
-          el.append("rect")
-            .attr("width", s).attr("height", s)
-            .attr("x", -s / 2).attr("y", -s / 2)
-            .attr("transform", "rotate(45)")
-            .attr("fill", "hsl(var(--chart-2))")
-            .attr("stroke", "hsl(var(--background))")
-            .attr("stroke-width", 1.5)
-        } else {
-          el.append("circle")
-            .attr("r", d.id === currentSlug ? 7 : 4)
-            .attr("fill", d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))")
-            .attr("stroke", "hsl(var(--background))")
-            .attr("stroke-width", 1.5)
-        }
-      })
+      // Notes: filled circle; Tags: outlined circle with accent color
+      node.append("circle")
+        .attr("r", d => d.type === "tag" ? 4 : d.id === currentSlug ? 7 : 4)
+        .attr("fill", d => {
+          if (d.type === "tag") return "transparent"
+          return d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))"
+        })
+        .attr("stroke", d => {
+          if (d.type === "tag") return "hsl(var(--chart-1))"
+          return "hsl(var(--background))"
+        })
+        .attr("stroke-width", d => d.type === "tag" ? 2 : 1.5)
 
-      // Hover labels (hidden by default, shown on mouseenter)
       const label = g.append("g")
         .selectAll<SVGTextElement, GraphNode>("text")
         .data(nodesCopy)
         .join("text")
-        .text(d => d.title.length > 20 ? d.title.slice(0, 18) + "…" : d.title)
+        .text(d => d.title.length > 18 ? d.title.slice(0, 16) + "…" : d.title)
         .attr("font-size", "9px")
         .attr("fill", "currentColor")
         .attr("text-anchor", "middle")
@@ -189,9 +158,9 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
 
   if (!data) {
     return (
-      <div className="w-full">
+      <div className="w-full mt-4">
         <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Graph</p>
-        <div className="flex h-[260px] items-center justify-center rounded-lg border bg-muted/10 text-xs text-muted-foreground">
+        <div className="flex h-[260px] items-center justify-center rounded-lg border bg-muted/5 text-xs text-muted-foreground">
           Loading…
         </div>
       </div>
@@ -201,43 +170,19 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
   if (data.nodes.length === 0) return null
 
   return (
-    <div className="w-full">
-      <div className="mb-2 flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Graph</p>
-        <button
-          onClick={resetZoom}
-          title="Reset view"
-          className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-        >
-          {/* home/reset icon */}
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-        </button>
-      </div>
+    <div className="w-full mt-4">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Graph</p>
       <div className="relative">
         <svg
           ref={svgRef}
-          className="w-full rounded-lg border bg-muted/10"
+          className="w-full rounded-lg border bg-muted/5"
           style={{ height: 260 }}
         />
         {hoveredId && (
-          <div className="absolute bottom-2 left-2 right-2 rounded bg-background/80 px-2 py-1 text-xs text-foreground backdrop-blur pointer-events-none truncate border">
+          <div className="absolute bottom-2 left-2 right-2 rounded-md bg-background/90 px-2 py-1 text-xs text-foreground backdrop-blur pointer-events-none truncate border">
             {data.nodes.find(n => n.id === hoveredId)?.title ?? hoveredId}
           </div>
         )}
-      </div>
-      <div className="mt-1 flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
-        <span className="flex items-center gap-1">
-          <svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="currentColor" /></svg>
-          note
-        </span>
-        <span className="flex items-center gap-1">
-          <svg width="8" height="8"><rect x="1" y="1" width="6" height="6" transform="rotate(45 4 4)" fill="hsl(var(--chart-2))" /></svg>
-          tag
-        </span>
-        <span>scroll to zoom · drag to pan</span>
       </div>
     </div>
   )

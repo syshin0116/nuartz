@@ -258,14 +258,18 @@ a.tag {
 
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight text-foreground scroll-mt-20;
-    /* Anchor # appears to the left on hover */
+    /* Heading anchor — # appears to the left, only on hover */
     a.heading-anchor {
-      @apply mr-2 text-muted-foreground/30 no-underline opacity-0 transition-opacity
-             hover:text-muted-foreground hover:no-underline;
+      display: inline-block;
+      margin-right: 0.4em;
       font-size: 0.85em;
       font-weight: 400;
+      color: hsl(var(--muted-foreground) / 0.4);
+      text-decoration: none !important;
+      opacity: 0;
+      transition: opacity 0.15s;
     }
-    &:hover a.heading-anchor { @apply opacity-100; }
+    &:hover a.heading-anchor { opacity: 1; }
   }
   h1 { @apply text-3xl font-bold mt-8 mb-4; }
   h2 { @apply text-2xl font-semibold mt-8 mb-3; }
