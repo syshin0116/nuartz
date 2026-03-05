@@ -158,6 +158,21 @@ mark {
   background-color: oklch(0.35 0.12 85);
 }
 
+/* Reader mode */
+html.reader-mode aside {
+  display: none !important;
+}
+html.reader-mode main > div {
+  max-width: 72ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Code block copy button */
+[data-rehype-pretty-code-figure] {
+  position: relative;
+}
+
 /* rehype-pretty-code */
 [data-rehype-pretty-code-figure] pre {
   overflow-x: auto;
@@ -174,77 +189,172 @@ mark {
   background-color: oklch(0.97 0.01 250 / 0.4);
 }
 
-/* ── Callout styles ───────────────────────────────────── */
+/* ── Callout styles (Quartz-style with SVG mask icons) ── */
 .callout {
-  @apply my-4 rounded-lg border-l-4 p-4 text-sm;
-}
-.callout-note,
-.callout-info      { @apply border-blue-400 bg-blue-50 dark:bg-blue-950/30; }
-.callout-tip,
-.callout-hint      { @apply border-teal-400 bg-teal-50 dark:bg-teal-950/30; }
-.callout-important { @apply border-purple-400 bg-purple-50 dark:bg-purple-950/30; }
-.callout-warning,
-.callout-caution,
-.callout-attention { @apply border-amber-400 bg-amber-50 dark:bg-amber-950/30; }
-.callout-danger,
-.callout-error,
-.callout-bug,
-.callout-failure,
-.callout-fail,
-.callout-missing   { @apply border-red-400 bg-red-50 dark:bg-red-950/30; }
-.callout-success,
-.callout-check,
-.callout-done      { @apply border-green-400 bg-green-50 dark:bg-green-950/30; }
-.callout-question,
-.callout-faq,
-.callout-help      { @apply border-purple-400 bg-purple-50 dark:bg-purple-950/30; }
-.callout-example   { @apply border-orange-400 bg-orange-50 dark:bg-orange-950/30; }
-.callout-quote,
-.callout-cite      { @apply border-neutral-400 bg-neutral-50 dark:bg-neutral-900/30; }
-.callout-todo      { @apply border-blue-400 bg-blue-50 dark:bg-blue-950/30; }
-.callout-abstract,
-.callout-summary,
-.callout-tldr      { @apply border-cyan-400 bg-cyan-50 dark:bg-cyan-950/30; }
+  @apply my-4 rounded-md border p-0 text-sm overflow-hidden;
+  border-color: var(--callout-border);
+  background-color: var(--callout-bg);
 
-/* Callout title with icon */
-.callout-title {
-  @apply mb-2 flex items-center gap-1.5 text-sm font-semibold capitalize;
-  &::before {
-    font-style: normal;
-    flex-shrink: 0;
+  /* Default: note (blue) */
+  --callout-color: #448aff;
+  --callout-border: #448aff44;
+  --callout-bg: #448aff10;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="2" x2="22" y2="6"/><path d="M7.5 20.5 19 9l-4-4L3.5 16.5 2 22z"/></svg>');
+
+  & > *:not(.callout-title) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  & > *:not(.callout-title):last-child {
+    padding-bottom: 1rem;
+  }
+  & > *:not(.callout-title):first-of-type {
+    padding-top: 0.25rem;
+  }
+  /* remarkBreaks adds a leading <br> in callout content — hide it */
+  & > *:not(.callout-title) > br:first-child {
+    display: none;
   }
 }
-.callout-note    .callout-title,
-.callout-info    .callout-title { @apply text-blue-700 dark:text-blue-400;   &::before { content: "ℹ"; } }
-.callout-tip     .callout-title,
-.callout-hint    .callout-title { @apply text-teal-700 dark:text-teal-400;   &::before { content: "💡"; } }
-.callout-important .callout-title { @apply text-purple-700 dark:text-purple-400; &::before { content: "📌"; } }
-.callout-warning .callout-title,
-.callout-caution .callout-title,
-.callout-attention .callout-title { @apply text-amber-700 dark:text-amber-400; &::before { content: "⚠"; } }
-.callout-danger  .callout-title,
-.callout-error   .callout-title,
-.callout-bug     .callout-title,
-.callout-failure .callout-title,
-.callout-fail    .callout-title,
-.callout-missing .callout-title { @apply text-red-700 dark:text-red-400;     &::before { content: "✕"; } }
-.callout-success .callout-title,
-.callout-check   .callout-title,
-.callout-done    .callout-title { @apply text-green-700 dark:text-green-400; &::before { content: "✓"; } }
-.callout-question .callout-title,
-.callout-faq     .callout-title,
-.callout-help    .callout-title { @apply text-purple-700 dark:text-purple-400; &::before { content: "?"; } }
-.callout-quote   .callout-title,
-.callout-cite    .callout-title { @apply text-neutral-600 dark:text-neutral-400; &::before { content: '"'; } }
-.callout-todo    .callout-title { @apply text-blue-700 dark:text-blue-400;   &::before { content: "○"; } }
-.callout-abstract .callout-title,
-.callout-summary .callout-title,
-.callout-tldr    .callout-title { @apply text-cyan-700 dark:text-cyan-400;   &::before { content: "≡"; } }
-.callout-example .callout-title { @apply text-orange-700 dark:text-orange-400; &::before { content: "⊞"; } }
+
+/* ── Callout title ── */
+.callout-title {
+  @apply flex items-center gap-2 text-sm font-semibold capitalize;
+  padding: 0.625rem 1rem 0.375rem 1rem;
+  color: var(--callout-color);
+
+  &::before {
+    content: "";
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    background-color: var(--callout-color);
+    mask-image: var(--callout-icon);
+    mask-size: 18px 18px;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    -webkit-mask-image: var(--callout-icon);
+    -webkit-mask-size: 18px 18px;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+  }
+}
+
+/* ── Callout type colors & icons ── */
+.callout[data-callout="abstract"],
+.callout[data-callout="summary"],
+.callout[data-callout="tldr"] {
+  --callout-color: #00b0ff;
+  --callout-border: #00b0ff44;
+  --callout-bg: #00b0ff10;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>');
+}
+
+.callout[data-callout="info"] {
+  --callout-color: #00b8d4;
+  --callout-border: #00b8d444;
+  --callout-bg: #00b8d410;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>');
+}
+
+.callout[data-callout="todo"] {
+  --callout-color: #00b8d4;
+  --callout-border: #00b8d444;
+  --callout-bg: #00b8d410;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>');
+}
+
+.callout[data-callout="tip"],
+.callout[data-callout="hint"] {
+  --callout-color: #00bfa5;
+  --callout-border: #00bfa544;
+  --callout-bg: #00bfa510;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>');
+}
+
+.callout[data-callout="success"],
+.callout[data-callout="check"],
+.callout[data-callout="done"] {
+  --callout-color: #09ad7a;
+  --callout-border: #09ad7144;
+  --callout-bg: #09ad7110;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>');
+}
+
+.callout[data-callout="question"],
+.callout[data-callout="help"],
+.callout[data-callout="faq"] {
+  --callout-color: #dba642;
+  --callout-border: #dba64244;
+  --callout-bg: #dba64210;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>');
+}
+
+.callout[data-callout="warning"],
+.callout[data-callout="caution"],
+.callout[data-callout="attention"] {
+  --callout-color: #db8942;
+  --callout-border: #db894244;
+  --callout-bg: #db894210;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>');
+}
+
+.callout[data-callout="important"] {
+  --callout-color: #00b8d4;
+  --callout-border: #00b8d444;
+  --callout-bg: #00b8d410;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>');
+}
+
+.callout[data-callout="failure"],
+.callout[data-callout="fail"],
+.callout[data-callout="missing"] {
+  --callout-color: #db4242;
+  --callout-border: #db424244;
+  --callout-bg: #db424210;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>');
+}
+
+.callout[data-callout="danger"],
+.callout[data-callout="error"] {
+  --callout-color: #db4242;
+  --callout-border: #db424244;
+  --callout-bg: #db424210;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>');
+}
+
+.callout[data-callout="bug"] {
+  --callout-color: #db4242;
+  --callout-border: #db424244;
+  --callout-bg: #db424210;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="14" x="8" y="6" rx="4"/><path d="m19 7-3 2"/><path d="m5 7 3 2"/><path d="m19 19-3-2"/><path d="m5 19 3-2"/><path d="M20 13h-4"/><path d="M4 13h4"/><path d="m10 4 1 2"/><path d="m14 4-1 2"/></svg>');
+}
+
+.callout[data-callout="example"] {
+  --callout-color: #7a43b5;
+  --callout-border: #7a43b544;
+  --callout-bg: #7a43b510;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>');
+}
+
+.callout[data-callout="quote"],
+.callout[data-callout="cite"] {
+  --callout-color: var(--muted-foreground);
+  --callout-border: hsl(var(--border));
+  --callout-bg: transparent;
+  --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>');
+}
 
 /* Wikilinks */
 .wikilink {
   @apply text-foreground underline underline-offset-2 decoration-foreground/30 hover:decoration-foreground/70 transition-[text-decoration-color];
+}
+.wikilink.broken {
+  opacity: 0.5;
+  text-decoration-style: dashed;
 }
 
 /* Inline tags */
@@ -252,12 +362,14 @@ a.tag {
   @apply rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground no-underline hover:bg-muted/80;
 }
 
-/* ── Prose styles ─────────────────────────────────────── */
+/* ── Prose styles (Quartz-inspired) ───────────────────── */
 .prose {
-  @apply text-foreground leading-7;
+  @apply text-foreground;
+  line-height: 1.7;
 
   h1, h2, h3, h4, h5, h6 {
     @apply tracking-tight text-foreground scroll-mt-20;
+    font-weight: 600;
     a.heading-anchor {
       display: inline-flex;
       align-items: center;
@@ -272,15 +384,33 @@ a.tag {
     &:hover a.heading-anchor { opacity: 1; }
     a.heading-anchor:hover { color: hsl(var(--foreground)); }
   }
-  h1 { @apply text-3xl font-bold mt-8 mb-4; }
-  h2 { @apply text-2xl font-semibold mt-8 mb-3; }
-  h3 { @apply text-lg font-semibold mt-6 mb-2; }
-  h4 { @apply text-base font-medium mt-4 mb-2; }
+
+  h1 {
+    font-size: 1.75rem;
+    margin-top: 2.25rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+  h2 {
+    font-size: 1.4rem;
+    margin-top: 1.9rem;
+    margin-bottom: 1rem;
+  }
+  h3 {
+    font-size: 1.12rem;
+    margin-top: 1.62rem;
+    margin-bottom: 1rem;
+  }
+  h4, h5, h6 {
+    font-size: 1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+  }
 
   p    { @apply my-4; }
   ul   { @apply my-4 ml-6 list-disc space-y-1; }
   ol   { @apply my-4 ml-6 list-decimal space-y-1; }
-  li   { @apply leading-7; }
+  li   { line-height: 1.7; }
 
   a {
     @apply text-foreground underline underline-offset-2 decoration-foreground/30
@@ -288,28 +418,67 @@ a.tag {
   }
 
   blockquote {
-    @apply my-4 border-l-4 border-muted-foreground/30 pl-4 italic text-muted-foreground;
+    @apply my-4 border-l-[3px] pl-4 italic;
+    border-color: hsl(var(--muted-foreground) / 0.4);
+    color: hsl(var(--muted-foreground));
   }
 
   code {
     @apply rounded bg-muted px-1.5 py-0.5 text-sm font-mono
            before:content-none after:content-none;
+    color: var(--foreground);
   }
 
   pre {
-    @apply my-4 overflow-x-auto rounded-lg bg-muted p-4;
+    @apply my-4 overflow-x-auto rounded-lg p-4;
+    border: 1px solid hsl(var(--border));
+    background: var(--muted);
     code { @apply bg-transparent p-0 text-sm; }
   }
 
   table {
     @apply my-4 w-full border-collapse text-sm;
-    th { @apply border px-3 py-2 text-left font-semibold bg-muted; }
-    td { @apply border px-3 py-2; }
-    tr:nth-child(even) td { @apply bg-muted/40; }
+    th {
+      text-align: left;
+      padding: 0.4rem 0.7rem;
+      border-bottom: 2px solid hsl(var(--muted-foreground) / 0.3);
+      font-weight: 600;
+    }
+    td {
+      padding: 0.2rem 0.7rem;
+    }
+    tr {
+      border-bottom: 1px solid hsl(var(--border));
+      &:last-child { border-bottom: none; }
+    }
   }
 
-  hr  { @apply my-8 border-border; }
-  img { @apply my-4 rounded-lg max-w-full; }
+  hr {
+    @apply my-8;
+    height: 1px;
+    border: none;
+    background-color: hsl(var(--border));
+  }
+
+  img {
+    @apply my-4 rounded-lg max-w-full;
+  }
+
+  p > img + em {
+    display: block;
+    transform: translateY(-0.75rem);
+    color: hsl(var(--muted-foreground));
+    font-size: 0.875rem;
+    text-align: center;
+  }
 
   input[type="checkbox"] { @apply mr-2 accent-foreground; }
+
+  .footnotes {
+    margin-top: 2rem;
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 1rem;
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+  }
 }
