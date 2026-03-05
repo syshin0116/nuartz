@@ -13,7 +13,6 @@ A typical nuartz page includes:
 - **Left sidebar** -- explorer, breadcrumbs
 - **Content area** -- the main page body with rendered Markdown
 - **Right sidebar** -- table of contents, graph view, backlinks
-- **Footer** -- site-wide footer content
 
 ## Responsive behavior
 

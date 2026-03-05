@@ -8,23 +8,18 @@ nuartz automatically generates a table of contents (TOC) from heading levels in 
 
 ## How It Works
 
-During rendering, `rehype-toc` (or the equivalent rehype pass) extracts all headings with their depth and anchor IDs. The result is returned in `result.toc` from `renderMarkdown()`:
+During rendering, a custom `rehypeExtractToc` plugin (defined inline in `packages/nuartz/src/markdown.ts`) extracts all headings with their depth and anchor IDs. The result is returned in `result.toc` from `renderMarkdown()`:
 
 ```ts
 const result = await renderMarkdown(raw)
 // result.toc → [{ depth: 1, text: "Introduction", slug: "introduction" }, ...]
 ```
 
-The `apps/web` template renders this data in the right sidebar via `components/layout/right-sidebar.tsx`.
+The `apps/web` template renders this data in the right sidebar via `components/toc.tsx`.
 
 ## Configuration
 
-The following options can be adjusted in `packages/nuartz/src/markdown.ts`:
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `maxDepth` | `3` | Maximum heading depth (h1–h6) included |
-| `minEntries` | `1` | Minimum headings required to show the TOC |
+`rehypeExtractToc` collects all h1–h6 headings by default. To filter by depth, adjust the `buildTocTree` function or filter the `toc` array before rendering in `components/toc.tsx`.
 
 ## Frontmatter Override
 
@@ -44,4 +39,4 @@ toc: false
 ## Source
 
 - [`packages/nuartz/src/markdown.ts`](https://github.com/your-user/nuartz/blob/main/packages/nuartz/src/markdown.ts)
-- [rehype-toc](https://github.com/JS-DevTools/rehype-toc)
+- `rehypeExtractToc` — custom plugin in `packages/nuartz/src/markdown.ts`

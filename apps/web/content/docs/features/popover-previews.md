@@ -3,18 +3,33 @@ title: Popover Previews
 description: Wikipedia-style page previews when hovering over internal links.
 ---
 
-nuartz supports popover previews -- when you hover over an internal link, a popup appears showing a preview of the linked page's content.
+Nuartz shows a small popup when you hover over an internal wikilink, letting you peek at the linked page without navigating away.
 
 ## How it works
 
-Hovering over any internal link triggers a fetch for the target page. The preview displays the page title, metadata, and content excerpt in a scrollable popup. Links to specific headers will scroll the preview to that section.
+When you hover over a `[[wikilink]]` in the content area, `PopoverPreview` (a client component) waits 350ms then fetches `/api/preview?slug=<target-slug>`. The API returns the page title and a short excerpt, which are displayed in a floating card near your cursor.
 
-Images referenced via wikilinks can also be previewed as popups.
+The popup disappears when you move your mouse away.
+
+## What's shown
+
+The preview card displays:
+- **Title** — from frontmatter `title`
+- **Excerpt** — first ~200 characters of the page body
+
+> [!note] Scope
+> Previews only work for **internal wikilinks** (`.wikilink` anchors in `article.prose`). External links are not previewed.
+
+## Implementation
+
+| File | Role |
+|------|------|
+| `apps/web/components/popover-preview.tsx` | Client component — attaches mouseover listeners |
+| `apps/web/app/api/preview/route.ts` | Returns `{ title, excerpt }` for a given slug |
 
 ## Limitations
 
-Previews are only generated for pages within your vault. External links are not fetched due to browser CORS restrictions.
-
-## Customization
-
-Popover previews can be enabled or disabled in your site configuration. When building custom components, add the `popover-hint` class to any element you want included in the preview content.
+- No header-scroll: the preview always shows the top of the page, not a specific section anchor.
+- No image previews for `![[image]]` embeds.
+- Previews are not shown on mobile (hover is not available).
+- The preview is plain text — no rendered HTML or images.

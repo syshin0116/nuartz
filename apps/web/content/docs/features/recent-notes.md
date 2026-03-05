@@ -3,29 +3,35 @@ title: Recent Notes
 description: Display a list of recently created or updated notes.
 ---
 
-nuartz can display a list of recently modified notes, making it easy for visitors to find fresh content.
+Nuartz's home page (`/`) shows a list of all notes sorted by `date` in frontmatter (most recent first).
 
 ## How it works
 
-Recent notes are sorted by the `date` field in each page's frontmatter. Pages without a date are excluded from the listing.
+The home page at `apps/web/app/page.tsx` calls `getAllMarkdownFiles()`, sorts by `frontmatter.date`, and renders a linked list of notes with their title, date, description, and tags.
 
-## Usage
+There is no separate configurable `RecentNotes` component — the home page itself serves as the recent notes listing.
 
-Add a recent notes section to any page by including it in your layout. You can control:
-
-- **Limit** -- how many notes to show (default: 5)
-- **Filtering** -- exclude certain tags or folders
-- **Display** -- show or hide tags and descriptions
-
-## Example frontmatter
+## Adding a date to your notes
 
 ```yaml
 ---
 title: My Note
 date: 2026-01-15
+description: A short summary shown in the listing.
 tags:
   - tutorial
 ---
 ```
 
-Notes with more recent dates appear first in the listing.
+Notes with a `date` field are sorted chronologically. Notes without a date appear at the bottom.
+
+## Customizing the listing
+
+To change how the home page listing looks, edit `apps/web/app/page.tsx` directly. For example, to show only the 10 most recent notes:
+
+```ts
+const notes = files
+  .filter((f) => f.slug !== "index")
+  .sort(/* by date */)
+  .slice(0, 10)  // limit to 10
+```

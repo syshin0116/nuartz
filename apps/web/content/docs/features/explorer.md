@@ -10,7 +10,7 @@ nuartz includes a sidebar explorer that lets you browse all pages and folders in
 - Nested folder tree with expand/collapse
 - Alphabetical sorting with folders first
 - Folder display names resolved from `index.md` frontmatter titles
-- Persists open/closed state across navigation
+- Open/closed state is per-session (resets on page reload — no localStorage persistence)
 
 ## Customization
 

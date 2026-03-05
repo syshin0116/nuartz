@@ -17,6 +17,6 @@ Under the hood, this is powered by the Next.js App Router's built-in client-side
 - Preserves scroll position and UI state where possible
 - Faster perceived navigation speed
 
-## Customization
+## Limitations
 
-SPA routing can be disabled in your site configuration if you prefer traditional full-page navigation.
+SPA routing is always on — it is a built-in behaviour of the Next.js App Router and cannot be disabled through Nuartz configuration. If you need full-page reloads for a specific link, use a standard `<a>` tag instead of Next.js `<Link>`.

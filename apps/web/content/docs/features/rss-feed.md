@@ -3,22 +3,39 @@ title: RSS Feed
 description: Automatically generated RSS feed for your content.
 ---
 
-nuartz generates an RSS feed so readers can subscribe to your site using any RSS reader.
+Nuartz generates an RSS feed so readers can subscribe to your site using any RSS reader.
 
 ## How it works
 
-An `index.xml` file is emitted at build time containing your published content. The feed includes the title, description, date, and a link to each page.
+The feed is served as a dynamic route at `/rss.xml`. It includes the title, description, date, and link for the 20 most recent published pages.
 
 After deploying, your RSS feed is available at:
 
 ```
-https://your-site.com/index.xml
+https://your-site.com/rss.xml
 ```
+
+The implementation lives in `apps/web/app/rss.xml/route.ts`.
 
 ## Requirements
 
-Make sure your site configuration includes a `baseUrl` so that RSS links resolve correctly. Pages should include `date` in their frontmatter to appear in the feed with proper ordering.
+Set `NEXT_PUBLIC_SITE_URL` in your environment so that item URLs resolve correctly:
 
-## Customization
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-site.vercel.app
+```
 
-You can control which pages appear in the feed by adjusting frontmatter fields like `draft` or by filtering on tags and folders in your build configuration.
+Pages should include `date` in their frontmatter to appear in the feed with proper ordering. Pages with `draft: true` are excluded automatically.
+
+## Linking the feed
+
+Add the feed URL to your site header or `<head>` so RSS readers can auto-discover it. In `apps/web/app/layout.tsx`, add:
+
+```tsx
+export const metadata: Metadata = {
+  // ...
+  alternates: {
+    types: { "application/rss+xml": "/rss.xml" },
+  },
+}
+```

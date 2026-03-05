@@ -36,19 +36,9 @@ A draft page is:
 
 ## Excluding entire folders
 
-To exclude a whole directory, use the `excludePatterns` option in `nuartz.config.ts`:
+To exclude a whole folder, prefix all files in it with `_` — any file starting with `_` is automatically skipped by `getAllMarkdownFiles()`.
 
-```ts
-// nuartz.config.ts
-export default defineConfig({
-  excludePatterns: ["private/**", "drafts/**"],
-})
-```
-
-Any [fast-glob](https://github.com/mrmlnc/fast-glob#pattern-syntax) pattern is valid here.
-
-> [!note]
-> `excludePatterns` is processed before rendering, so matching files are never parsed. This is faster than `draft: true` for large folders you always want excluded.
+Alternatively, add `draft: true` to each file's frontmatter, or organise them in a folder that you simply don't add any content index for.
 
 ## Related
 
