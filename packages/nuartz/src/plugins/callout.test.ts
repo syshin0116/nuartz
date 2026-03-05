@@ -20,7 +20,7 @@ describe("remarkCallout", () => {
     const html = await process("> [!note] My Title\n> Some content here")
     expect(html).toContain('class="callout callout-note"')
     expect(html).toContain('data-callout="note"')
-    expect(html).toContain('data-callout-title="My Title"')
+    expect(html).toContain('<div class="callout-title">My Title</div>')
     expect(html).toContain("Some content here")
   })
 
@@ -47,12 +47,12 @@ describe("remarkCallout", () => {
 
   it("uses capitalized type as default title when no title given", async () => {
     const html = await process("> [!warning]\n> Content")
-    expect(html).toContain('data-callout-title="Warning"')
+    expect(html).toContain('<div class="callout-title">Warning</div>')
   })
 
   it("uses custom title text", async () => {
     const html = await process("> [!note] Custom Title Here\n> Content")
-    expect(html).toContain('data-callout-title="Custom Title Here"')
+    expect(html).toContain('<div class="callout-title">Custom Title Here</div>')
   })
 
   it("does not transform a regular blockquote", async () => {

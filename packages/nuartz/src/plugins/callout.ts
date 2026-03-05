@@ -44,6 +44,17 @@ export const remarkCallout: Plugin<[], Root> = () => {
 
       const title = titleText?.trim() ?? type.charAt(0).toUpperCase() + type.slice(1)
 
+      const titleParagraph: Paragraph = {
+        type: "paragraph",
+        data: {
+          hName: "div",
+          hProperties: { className: "callout-title" },
+        },
+        children: [{ type: "text", value: title }],
+      }
+
+      node.children.unshift(titleParagraph)
+
       node.data = {
         ...node.data,
         hName: "div",
@@ -51,7 +62,6 @@ export const remarkCallout: Plugin<[], Root> = () => {
           className: `callout callout-${type}`,
           "data-callout": type,
           "data-callout-fold": fold || null,
-          "data-callout-title": title,
         },
       }
     })

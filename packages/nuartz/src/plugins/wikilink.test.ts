@@ -54,8 +54,8 @@ describe("remarkWikilink", () => {
   it("transforms ![[image.png]] into an embed image", async () => {
     const html = await process("Here: ![[image.png]]")
     expect(html).toContain("<img")
-    expect(html).toContain('src="/imagepng"')
-    expect(html).toContain('class="embed"')
+    expect(html).toContain('src="/api/content/image.png"')
+    expect(html).toContain('class="embed-image"')
   })
 
   it("converts spaces to hyphens in href", async () => {

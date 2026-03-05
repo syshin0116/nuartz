@@ -14,9 +14,14 @@ import { visit } from "unist-util-visit"
 import type { Root as HastRoot, Element } from "hast"
 import type { Plugin } from "unified"
 
+import remarkBreaks from "remark-breaks"
+import rehypePrettyCode from "rehype-pretty-code"
 import { remarkCallout } from "./plugins/callout.js"
 import { remarkTag } from "./plugins/tag.js"
 import { remarkWikilink } from "./plugins/wikilink.js"
+import { remarkHighlight } from "./plugins/highlight.js"
+import { remarkObsidianComment } from "./plugins/comment.js"
+import { remarkArrows } from "./plugins/arrows.js"
 import type { Frontmatter, RenderResult, RenderOptions, TocEntry } from "./types.js"
 
 // Rehype plugin that extracts headings into vfile.data.toc
@@ -78,13 +83,21 @@ export async function renderMarkdown(
   const file = await unified()
     .use(remarkParse)
     .use(remarkFrontmatter, ["yaml", "toml"])
+    .use(remarkObsidianComment)
     .use(remarkGfm)
     .use(remarkMath)
+    .use(remarkBreaks)
     .use(remarkWikilink, { baseUrl, resolveLink })
     .use(remarkCallout)
     .use(remarkTag)
+    .use(remarkHighlight)
+    .use(remarkArrows)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
+    .use(rehypePrettyCode, {
+      theme: { light: "github-light", dark: "github-dark" },
+      keepBackground: false,
+    })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, { behavior: "wrap" })
     .use(rehypeKatex)

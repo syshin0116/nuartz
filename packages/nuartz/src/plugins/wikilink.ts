@@ -59,12 +59,15 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
         const displayText = alias ?? (heading ? `${target} > ${heading}` : target)
 
         if (bang === "!") {
-          // Embed: treat as image for now
+          const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".mp4"])
+          const extMatch = target.match(/\.(\w+)$/)
+          const isImage = extMatch ? IMAGE_EXTS.has("." + extMatch[1].toLowerCase()) : false
+
           nodes.push({
             type: "image",
-            url: href,
+            url: isImage ? `/api/content/${target}` : href,
             alt: displayText,
-            data: { hProperties: { className: "embed", "data-embed": target } },
+            data: { hProperties: { className: isImage ? "embed-image" : "embed-note", "data-embed": target } },
           })
         } else {
           outgoingLinks.push(target)
