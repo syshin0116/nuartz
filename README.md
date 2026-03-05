@@ -1,10 +1,10 @@
-# nuartz
+# Nuartz
 
 > Obsidian-compatible digital garden built on Next.js + shadcn/ui
 
-nuartz turns your Obsidian vault into a modern web app — wikilinks, callouts, backlinks, and all — without compromising on UI quality.
+Nuartz turns your Obsidian vault into a modern web app — wikilinks, callouts, backlinks, graph view, and all — without compromising on UI quality.
 
-[Quartz](https://quartz.jzhao.xyz) is an excellent Obsidian-to-web tool with deep OFM support. nuartz is built on the same parsing foundation — wikilinks, callouts, backlinks — but packages it as a composable remark/rehype plugin set that plugs into any Next.js app.
+[Quartz](https://quartz.jzhao.xyz) is an excellent Obsidian-to-web tool with deep OFM support. Nuartz is built on the same parsing foundation — wikilinks, callouts, backlinks — but packages it as a composable remark/rehype plugin set that plugs into any Next.js app.
 
 ## Features
 
@@ -22,7 +22,12 @@ nuartz turns your Obsidian vault into a modern web app — wikilinks, callouts, 
 | Dynamic OG images | ✅ |
 | Math (KaTeX) | ✅ |
 | GFM (tables, strikethrough, task lists) | ✅ |
-| Graph view | 🔜 |
+| Graph view (D3 force-directed) | ✅ |
+| Popover previews on hover | ✅ |
+| Reader mode | ✅ |
+| Comments (Giscus) | ✅ |
+| Dead link detection | ✅ |
+| Draft / private page filtering | ✅ |
 | AI chat (LangGraph) | 🔜 |
 
 ## Stack
@@ -33,6 +38,7 @@ nuartz turns your Obsidian vault into a modern web app — wikilinks, callouts, 
 | UI | shadcn/ui + Radix UI |
 | Styling | Tailwind CSS v4 |
 | Markdown | unified / remark / rehype |
+| Graph | D3 force-directed |
 | Runtime | Bun |
 
 ## Getting Started
@@ -44,11 +50,11 @@ bun install
 bun dev
 ```
 
-Put your Obsidian markdown files in `apps/www/content/` and start the dev server.
+Put your Obsidian markdown files in `apps/web/content/` and start the dev server.
 
 ## Configuration
 
-Edit `apps/www/nuartz.config.ts`:
+Edit `apps/web/nuartz.config.ts`:
 
 ```typescript
 import { defineConfig } from "nuartz"
