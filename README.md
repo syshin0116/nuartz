@@ -109,6 +109,47 @@ import {
 > Use - to start collapsed.
 ```
 
+## Deployment
+
+### Vercel (recommended)
+
+Nuartz is a monorepo — the Next.js app lives in `apps/web`. Override these settings when importing to Vercel:
+
+| Setting | Value |
+|---------|-------|
+| Root Directory | `apps/web` |
+| Install Command | `cd ../.. && bun install --frozen-lockfile` |
+| Build Command | `cd ../.. && bun run build:pkg && cd apps/web && next build` |
+
+Then add environment variables in Vercel's dashboard as needed:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-site.vercel.app
+
+# Optional: Giscus comments
+NEXT_PUBLIC_GISCUS_REPO=your-user/your-repo
+NEXT_PUBLIC_GISCUS_REPO_ID=R_xxx
+NEXT_PUBLIC_GISCUS_CATEGORY=Announcements
+NEXT_PUBLIC_GISCUS_CATEGORY_ID=DIC_xxx
+```
+
+> **Note:** GitHub Pages is not supported — Nuartz uses server-side API routes and Edge runtime features that require Node.js.
+
+See the [full hosting guide](apps/web/content/docs/hosting.md) for Netlify and Docker options.
+
+## Comments
+
+Nuartz ships with [Giscus](https://giscus.app) (GitHub Discussions-based comments). It requires no backend and takes ~5 minutes to set up. See [features/comments](apps/web/content/docs/features/comments.md).
+
+**Alternatives by use case:**
+
+| System | Best for | Backend needed |
+|--------|----------|---------------|
+| [Giscus](https://giscus.app) | Dev/tech audience (GitHub login) | No |
+| [Waline](https://waline.js.org) | General audience (anonymous ok) | Yes (Vercel + DB) |
+| [Remark42](https://remark42.com) | Privacy-first, multiple social logins | Yes (Docker) |
+| [Cusdis](https://cusdis.com) | Minimal, anonymous, no-login | Yes (self-host) |
+
 ## License
 
 MIT

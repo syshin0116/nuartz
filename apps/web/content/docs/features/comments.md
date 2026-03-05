@@ -1,36 +1,45 @@
 ---
 title: Comments
-description: Allow readers to leave comments on your pages
+description: Allow readers to leave comments on your pages via Giscus
 ---
 
-nuartz can integrate with comment providers to let readers leave comments on your site.
+Nuartz ships with [Giscus](https://giscus.app/) — a comment system powered by GitHub Discussions. It requires no backend, no database, and is completely free.
 
-## Status
+## Setup
 
-Comments are **not yet implemented** in nuartz. The following describes the planned approach.
+### 1. Enable GitHub Discussions
 
-## Providers
+Your repository must be **public** and have Discussions enabled:
+- Go to your repo → **Settings → Features → Discussions** → check it on.
 
-### Giscus
+### 2. Install the Giscus app
 
-[Giscus](https://giscus.app/) uses GitHub Discussions to power a comment system. To use it, your GitHub repository must meet these requirements:
+Install the [Giscus GitHub App](https://github.com/apps/giscus) on your repository.
 
-1. The repository is [public](https://docs.github.com/en/github/administering-a-repository/managing-repository-settings/setting-repository-visibility#making-a-repository-public)
-2. The [Giscus app](https://github.com/apps/giscus) is installed
-3. The Discussions feature is [enabled](https://docs.github.com/en/github/administering-a-repository/managing-repository-settings/enabling-or-disabling-github-discussions-for-a-repository)
+### 3. Get your IDs
 
-Use the [Giscus configuration site](https://giscus.app/#repository) to get your `repoId` and `categoryId`. Select **Announcements** for the discussion category.
+Visit [giscus.app](https://giscus.app/#repository), enter your repo name, and it will generate your config values. Select **Announcements** as the discussion category.
 
-Once nuartz adds comment support, you will be able to configure Giscus in your site configuration with values like:
+### 4. Add environment variables
 
-- `repo` - your GitHub repository (e.g. `user/repo`)
-- `repoId` - from the Giscus configuration
-- `category` - typically `Announcements`
-- `categoryId` - from the Giscus configuration
+In Vercel (or your `.env.local` for local dev):
 
-### Conditionally displaying comments
+```bash
+NEXT_PUBLIC_GISCUS_REPO=your-user/your-repo
+NEXT_PUBLIC_GISCUS_REPO_ID=R_xxxxxxxxxx
+NEXT_PUBLIC_GISCUS_CATEGORY=Announcements
+NEXT_PUBLIC_GISCUS_CATEGORY_ID=DIC_xxxxxxxxxx
+```
 
-Comments can be disabled on individual pages using frontmatter:
+If any variable is missing, the comment section is silently hidden.
+
+### 5. Done
+
+The `<Giscus>` component in `apps/web/components/giscus.tsx` reads these env vars and renders automatically on every content page.
+
+## Disabling per page
+
+Add `comments: false` to a page's frontmatter:
 
 ```yaml
 ---
@@ -38,3 +47,49 @@ title: No comments here
 comments: false
 ---
 ```
+
+## Alternatives
+
+Giscus requires a GitHub account to comment. If your audience is non-technical or you want anonymous comments, consider these alternatives:
+
+### Waline
+
+[Waline](https://waline.js.org/) supports anonymous comments, emoji reactions, and has an admin dashboard.
+
+- Requires a backend: deploy to Vercel + a database (Vercel KV, PlanetScale, or MongoDB Atlas — all have free tiers)
+- Setup: [waline.js.org/en/guide/get-started](https://waline.js.org/en/guide/get-started/)
+- Replace `components/giscus.tsx` with the `@waline/client` script
+
+### Remark42
+
+[Remark42](https://remark42.com/) is a self-hosted, privacy-first system with support for Google, GitHub, Twitter, and anonymous logins.
+
+- Requires Docker to self-host (no external database needed — stores data in a single file)
+- Best if you control your own server
+- Docker image: `umputun/remark42`
+
+### Cusdis
+
+[Cusdis](https://cusdis.com/) is ultra-lightweight (~5kb), anonymous-first, and requires no login from commenters.
+
+- Requires self-hosting or their cloud plan
+- Minimal UI — approve comments in a dashboard before they appear
+
+### Utterances
+
+[Utterances](https://utteranc.es/) is the predecessor to Giscus. It uses GitHub **Issues** instead of Discussions.
+
+- Simpler than Giscus but lacks reactions and nested replies
+- If you're already using Giscus, there's no reason to switch
+
+## Comparison
+
+| System | Login required | Backend | Nested replies | Reactions | Effort |
+|--------|---------------|---------|---------------|-----------|--------|
+| Giscus | GitHub | No | ✅ | ✅ | Low |
+| Waline | Optional | Yes (Vercel) | ✅ | ✅ | Medium |
+| Remark42 | Optional | Yes (Docker) | ✅ | ✅ | Medium |
+| Cusdis | No | Yes (self-host) | ❌ | ❌ | Medium |
+| Utterances | GitHub | No | ❌ | ❌ | Low |
+
+**Recommendation:** For a developer-focused garden, stick with Giscus. For a general-audience blog, Waline is the best balance of features and setup effort.
