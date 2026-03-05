@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 
 interface GraphNode {
-  id: string; title: string; tags: string[]
+  id: string; title: string; tags: string[]; type?: "note" | "tag"
   x?: number; y?: number; vx?: number; vy?: number
   fx?: number | null; fy?: number | null
 }
@@ -104,6 +104,8 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
               if (n.id === d.id) return n.id === currentSlug ? 9 : 7
               return n.id === currentSlug ? 7 : 4
             })
+          node.selectAll<SVGRectElement, GraphNode>("rect")
+            .attr("opacity", n => connected.has(n.id) ? 1 : 0.15)
 
           link
             .attr("stroke-opacity", l => {
@@ -125,6 +127,8 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           node.selectAll<SVGCircleElement, GraphNode>("circle")
             .attr("opacity", 1)
             .attr("r", n => n.id === currentSlug ? 7 : 4)
+          node.selectAll<SVGRectElement, GraphNode>("rect")
+            .attr("opacity", 1)
           link.attr("stroke-opacity", 0.25).attr("stroke-width", 1)
           label.attr("opacity", 0)
         })
@@ -133,11 +137,26 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y })
           .on("end", (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null }))
 
-      node.append("circle")
-        .attr("r", d => d.id === currentSlug ? 7 : 4)
-        .attr("fill", d => d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))")
-        .attr("stroke", "hsl(var(--background))")
-        .attr("stroke-width", 1.5)
+      // Notes: circle; Tags: rotated square (diamond)
+      node.each(function(d) {
+        const el = d3.select(this)
+        if (d.type === "tag") {
+          const s = d.id === currentSlug ? 9 : 6
+          el.append("rect")
+            .attr("width", s).attr("height", s)
+            .attr("x", -s / 2).attr("y", -s / 2)
+            .attr("transform", "rotate(45)")
+            .attr("fill", "hsl(var(--chart-2))")
+            .attr("stroke", "hsl(var(--background))")
+            .attr("stroke-width", 1.5)
+        } else {
+          el.append("circle")
+            .attr("r", d.id === currentSlug ? 7 : 4)
+            .attr("fill", d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))")
+            .attr("stroke", "hsl(var(--background))")
+            .attr("stroke-width", 1.5)
+        }
+      })
 
       // Hover labels (hidden by default, shown on mouseenter)
       const label = g.append("g")
@@ -209,9 +228,17 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           </div>
         )}
       </div>
-      <p className="mt-1 text-center text-[10px] text-muted-foreground/60">
-        scroll to zoom · drag to pan · click to navigate
-      </p>
+      <div className="mt-1 flex items-center justify-center gap-3 text-[10px] text-muted-foreground/60">
+        <span className="flex items-center gap-1">
+          <svg width="8" height="8"><circle cx="4" cy="4" r="3" fill="currentColor" /></svg>
+          note
+        </span>
+        <span className="flex items-center gap-1">
+          <svg width="8" height="8"><rect x="1" y="1" width="6" height="6" transform="rotate(45 4 4)" fill="hsl(var(--chart-2))" /></svg>
+          tag
+        </span>
+        <span>scroll to zoom · drag to pan</span>
+      </div>
     </div>
   )
 }

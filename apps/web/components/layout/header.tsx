@@ -22,7 +22,7 @@ export function Header({ title = "nuartz", tree }: HeaderProps) {
       <div className="flex h-14 items-center gap-2 px-4">
         <MobileNav tree={tree} />
 
-        <Link href="/" className="flex items-center gap-2 font-semibold">
+        <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight">
           <span>{title}</span>
         </Link>
 

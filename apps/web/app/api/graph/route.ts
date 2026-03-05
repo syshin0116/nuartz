@@ -10,6 +10,7 @@ export interface GraphNode {
   id: string
   title: string
   tags: string[]
+  type: "note" | "tag"
 }
 
 export interface GraphLink {
@@ -20,14 +21,16 @@ export interface GraphLink {
 export async function GET() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)
 
-  const nodes: GraphNode[] = files.map((f) => ({
+  const noteNodes: GraphNode[] = files.map((f) => ({
     id: f.slug,
     title: String(f.frontmatter.title ?? f.slug.split("/").pop() ?? f.slug),
     tags: (f.frontmatter.tags as string[] | undefined) ?? [],
+    type: "note",
   }))
 
   const links: GraphLink[] = []
 
+  // Note-to-note links (via wikilinks)
   await Promise.all(
     files.map(async (f) => {
       const result = await renderMarkdown(f.raw)
@@ -43,5 +46,24 @@ export async function GET() {
     })
   )
 
-  return NextResponse.json({ nodes, links })
+  // Tag nodes + note-to-tag links
+  const tagSet = new Set<string>()
+  for (const node of noteNodes) {
+    for (const tag of node.tags) tagSet.add(tag)
+  }
+
+  const tagNodes: GraphNode[] = [...tagSet].map((tag) => ({
+    id: `tag/${tag}`,
+    title: `#${tag}`,
+    tags: [],
+    type: "tag",
+  }))
+
+  for (const note of noteNodes) {
+    for (const tag of note.tags) {
+      links.push({ source: note.id, target: `tag/${tag}` })
+    }
+  }
+
+  return NextResponse.json({ nodes: [...noteNodes, ...tagNodes], links })
 }

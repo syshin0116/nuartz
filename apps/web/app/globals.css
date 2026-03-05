@@ -223,6 +223,7 @@ a.tag {
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight text-foreground scroll-mt-20;
+    a { @apply text-inherit no-underline hover:text-inherit; }
   }
   h1 { @apply text-3xl mt-8 mb-4; }
   h2 { @apply text-2xl mt-8 mb-3 border-b pb-2; }
