@@ -17,6 +17,8 @@ git remote set-url origin https://github.com/YOUR-USERNAME/my-garden.git
 
 ## Keeping up with upstream
 
+### If you cloned / forked the repo
+
 To pull updates from the main nuartz repository:
 
 ```bash
@@ -29,6 +31,16 @@ git merge upstream/main
 ```
 
 Resolve any merge conflicts, especially in `apps/web/content/` where your content lives.
+
+### If you installed nuartz as a package
+
+If you're using nuartz as an npm dependency inside another app:
+
+```bash
+bun update nuartz
+```
+
+Check the [releases](https://github.com/syshin0116/nuartz/releases) page for changelogs before updating.
 
 ## Pushing your content
 

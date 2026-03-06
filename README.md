@@ -75,6 +75,30 @@ export default defineConfig({
 })
 ```
 
+## Using as a Package
+
+If you want to embed a blog/garden into an existing Next.js app (e.g. a portfolio), install nuartz as a dependency instead of cloning the full repo:
+
+```bash
+bun add nuartz
+```
+
+Then use the API directly in your app:
+
+```typescript
+import { renderMarkdown, buildBacklinkIndex, buildSearchIndex } from "nuartz"
+```
+
+### Updating
+
+When a new version of nuartz is released:
+
+```bash
+bun update nuartz
+```
+
+Check the [releases](https://github.com/syshin0116/nuartz/releases) page for changelogs before updating.
+
 ## Package API
 
 ```typescript
