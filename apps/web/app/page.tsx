@@ -22,9 +22,9 @@ export default async function HomePage() {
     if (file) {
       const { html } = await renderMarkdown(file.raw)
       return (
-        <div className="mx-auto max-w-3xl px-6 py-10">
+        <div className="px-6 py-8 max-w-6xl mx-auto w-full">
           <article
-            className="prose prose-neutral dark:prose-invert max-w-none"
+            className="prose max-w-none"
             dangerouslySetInnerHTML={{ __html: html }}
           />
         </div>
@@ -48,7 +48,7 @@ async function RecentNotes() {
     })
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-10">
+    <div className="px-6 py-8 max-w-6xl mx-auto w-full">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Recent Notes</h1>
         <p className="mt-1 text-sm text-muted-foreground">{notes.length} notes</p>
