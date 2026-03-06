@@ -3,6 +3,8 @@ import { getAllMarkdownFiles, getMarkdownBySlug, renderMarkdown } from "nuartz"
 import path from "node:path"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { TableOfContents } from "@/components/toc"
+import { GraphView } from "@/components/graph-view"
 import type { Metadata } from "next"
 import config from "@/nuartz.config"
 
@@ -20,13 +22,18 @@ export default async function HomePage() {
   if (homePage === "index") {
     const file = await getMarkdownBySlug(CONTENT_DIR, "index")
     if (file) {
-      const { html } = await renderMarkdown(file.raw)
+      const { html, toc } = await renderMarkdown(file.raw)
       return (
-        <div className="px-6 py-8 max-w-6xl mx-auto w-full">
-          <article
-            className="prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: html }}
-          />
+        <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
+          <div className="min-w-0 flex-1">
+            <article
+              className="prose max-w-none"
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          </div>
+          <TableOfContents toc={toc}>
+            <GraphView currentSlug="index" />
+          </TableOfContents>
         </div>
       )
     }
