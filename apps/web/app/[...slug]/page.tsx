@@ -16,6 +16,7 @@ import { HeadingAnchors } from "@/components/heading-anchors"
 import { PopoverPreview } from "@/components/popover-preview"
 import { CopyCode } from "@/components/copy-code"
 import { GiscusComments } from "@/components/giscus"
+import config from "@/nuartz.config"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
@@ -126,12 +127,15 @@ export async function generateMetadata({
   const title = data.title ?? slug[slug.length - 1]
   const description = data.description ?? ""
   const ogParams = new URLSearchParams({ title, ...(description && { description }) })
+  const canonical = `${config.site.baseUrl}/${slug.join("/")}`
   return {
     title,
     description,
+    alternates: { canonical },
     openGraph: {
       title,
       description,
+      url: canonical,
       images: [`/og?${ogParams.toString()}`],
     },
     twitter: {
@@ -253,8 +257,24 @@ export default async function NotePage({
   const fileStat = await fs.stat(filePath)
   const modifiedDate = fileStat.mtime.toLocaleDateString("en-CA")
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: result.frontmatter.title,
+    description: result.frontmatter.description ?? "",
+    url: `${config.site.baseUrl}/${slug.join("/")}`,
+    ...(result.frontmatter.date && {
+      datePublished: new Date(result.frontmatter.date as string).toISOString(),
+    }),
+    dateModified: fileStat.mtime.toISOString(),
+  }
+
   return (
     <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Main content */}
       <div className="min-w-0 flex-1">
         {slug.length > 1 && (

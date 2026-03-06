@@ -8,7 +8,11 @@ import config from "@/nuartz.config"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
-export const metadata: Metadata = { title: "Nuartz" }
+export const metadata: Metadata = {
+  title: config.site.title,
+  description: config.site.description,
+  alternates: { canonical: config.site.baseUrl },
+}
 
 export default async function HomePage() {
   const homePage = config.homePage ?? "index"
