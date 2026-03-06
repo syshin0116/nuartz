@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { Search, Github } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { MobileNav } from "./mobile-nav"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -51,6 +51,11 @@ export function Header({ title = "Nuartz", tree }: HeaderProps) {
           <Search className="h-4 w-4" />
         </Button>
 
+        <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+          <a href="https://github.com/syshin0116/nuartz" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <Github className="h-4 w-4" />
+          </a>
+        </Button>
         <ReaderModeToggle />
         <ThemeToggle />
       </div>

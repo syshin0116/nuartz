@@ -4,7 +4,7 @@
 
 Nuartz turns your Obsidian vault into a modern web app — wikilinks, callouts, backlinks, graph view, and all — without compromising on UI quality.
 
-[Quartz](https://quartz.jzhao.xyz) is an excellent Obsidian-to-web tool with deep OFM support. Nuartz is built on the same parsing foundation — wikilinks, callouts, backlinks — but packages it as a composable remark/rehype plugin set that plugs into any Next.js app.
+Inspired by [Quartz](https://quartz.jzhao.xyz) — jackyzha0's excellent Obsidian-to-web tool. Quartz pioneered the OFM (Obsidian Flavored Markdown) parsing approach: wikilinks, callouts, backlinks, and graph view. Nuartz takes that foundation and rebuilds it as a composable remark/rehype plugin set that plugs into a modern Next.js + shadcn/ui stack.
 
 ## Features
 
