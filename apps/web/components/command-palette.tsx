@@ -107,14 +107,16 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
       const idx = indexRef.current
       if (!idx) return
 
-      const raw = idx.search(q, { limit: 8, enrich: false }) as Array<{ field: string; result: number[] }>
-      const seen = new Set<number>()
-      const ids: number[] = []
-      for (const r of raw) {
-        for (const id of r.result) {
-          if (!seen.has(id)) { seen.add(id); ids.push(id) }
-        }
-      }
+      // Split query into individual tokens and intersect results (AND logic)
+      const tokens = q.trim().split(/\s+/).filter(Boolean)
+      const tokenSets = tokens.map((token) => {
+        const raw = idx.search(token, { limit: 100, enrich: false }) as Array<{ field: string; result: number[] }>
+        const set = new Set<number>()
+        for (const r of raw) for (const id of r.result) set.add(id)
+        return set
+      })
+      const ids: number[] = tokenSets.length === 0 ? [] :
+        [...tokenSets[0]].filter((id) => tokenSets.every((s) => s.has(id))).slice(0, 8)
 
       const lower = q.toLowerCase()
       const notes: Result[] = ids.slice(0, 7).map((id) => {
