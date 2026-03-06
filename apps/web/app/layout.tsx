@@ -2,16 +2,11 @@ import type { Metadata } from "next"
 import "./globals.css"
 import "katex/dist/katex.min.css"
 import { Analytics } from "@vercel/analytics/next"
-import dynamic from "next/dynamic"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Header } from "@/components/layout/header"
 import { NavSidebar } from "@/components/layout/nav-sidebar"
+import { CommandPaletteDynamic } from "@/components/command-palette-dynamic"
 import { getAllMarkdownFiles, buildFileTree, buildSearchIndex } from "nuartz"
-
-const CommandPalette = dynamic(
-  () => import("@/components/command-palette").then((m) => m.CommandPalette),
-  { ssr: false }
-)
 import config from "@/nuartz.config"
 import path from "node:path"
 
@@ -56,7 +51,7 @@ export default async function RootLayout({
               </main>
             </div>
           </div>
-          <CommandPalette entries={searchEntries} />
+          <CommandPaletteDynamic entries={searchEntries} />
         </ThemeProvider>
         <Analytics />
       </body>
