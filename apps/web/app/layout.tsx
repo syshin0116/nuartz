@@ -15,6 +15,9 @@ const CONTENT_DIR = path.join(process.cwd(), "content")
 export const metadata: Metadata = {
   title: config.site.title,
   description: config.site.description,
+  verification: {
+    google: "j5FT4jTGt4vceZ-Tgn0gf5q1VHp1VNTtBcbYC1VUBFE",
+  },
 }
 
 export default async function RootLayout({
