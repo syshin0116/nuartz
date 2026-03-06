@@ -8,6 +8,7 @@ export interface NuartzConfig {
   site: {
     title: string
     description?: string
+    /** Production URL, e.g. "https://example.com". Defaults to "http://localhost:3000". */
     baseUrl?: string
     locale?: string
   }
@@ -50,9 +51,13 @@ const DEFAULT_FEATURES: Required<NuartzConfig["features"]> = {
   darkMode: true,
 }
 
-export function defineConfig(config: NuartzConfig): NuartzConfig {
+export function defineConfig(config: NuartzConfig): NuartzConfig & { site: { baseUrl: string } } {
   return {
     ...config,
+    site: {
+      baseUrl: "http://localhost:3000",
+      ...config.site,
+    },
     features: { ...DEFAULT_FEATURES, ...config.features },
   }
 }

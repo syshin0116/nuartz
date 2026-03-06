@@ -7,7 +7,7 @@ import config from "@/nuartz.config"
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const SITE_URL = config.site.baseUrl
+  const SITE_URL = config.site.baseUrl ?? "https://nuartz.vercel.app"
   const files = await getAllMarkdownFiles(CONTENT_DIR)
   const noteEntries = await Promise.all(
     files
