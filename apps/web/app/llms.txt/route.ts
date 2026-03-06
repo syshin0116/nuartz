@@ -13,9 +13,9 @@ export async function GET() {
   const lines: string[] = [
     `# ${config.site.title}`,
     "",
-    `> ${config.site.description}`,
+    `> ${config.site.description ?? ""}`,
     "",
-    config.site.baseUrl,
+    config.site.baseUrl ?? "",
     "",
     "## Notes",
     "",
