@@ -15,14 +15,18 @@ export function PopoverPreview() {
     }
 
     function handleEnter(e: MouseEvent) {
-      const a = (e.target as HTMLElement).closest("article.prose a.wikilink") as HTMLAnchorElement | null
+      const a = (e.target as HTMLElement).closest("article.prose a") as HTMLAnchorElement | null
       if (!a) return
-
-      hide()
 
       const href = a.getAttribute("href")
       if (!href) return
-      const slug = href.startsWith("/") ? href.slice(1) : href
+
+      const isExternal = href.startsWith("http://") || href.startsWith("https://")
+      const isWikilink = a.classList.contains("wikilink")
+
+      if (!isWikilink && !isExternal) return
+
+      hide()
 
       const x = e.clientX
       const y = e.clientY
@@ -30,21 +34,36 @@ export function PopoverPreview() {
       timer = setTimeout(async () => {
         controller = new AbortController()
         try {
-          const res = await fetch(`/api/preview?slug=${encodeURIComponent(slug)}`, {
-            signal: controller.signal,
-          })
+          const apiUrl = isExternal
+            ? `/api/preview?url=${encodeURIComponent(href)}`
+            : `/api/preview?slug=${encodeURIComponent(href.startsWith("/") ? href.slice(1) : href)}`
+
+          const res = await fetch(apiUrl, { signal: controller.signal })
           if (!res.ok) return
-          const { title, excerpt } = await res.json()
+          const data = await res.json()
 
           popup = document.createElement("div")
           popup.className =
-            "fixed z-50 rounded-lg border bg-popover text-popover-foreground shadow-lg p-3 max-w-[280px] text-sm pointer-events-none"
+            "fixed z-50 rounded-lg border bg-popover text-popover-foreground shadow-lg p-3 max-w-[320px] text-sm pointer-events-none"
 
-          popup.innerHTML = `<div class="font-medium">${escapeHtml(title)}</div><div class="text-muted-foreground text-xs mt-1 line-clamp-3">${escapeHtml(excerpt)}</div>`
+          let inner = `<div class="font-medium leading-snug">${escapeHtml(data.title)}</div>`
 
+          if (data.image && data.type === "external") {
+            inner += `<img src="${escapeHtml(data.image)}" class="mt-2 w-full rounded object-cover max-h-[120px]" loading="lazy" />`
+          }
+
+          if (data.excerpt) {
+            inner += `<div class="text-muted-foreground text-xs mt-1 line-clamp-4">${escapeHtml(data.excerpt)}</div>`
+          }
+
+          if (data.type === "external") {
+            const domain = new URL(href).hostname.replace(/^www\./, "")
+            inner += `<div class="text-muted-foreground/60 text-xs mt-1">${escapeHtml(domain)}</div>`
+          }
+
+          popup.innerHTML = inner
           document.body.appendChild(popup)
 
-          // Position and clamp to viewport
           const rect = popup.getBoundingClientRect()
           let left = x
           let top = y + 16
@@ -57,11 +76,11 @@ export function PopoverPreview() {
         } catch {
           // aborted or failed
         }
-      }, 350)
+      }, 250)
     }
 
     function handleLeave(e: MouseEvent) {
-      const a = (e.target as HTMLElement).closest("article.prose a.wikilink")
+      const a = (e.target as HTMLElement).closest("article.prose a")
       if (!a) return
       hide()
     }
