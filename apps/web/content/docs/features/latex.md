@@ -11,15 +11,15 @@ nuartz renders LaTeX math expressions using [remark-math](https://github.com/rem
 
 ## Inline math
 
-Wrap an expression in single dollar signs `$...$` for inline math.
+Wrap an expression in double dollar signs `$$...$$` for inline math.
 
 ```
-The famous identity is $e^{i\pi} + 1 = 0$.
+The famous identity is $$e^{i\pi} + 1 = 0$$.
 ```
 
-Renders as: The famous identity is $e^{i\pi} + 1 = 0$.
+Renders as: The famous identity is $$e^{i\pi} + 1 = 0$$.
 
-Another example: the energy-mass equivalence $E = mc^2$ is perhaps the most recognisable equation in physics.
+Another example: the energy-mass equivalence $$E = mc^2$$ is perhaps the most recognisable equation in physics.
 
 ## Block math
 
@@ -34,9 +34,6 @@ $$
 $$
 \int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
 $$
-
-> [!warning]
-> The `$$` delimiters must be on their own lines. Inline `$$` is not supported due to a limitation in the underlying parser.
 
 ## Aligned equations
 
@@ -59,17 +56,19 @@ $$
 \end{bmatrix}
 $$
 
-## Escaping dollar signs
+## Dollar signs in text
 
-If you need a literal `$` in text that is not meant to be math, escape it with a backslash:
+Literal `$` signs in text are safe — they will not be parsed as math delimiters. Only `$$...$$` triggers math rendering.
 
 ```
-I have \$5 and you have \$10.
+I have $5 and you have $10.
 ```
 
-Renders as: I have \$5 and you have \$10.
+Renders as: I have $5 and you have $10.
 
-Without the backslash, the parser would try to interpret the text between the two `$` signs as a math expression.
+> [!info] Why not single dollar `$...$`?
+>
+> Single dollar math is disabled by default. Blog content — especially Korean/CJK text — frequently contains stray `$` characters that would be misinterpreted as math delimiters, producing KaTeX warnings. Double dollar `$$` is explicit and safe.
 
 ## Supported functions
 

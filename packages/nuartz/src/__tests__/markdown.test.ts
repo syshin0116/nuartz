@@ -87,7 +87,7 @@ Content with #beta and #gamma`
   })
 
   it("renders LaTeX with KaTeX", async () => {
-    const result = await renderMarkdown("Inline math: $x^2$")
+    const result = await renderMarkdown("Inline math: $$x^2$$")
     expect(result.html).toContain("katex")
   })
 
