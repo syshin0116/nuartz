@@ -31,7 +31,8 @@ jobs:
         run: bun run --cwd packages/nuartz build
 
       - name: Enable static export
-        run: sed -i 's|// output: "export"|output: "export"|' apps/web/next.config.ts
+        run: |
+          sed -i 's|// output: "export"|output: "export"|' apps/web/next.config.ts
 
       - name: Run prebuild static script
         run: bun run apps/web/scripts/prebuild-static.ts
