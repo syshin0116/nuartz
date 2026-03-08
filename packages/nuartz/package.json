@@ -1,18 +1,37 @@
 {
   "name": "nuartz",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Publish your Obsidian vault as a Next.js website — wikilinks, backlinks, graph view, search",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/syshin0116/nuartz.git"
   },
-  "keywords": ["markdown", "obsidian", "nextjs", "blog", "mdx", "remark", "rehype", "digital-garden", "wikilink", "obsidian-publish", "quartz", "tailwindcss", "shadcn", "knowledge-base", "second-brain"],
+  "keywords": [
+    "markdown",
+    "obsidian",
+    "nextjs",
+    "blog",
+    "mdx",
+    "remark",
+    "rehype",
+    "digital-garden",
+    "wikilink",
+    "obsidian-publish",
+    "quartz",
+    "tailwindcss",
+    "shadcn",
+    "knowledge-base",
+    "second-brain"
+  ],
   "homepage": "https://github.com/syshin0116/nuartz#readme",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "styles"],
+  "files": [
+    "dist",
+    "styles"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
