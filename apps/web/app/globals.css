@@ -168,25 +168,61 @@ html.reader-mode main > div {
   margin-right: auto;
 }
 
-/* Code block copy button */
-[data-rehype-pretty-code-figure] {
-  position: relative;
+/* ── Shiki dual-theme ── */
+[data-rehype-pretty-code-figure] span[style] {
+  color: var(--shiki-light) !important;
+}
+.dark [data-rehype-pretty-code-figure] span[style] {
+  color: var(--shiki-dark) !important;
 }
 
-/* rehype-pretty-code */
+/* ── Code blocks (rehype-pretty-code + copy button) ──── */
+[data-rehype-pretty-code-figure] {
+  position: relative;
+  margin: 1rem 0;
+}
+
 [data-rehype-pretty-code-figure] pre {
   overflow-x: auto;
-  padding: 1rem;
+  padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   border: 1px solid hsl(var(--border));
-  font-size: 0.875rem;
+  background: hsl(var(--muted));
+  font-size: 0.8125rem;
   line-height: 1.7;
 }
+
+/* Language label */
+.code-lang-label {
+  position: absolute;
+  top: 0.375rem;
+  right: 2.25rem;
+  font-size: 0.65rem;
+  font-family: ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: hsl(var(--muted-foreground) / 0.6);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Copy button — visible on hover */
+[data-rehype-pretty-code-figure] .copy-code-btn {
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+[data-rehype-pretty-code-figure]:hover .copy-code-btn {
+  opacity: 1;
+}
+
 [data-line] {
   padding: 0 0.5rem;
 }
 [data-highlighted-line] {
   background-color: oklch(0.97 0.01 250 / 0.4);
+}
+.dark [data-highlighted-line] {
+  background-color: oklch(0.3 0.01 250 / 0.3);
 }
 
 /* ── Callout styles (Quartz-style with SVG mask icons) ── */
@@ -439,17 +475,23 @@ a.tag {
   table {
     @apply my-4 w-full border-collapse text-sm;
     th {
+      height: 2.5rem;
+      padding: 0.5rem;
       text-align: left;
-      padding: 0.4rem 0.7rem;
-      border-bottom: 2px solid hsl(var(--muted-foreground) / 0.3);
+      vertical-align: middle;
       font-weight: 600;
+      color: hsl(var(--foreground));
+      border-bottom: 2px solid hsl(var(--border));
     }
     td {
-      padding: 0.2rem 0.7rem;
+      padding: 0.5rem;
+      vertical-align: middle;
     }
     tr {
       border-bottom: 1px solid hsl(var(--border));
+      transition: background-color 0.15s;
       &:last-child { border-bottom: none; }
+      &:hover { background-color: hsl(var(--muted)); }
     }
   }
 
