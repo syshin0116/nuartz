@@ -9,6 +9,7 @@
   },
   "keywords": ["markdown", "obsidian", "nextjs", "blog", "mdx", "remark", "rehype", "digital-garden", "wikilink", "obsidian-publish", "quartz", "tailwindcss", "shadcn", "knowledge-base", "second-brain"],
   "homepage": "https://github.com/syshin0116/nuartz#readme",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": ["dist", "styles"],
