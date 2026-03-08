@@ -5,7 +5,11 @@ description: Sites and gardens built with nuartz
 
 Want to see what nuartz can do? Here are some sites using it:
 
-_No showcase entries yet! If you've built something with nuartz, open a PR to add it here._
+## Sites built with nuartz
+
+| Site | Description |
+|------|-------------|
+| [syshin0116.vercel.app/blog](https://syshin0116.vercel.app/blog) | Personal blog and digital garden |
 
 ## Submit your site
 
