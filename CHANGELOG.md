@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2026-03-08
+
+### Fixed
+- Include `dist/` folder in npm package — fixes module resolution errors on install
+
+## [0.1.2] - 2026-03-08
+
+### Added
+- `buildFileTree()` now accepts `sortBy` option (`'name'` | `'modified'`) — sort sidebar/nav by modification time
+- `MarkdownFile` and `FileTreeNode` expose `mtime` (file modification time)
+
+### Fixed
+- Math rendering: disable single `$...$` parsing to prevent Korean/CJK text being misinterpreted as math
+- KaTeX `strict: "ignore"` — suppress residual unicode-in-math warnings
+
 ## [0.1.1] - 2026-03-06
 
 ### Fixed
