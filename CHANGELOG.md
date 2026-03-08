@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2026-03-08
+
+### Added
+- **GitHub Pages support** — static export mode with prebuild script that generates `graph.json`, `preview-index.json`, and copies media files. Deploy with the included GitHub Actions workflow.
+- **Tooltips on header buttons** — Search, GitHub, Reader Mode, Theme Toggle now show tooltips on hover
+- **Dependabot** — automatic dependency update PRs for npm packages and GitHub Actions
+
+### Fixed
+- **Full-text search actually works now** — cmdk was overriding FlexSearch results with its own slug-based filter. Disabled cmdk's built-in filter so FlexSearch content/tag search works correctly.
+- **Cursor pointer on all buttons** — all buttons now show pointer cursor on hover, not just links
+
+### Changed
+- Rewrote README, philosophy, and hosting docs with clearer positioning: who Nuartz is for, how it compares to Quartz, and what works in each deployment mode (static vs server)
+- Updated package description to "Publish your Obsidian vault as a Next.js website"
+
+## [0.1.4] - 2026-03-08
+
+### Added
+- `sortBy: 'date'` option for `buildFileTree()` — sort by frontmatter date or filename date
+
 ## [0.1.3] - 2026-03-08
 
 ### Fixed
