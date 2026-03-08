@@ -26,13 +26,10 @@
   }
 
   * {
-    border-color: hsl(var(--border));
     @apply border-border outline-ring/50;
   }
 
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
     @apply bg-background text-foreground;
   }
 }
@@ -186,8 +183,8 @@ html.reader-mode main > div {
   overflow-x: auto;
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
-  border: 1px solid hsl(var(--border));
-  background: hsl(var(--muted));
+  border-width: 1px;
+  background: var(--muted);
   font-size: 0.8125rem;
   line-height: 1.7;
 }
@@ -201,7 +198,7 @@ html.reader-mode main > div {
   font-family: ui-monospace, monospace;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: hsl(var(--muted-foreground) / 0.6);
+  color: color-mix(in srgb, var(--muted-foreground) 60%, transparent);
   user-select: none;
   pointer-events: none;
 }
@@ -379,7 +376,7 @@ html.reader-mode main > div {
 .callout[data-callout="quote"],
 .callout[data-callout="cite"] {
   --callout-color: var(--muted-foreground);
-  --callout-border: hsl(var(--border));
+  --callout-border: var(--border);
   --callout-bg: transparent;
   --callout-icon: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%25" height="100%25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>');
 }
@@ -410,7 +407,7 @@ a.tag {
       display: inline-flex;
       align-items: center;
       margin-left: 0.4em;
-      color: hsl(var(--muted-foreground) / 0.45);
+      color: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
       text-decoration: none !important;
       opacity: 0;
       transition: opacity 0.15s, color 0.15s;
@@ -418,7 +415,7 @@ a.tag {
       svg { width: 0.8em; height: 0.8em; }
     }
     &:hover a.heading-anchor { opacity: 1; }
-    a.heading-anchor:hover { color: hsl(var(--foreground)); }
+    a.heading-anchor:hover { color: var(--foreground); }
   }
 
   h1 {
@@ -455,8 +452,8 @@ a.tag {
 
   blockquote {
     @apply my-4 border-l-[3px] pl-4 italic;
-    border-color: hsl(var(--muted-foreground) / 0.4);
-    color: hsl(var(--muted-foreground));
+    border-color: color-mix(in srgb, var(--muted-foreground) 40%, transparent);
+    color: var(--muted-foreground);
   }
 
   code {
@@ -467,7 +464,7 @@ a.tag {
 
   pre {
     @apply my-4 overflow-x-auto rounded-lg p-4;
-    border: 1px solid hsl(var(--border));
+    border-width: 1px;
     background: var(--muted);
     code { @apply bg-transparent p-0 text-sm; }
   }
@@ -480,18 +477,18 @@ a.tag {
       text-align: left;
       vertical-align: middle;
       font-weight: 600;
-      color: hsl(var(--foreground));
-      border-bottom: 2px solid hsl(var(--border));
+      color: var(--foreground);
+      border-bottom-width: 2px;
     }
     td {
       padding: 0.5rem;
       vertical-align: middle;
     }
     tr {
-      border-bottom: 1px solid hsl(var(--border));
+      border-bottom-width: 1px;
       transition: background-color 0.15s;
-      &:last-child { border-bottom: none; }
-      &:hover { background-color: hsl(var(--muted)); }
+      &:last-child { border-bottom-width: 0; }
+      &:hover { background-color: var(--muted); }
     }
   }
 
@@ -499,7 +496,7 @@ a.tag {
     @apply my-8;
     height: 1px;
     border: none;
-    background-color: hsl(var(--border));
+    background-color: var(--border);
   }
 
   img {
@@ -509,7 +506,7 @@ a.tag {
   p > img + em {
     display: block;
     transform: translateY(-0.75rem);
-    color: hsl(var(--muted-foreground));
+    color: var(--muted-foreground);
     font-size: 0.875rem;
     text-align: center;
   }
@@ -518,9 +515,9 @@ a.tag {
 
   .footnotes {
     margin-top: 2rem;
-    border-top: 1px solid hsl(var(--border));
+    border-top-width: 1px;
     padding-top: 1rem;
     font-size: 0.875rem;
-    color: hsl(var(--muted-foreground));
+    color: var(--muted-foreground);
   }
 }
