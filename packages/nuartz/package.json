@@ -1,6 +1,6 @@
 {
   "name": "nuartz",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Obsidian-compatible markdown pipeline for Next.js",
   "license": "MIT",
   "repository": {

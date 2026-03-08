@@ -11,6 +11,21 @@ export interface MarkdownFile {
   mtime?: Date        // File modification time
 }
 
+/** Extract date from frontmatter or filename (e.g. 2025-10-13-title.md) */
+function extractDate(file: MarkdownFile): number {
+  if (file.frontmatter.date) {
+    const d = new Date(file.frontmatter.date as string | Date)
+    if (!isNaN(d.getTime())) return d.getTime()
+  }
+  const basename = file.slug.split("/").pop() ?? ""
+  const match = basename.match(/^(\d{4}-\d{2}-\d{2})/)
+  if (match) {
+    const d = new Date(match[1])
+    if (!isNaN(d.getTime())) return d.getTime()
+  }
+  return 0
+}
+
 /**
  * Recursively walks a directory and returns all .md files.
  */
@@ -95,12 +110,13 @@ export interface FileTreeNode {
   path: string
   type: "file" | "folder"
   children?: FileTreeNode[]
-  mtime?: Date  // File modification time (for sorting)
+  mtime?: Date
+  date?: number  // Resolved date timestamp for sorting (frontmatter > filename > 0)
 }
 
 export interface BuildFileTreeOptions {
-  /** Sort method: 'name' (alphabetical) or 'modified' (newest first) */
-  sortBy?: 'name' | 'modified'
+  /** Sort method: 'name' (alphabetical), 'modified' (file mtime), or 'date' (frontmatter/filename date) */
+  sortBy?: 'name' | 'modified' | 'date'
 }
 
 /**
@@ -113,9 +129,10 @@ export function buildFileTree(files: MarkdownFile[], options?: BuildFileTreeOpti
 
   const sortedFiles = [...files].sort((a, b) => {
     if (sortBy === 'modified') {
-      const timeA = a.mtime?.getTime() ?? 0
-      const timeB = b.mtime?.getTime() ?? 0
-      return timeB - timeA  // Newest first
+      return (b.mtime?.getTime() ?? 0) - (a.mtime?.getTime() ?? 0)
+    }
+    if (sortBy === 'date') {
+      return extractDate(b) - extractDate(a)
     }
     return a.slug.localeCompare(b.slug)
   })
@@ -135,30 +152,35 @@ export function buildFileTree(files: MarkdownFile[], options?: BuildFileTreeOpti
           path: file.slug,
           type: "file",
           mtime: file.mtime,
+          date: extractDate(file),
         }
         parentList.push(node)
       } else {
         let folderNode = nodeMap.get(partPath)
         if (!folderNode) {
-          folderNode = { name: part, path: partPath, type: "folder", children: [] }
+          folderNode = { name: part, path: partPath, type: "folder", children: [], date: 0 }
           nodeMap.set(partPath, folderNode)
           parentList.push(folderNode)
+        }
+        // Bubble up the latest date to the folder
+        if (sortBy === 'date') {
+          const fileDate = extractDate(file)
+          if (fileDate > (folderNode.date ?? 0)) folderNode.date = fileDate
+        } else if (sortBy === 'modified') {
+          const t = file.mtime?.getTime() ?? 0
+          if (t > (folderNode.mtime?.getTime() ?? 0)) folderNode.mtime = file.mtime
         }
         parentList = folderNode.children!
       }
     }
   }
 
-  // Sort each level: folders first, then by name or modification time
+  // Sort each level: folders first, then by chosen method
   function sortNodes(nodes: FileTreeNode[]): FileTreeNode[] {
     nodes.sort((a, b) => {
       if (a.type !== b.type) return a.type === "folder" ? -1 : 1
-      
-      if (sortBy === 'modified') {
-        const timeA = a.mtime?.getTime() ?? 0
-        const timeB = b.mtime?.getTime() ?? 0
-        return timeB - timeA  // Newest first
-      }
+      if (sortBy === 'date') return (b.date ?? 0) - (a.date ?? 0)
+      if (sortBy === 'modified') return (b.mtime?.getTime() ?? 0) - (a.mtime?.getTime() ?? 0)
       return a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
     })
     for (const node of nodes) {
