@@ -143,7 +143,7 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
   }
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
       <CommandInput
         placeholder="Search notes or type # for tags…"
         value={query}
