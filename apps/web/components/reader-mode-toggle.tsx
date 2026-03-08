@@ -3,6 +3,7 @@
 import { BookOpen } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 
 export function ReaderModeToggle() {
   const [active, setActive] = useState(false)
@@ -23,9 +24,14 @@ export function ReaderModeToggle() {
   }
 
   return (
-    <Button variant="ghost" size="icon" onClick={toggle}>
-      <BookOpen className="h-4 w-4" />
-      <span className="sr-only">Toggle reader mode</span>
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon" onClick={toggle}>
+          <BookOpen className="h-4 w-4" />
+          <span className="sr-only">Toggle reader mode</span>
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>Reader mode</TooltipContent>
+    </Tooltip>
   )
 }
