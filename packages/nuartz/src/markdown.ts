@@ -113,7 +113,7 @@ export async function renderMarkdown(
         ],
       } as ElementContent,
     })
-    .use(rehypeKatex)
+    .use(rehypeKatex, { strict: "ignore" })
     .use(rehypeExtractToc)
     .use(rehypeStringify)
     .process(body)
