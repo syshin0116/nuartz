@@ -220,8 +220,14 @@ html.reader-mode main > div {
   color: var(--foreground);
   background-color: var(--muted);
 }
-[data-rehype-pretty-code-figure]:hover .copy-code-btn {
+[data-rehype-pretty-code-figure]:hover .copy-code-btn,
+.pre-wrapper:hover .copy-code-btn {
   opacity: 1;
+}
+
+/* Wrapper for plain <pre> blocks (no language) */
+.pre-wrapper {
+  position: relative;
 }
 
 [data-line] {
