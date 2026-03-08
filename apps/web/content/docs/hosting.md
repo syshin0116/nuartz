@@ -43,9 +43,22 @@ The prebuild script (`apps/web/scripts/prebuild-static.ts`) handles steps 1-4 au
 
 Go to your repo's **Settings > Pages** and set the source to **GitHub Actions**.
 
-#### 2. Push to main
+#### 2. Enable automatic deployment
 
-The repo includes `.github/workflows/deploy-pages.yml`. Every push to `main` will:
+The repo includes `.github/workflows/deploy-pages.yml`, but it's set to manual dispatch by default (so it doesn't fail on repos that don't use GitHub Pages). To deploy on every push, add the `push` trigger:
+
+```yaml
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+```
+
+Or you can leave it as-is and trigger deployments manually from the **Actions** tab.
+
+#### 3. Push to main
+
+The workflow will:
 1. Automatically enable `output: "export"` in `next.config.ts`
 2. Run the prebuild script (generate static graph/preview data, copy media files)
 3. Build all pages as static HTML
@@ -54,7 +67,7 @@ The repo includes `.github/workflows/deploy-pages.yml`. Every push to `main` wil
 That's it. Your site will be live at `https://<username>.github.io/<repo-name>/`.
 
 > [!note] No manual config changes needed
-> The GitHub Actions workflow automatically enables static export during the build. Your `next.config.ts` stays unchanged in the repo, so Vercel and local `bun dev` continue to work normally.
+> The workflow automatically enables static export during the build. Your `next.config.ts` stays unchanged in the repo, so Vercel and local `bun dev` continue to work normally.
 
 > [!tip] Local testing
 > You can test the static build locally:

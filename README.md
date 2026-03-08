@@ -76,9 +76,10 @@ Nuartz supports two deployment modes. Pick the one that fits your needs:
 All pages are pre-built as static HTML at build time. No server needed.
 
 1. Go to your repo's **Settings > Pages**, set source to **GitHub Actions**
-2. Push to `main` — the included workflow builds and deploys automatically
+2. Add `push` trigger to `.github/workflows/deploy-pages.yml` (it's manual-only by default)
+3. Push to `main` — the workflow builds and deploys automatically
 
-No config changes needed. The workflow automatically enables static export during CI.
+No `next.config.ts` changes needed. The workflow automatically enables static export during CI.
 
 What works: search, graph view, popover previews (internal links), dark mode, tags, backlinks, RSS, sitemap — everything that can be computed at build time.
 
