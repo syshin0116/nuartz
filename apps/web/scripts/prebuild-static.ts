@@ -168,6 +168,33 @@ async function generatePreviewIndex() {
 }
 
 // ---------------------------------------------------------------------------
+// 4. Disable server-only routes incompatible with static export
+// ---------------------------------------------------------------------------
+const SERVER_ONLY_ROUTES = [
+  "app/api",
+  "app/og",
+  "app/opengraph-image.tsx",
+]
+
+async function disableServerRoutes() {
+  console.log("[prebuild] Disabling server-only routes for static export ...")
+  const backupDir = path.join(APP_DIR, ".server-routes-backup")
+  await fs.mkdir(backupDir, { recursive: true })
+
+  for (const route of SERVER_ONLY_ROUTES) {
+    const src = path.join(APP_DIR, route)
+    const dest = path.join(backupDir, route)
+    try {
+      await fs.mkdir(path.dirname(dest), { recursive: true })
+      await fs.rename(src, dest)
+      console.log(`  moved ${route} -> .server-routes-backup/${route}`)
+    } catch {
+      // Route doesn't exist, skip
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
@@ -177,6 +204,7 @@ async function main() {
   await copyMediaFiles()
   await generateGraphJson()
   await generatePreviewIndex()
+  await disableServerRoutes()
 
   const elapsed = ((Date.now() - start) / 1000).toFixed(2)
   console.log(`[prebuild] Done in ${elapsed}s.`)

@@ -3,6 +3,7 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import matter from "gray-matter"
 
+
 const CONTENT_DIR = path.join(process.cwd(), "content")
 
 export async function GET(request: NextRequest) {

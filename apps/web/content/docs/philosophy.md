@@ -20,12 +20,15 @@ Nuartz is split into a library and a starter template:
 
 Most people start with the starter template and customise from there. If you have an existing Next.js app (portfolio, blog, docs site), install the package and integrate only what you need.
 
-## Hosting
+## Deploy anywhere
 
-Nuartz supports both server-side (Vercel, Netlify) and fully static (GitHub Pages) deployment:
+Nuartz supports two deployment modes:
 
-- **Vercel/Netlify** — full feature set including server-side OG images and API routes
-- **GitHub Pages** — enable `output: "export"` in `next.config.ts` and deploy with GitHub Actions. Graph view, search, and popover previews all work via pre-generated static data.
+**GitHub Pages (static)** — all pages are pre-built as HTML. Free hosting, no server. Search, graph view, popover previews, dark mode — all work. The prebuild script generates static JSON files so features that would normally need API routes work without a server.
+
+**Vercel / Netlify (server)** — full feature set. Dynamic OG images (each page gets its own social preview card), external link previews on hover, and Next.js image optimization. The free tier on Vercel is generous enough for most personal sites.
+
+Both modes share the same codebase. You don't need to change your code to switch — just toggle `output: "export"` in `next.config.ts`. See [[docs/hosting|Hosting]] for details.
 
 ## Who is this for?
 

@@ -27,7 +27,7 @@ Most people start with the starter template. If you want to embed a garden into 
 | **UI**           | Built-in theme                      | shadcn/ui (swap any component)              |
 | **Hosting**      | GitHub Pages, Cloudflare, Netlify   | GitHub Pages, Vercel, Netlify, Docker       |
 | **GitHub Pages** | First-class                         | Supported (static export mode)              |
-| **Search**       | Client-side                         | Client-side (CJK-aware)                     |
+| **Search**       | Client-side                         | Client-side (CJK-aware, FlexSearch)         |
 | **Customisation**| Quartz plugin API                   | Any Next.js component, no constraints       |
 
 **Choose Quartz** if you want a site running in minutes and you're happy with its design system.
@@ -43,7 +43,7 @@ Most people start with the starter template. If you want to embed a garden into 
 | Inline tags `#tag` with tag index pages | Done |
 | Backlink index | Done |
 | Table of contents (scroll-aware) | Done |
-| Full-text search (Cmd+K) | Done |
+| Full-text search (Cmd+K, CJK-aware) | Done |
 | Dark mode (system-aware) | Done |
 | Graph view (D3 force-directed) | Done |
 | Popover previews on hover | Done |
@@ -69,7 +69,22 @@ Put your Obsidian markdown files in `apps/web/content/` and open `http://localho
 
 ## Deploying
 
-### Vercel (recommended)
+Nuartz supports two deployment modes. Pick the one that fits your needs:
+
+### GitHub Pages (free, static)
+
+All pages are pre-built as static HTML at build time. No server needed.
+
+1. Go to your repo's **Settings > Pages**, set source to **GitHub Actions**
+2. Push to `main` — the included workflow builds and deploys automatically
+
+No config changes needed. The workflow automatically enables static export during CI.
+
+What works: search, graph view, popover previews (internal links), dark mode, tags, backlinks, RSS, sitemap — everything that can be computed at build time.
+
+What doesn't: dynamic OG images (per-page social cards), external link previews, Next.js image optimization. These features need a server.
+
+### Vercel (recommended, server-side)
 
 Import the repo in Vercel with these overrides:
 
@@ -79,11 +94,9 @@ Import the repo in Vercel with these overrides:
 | Install Command | `cd ../.. && bun install --frozen-lockfile` |
 | Build Command | `cd ../.. && bun run build:pkg && cd apps/web && next build` |
 
-### GitHub Pages
+Everything works, including dynamic OG images and external link previews. Free tier is generous enough for most personal sites.
 
-Nuartz supports static export for GitHub Pages. Enable `output: "export"` in `next.config.ts`, then use the included GitHub Actions workflow (`.github/workflows/deploy-pages.yml`). The prebuild script generates static data for graph view and popover previews automatically.
-
-See the [hosting guide](apps/web/content/docs/hosting.md) for Netlify, Docker, and other options.
+See the [full hosting guide](apps/web/content/docs/hosting.md) for Netlify, Docker, and details on what each mode supports.
 
 ## Using as a Package
 

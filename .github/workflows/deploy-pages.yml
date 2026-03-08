@@ -30,13 +30,16 @@ jobs:
       - name: Build nuartz package
         run: bun run --cwd packages/nuartz build
 
+      - name: Enable static export
+        run: sed -i 's|// output: "export"|output: "export"|' apps/web/next.config.ts
+
       - name: Run prebuild static script
         run: bun run apps/web/scripts/prebuild-static.ts
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Build Next.js with static export
+      - name: Build Next.js
         run: bun run --cwd apps/web build
         env:
           NEXT_PUBLIC_SITE_URL: ""

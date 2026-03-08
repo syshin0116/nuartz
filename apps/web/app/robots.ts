@@ -1,3 +1,5 @@
+export const dynamic = "force-static"
+
 import type { MetadataRoute } from "next"
 import config from "@/nuartz.config"
 

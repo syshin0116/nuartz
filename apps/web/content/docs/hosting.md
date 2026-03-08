@@ -3,55 +3,72 @@ title: Hosting
 description: Deploy Nuartz to GitHub Pages, Vercel, Netlify, or your own server.
 ---
 
-Nuartz supports both static and server-side deployment. Choose based on your needs:
+Nuartz can be deployed in two ways: as a **static site** (GitHub Pages) or with a **server** (Vercel, Netlify, Docker). Most features work in both modes, but a few things need a server.
 
-| Host | Type | Cost | Setup |
-|------|------|------|-------|
-| GitHub Pages | Static | Free | GitHub Actions workflow |
-| Vercel | Server-side | Free tier | One-click import |
-| Netlify | Server-side | Free tier | Import + plugin |
-| Docker / Node.js | Server-side | Self-hosted | Manual |
+## Which mode should I use?
 
-## GitHub Pages
+| Feature | Static (GitHub Pages) | Server (Vercel) |
+|---------|:---:|:---:|
+| Pages, search, graph view | O | O |
+| Popover previews (internal links) | O | O |
+| Dark mode, tags, backlinks, TOC | O | O |
+| RSS feed, sitemap | O | O |
+| Dynamic OG images (per-page social cards) | X | O |
+| External link previews | X | O |
+| Next.js image optimization | X | O |
+| Cost | Free | Free tier |
 
-GitHub Pages serves static files for free. Nuartz supports this via Next.js static export.
+**Short version:** if you just want to publish your notes for free, GitHub Pages works great. If you want social preview cards or external link previews, use Vercel.
 
-### 1. Enable static export
+---
 
-Uncomment `output: "export"` in `apps/web/next.config.ts`:
+## GitHub Pages (static export)
 
-```typescript
-const nextConfig: NextConfig = {
-  output: "export",
-  // ...
-}
-```
+GitHub Pages serves static files for free. Nuartz supports this by building all pages as HTML at build time.
 
-### 2. Use the included workflow
+### How it works
 
-The repo includes `.github/workflows/deploy-pages.yml`. It runs the prebuild script (copies media, generates graph and preview data as static JSON) then builds and deploys to GitHub Pages.
+When you enable static export, Nuartz:
+1. **Pre-generates `graph.json`** — the same graph data that normally comes from `/api/graph`, saved as a static file
+2. **Pre-generates `preview-index.json`** — preview data for internal link popups, no API needed
+3. **Copies media files** from `content/` to `public/content/` so images work without a server
+4. **Temporarily disables server-only routes** (API routes, OG image generation) that aren't compatible with static hosting
+5. **Builds all pages as static HTML** using Next.js `output: "export"`
 
-### 3. Enable Pages in repo settings
+The prebuild script (`apps/web/scripts/prebuild-static.ts`) handles steps 1-4 automatically.
 
-Go to **Settings > Pages** and set the source to **GitHub Actions**.
+### Setup
 
-### 4. Push to main
+#### 1. Enable GitHub Pages in your repo
 
-Every push to `main` triggers a build and deploy automatically.
+Go to your repo's **Settings > Pages** and set the source to **GitHub Actions**.
 
-> [!note] What works in static export
-> Search, graph view, popover previews, dark mode, tags, backlinks — all work. The prebuild script generates `graph.json` and `preview-index.json` at build time so client components can fetch static data instead of API routes.
+#### 2. Push to main
 
-> [!warning] What doesn't work in static export
-> - OG image generation (edge runtime) — use pre-made images or a third-party service
-> - External link previews (requires server-side fetch) — internal previews still work
-> - Next.js Image Optimization — images are served as-is
+The repo includes `.github/workflows/deploy-pages.yml`. Every push to `main` will:
+1. Automatically enable `output: "export"` in `next.config.ts`
+2. Run the prebuild script (generate static graph/preview data, copy media files)
+3. Build all pages as static HTML
+4. Deploy to GitHub Pages
+
+That's it. Your site will be live at `https://<username>.github.io/<repo-name>/`.
+
+> [!note] No manual config changes needed
+> The GitHub Actions workflow automatically enables static export during the build. Your `next.config.ts` stays unchanged in the repo, so Vercel and local `bun dev` continue to work normally.
+
+> [!tip] Local testing
+> You can test the static build locally:
+> ```bash
+> bun run apps/web/scripts/prebuild-static.ts
+> bun run build
+> npx serve apps/web/out
+> ```
 
 ---
 
 ## Vercel (recommended)
 
-Vercel has first-class Next.js support and is the easiest option for the full feature set.
+Vercel has first-class Next.js support and enables the full feature set, including dynamic OG images and external link previews.
 
 ### 1. Import the repository
 

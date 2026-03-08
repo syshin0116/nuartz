@@ -69,7 +69,12 @@ bun run build
 
 ## Deploying
 
-Nuartz supports **GitHub Pages** (static export) and **Vercel** (server-side). See [[docs/hosting|Hosting]] for setup instructions.
+Nuartz can be deployed two ways:
+
+- **GitHub Pages** — free static hosting. Uncomment `output: "export"` in `next.config.ts` and push. The included GitHub Actions workflow builds and deploys automatically.
+- **Vercel** — free tier with full features (dynamic OG images, external link previews). Import the repo and deploy in one click.
+
+See [[docs/hosting|Hosting]] for step-by-step instructions and a full comparison of what each mode supports.
 
 > [!tip] Next Steps
 > - [[docs/authoring-content|Learn how to write content]]
