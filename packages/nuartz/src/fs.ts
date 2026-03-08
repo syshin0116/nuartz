@@ -8,6 +8,7 @@ export interface MarkdownFile {
   filePath: string    // absolute file path
   frontmatter: Frontmatter
   raw: string
+  mtime?: Date        // File modification time
 }
 
 /**
@@ -39,11 +40,22 @@ export async function getAllMarkdownFiles(
 
         const relative = path.relative(contentDir, fullPath)
         const slug = relative.replace(/\.md$/, "").replace(/\\/g, "/")
+        
+        // Get file modification time
+        let mtime: Date | undefined
+        try {
+          const stat = await fs.stat(fullPath)
+          mtime = stat.mtime
+        } catch {
+          mtime = undefined
+        }
+
         results.push({
           slug,
           filePath: fullPath,
           frontmatter: data as Frontmatter,
           raw,
+          mtime,
         })
       }
     }
@@ -65,7 +77,14 @@ export async function getMarkdownBySlug(
   try {
     const raw = await fs.readFile(filePath, "utf-8")
     const { data } = matter(raw)
-    return { slug, filePath, frontmatter: data as Frontmatter, raw }
+    let mtime: Date | undefined
+    try {
+      const stat = await fs.stat(filePath)
+      mtime = stat.mtime
+    } catch {
+      mtime = undefined
+    }
+    return { slug, filePath, frontmatter: data as Frontmatter, raw, mtime }
   } catch {
     return null
   }
@@ -76,16 +95,30 @@ export interface FileTreeNode {
   path: string
   type: "file" | "folder"
   children?: FileTreeNode[]
+  mtime?: Date  // File modification time (for sorting)
+}
+
+export interface BuildFileTreeOptions {
+  /** Sort method: 'name' (alphabetical) or 'modified' (newest first) */
+  sortBy?: 'name' | 'modified'
 }
 
 /**
  * Builds a nested file tree from a flat list of MarkdownFile entries.
  */
-export function buildFileTree(files: MarkdownFile[]): FileTreeNode[] {
+export function buildFileTree(files: MarkdownFile[], options?: BuildFileTreeOptions): FileTreeNode[] {
+  const { sortBy = 'name' } = options ?? {}
   const root: FileTreeNode[] = []
   const nodeMap = new Map<string, FileTreeNode>()
 
-  const sortedFiles = [...files].sort((a, b) => a.slug.localeCompare(b.slug))
+  const sortedFiles = [...files].sort((a, b) => {
+    if (sortBy === 'modified') {
+      const timeA = a.mtime?.getTime() ?? 0
+      const timeB = b.mtime?.getTime() ?? 0
+      return timeB - timeA  // Newest first
+    }
+    return a.slug.localeCompare(b.slug)
+  })
 
   for (const file of sortedFiles) {
     const parts = file.slug.split("/")
@@ -101,6 +134,7 @@ export function buildFileTree(files: MarkdownFile[]): FileTreeNode[] {
           name: file.frontmatter.title ?? part,
           path: file.slug,
           type: "file",
+          mtime: file.mtime,
         }
         parentList.push(node)
       } else {
@@ -115,10 +149,16 @@ export function buildFileTree(files: MarkdownFile[]): FileTreeNode[] {
     }
   }
 
-  // Sort each level: folders first, then files; alphabetically within each group
+  // Sort each level: folders first, then by name or modification time
   function sortNodes(nodes: FileTreeNode[]): FileTreeNode[] {
     nodes.sort((a, b) => {
       if (a.type !== b.type) return a.type === "folder" ? -1 : 1
+      
+      if (sortBy === 'modified') {
+        const timeA = a.mtime?.getTime() ?? 0
+        const timeB = b.mtime?.getTime() ?? 0
+        return timeB - timeA  // Newest first
+      }
       return a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
     })
     for (const node of nodes) {
