@@ -1,13 +1,13 @@
 {
   "name": "nuartz",
   "version": "0.1.4",
-  "description": "Obsidian-compatible markdown pipeline for Next.js",
+  "description": "Publish your Obsidian vault as a Next.js website — wikilinks, backlinks, graph view, search",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/syshin0116/nuartz.git"
   },
-  "keywords": ["markdown", "obsidian", "nextjs", "blog", "mdx", "remark", "rehype"],
+  "keywords": ["markdown", "obsidian", "nextjs", "blog", "mdx", "remark", "rehype", "digital-garden", "wikilink", "obsidian-publish", "quartz", "tailwindcss", "shadcn", "knowledge-base", "second-brain"],
   "homepage": "https://github.com/syshin0116/nuartz#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

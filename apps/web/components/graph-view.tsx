@@ -18,7 +18,12 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
   const router = useRouter()
 
   useEffect(() => {
-    fetch("/api/graph").then(r => r.json()).then(setData).catch(console.error)
+    // Try static JSON first (for static export), fall back to API route
+    fetch("/graph.json")
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(setData)
+      .catch(() => fetch("/api/graph").then(r => r.json()).then(setData))
+      .catch(console.error)
   }, [])
 
   useEffect(() => {

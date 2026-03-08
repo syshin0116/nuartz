@@ -8,5 +8,10 @@ out/
 .DS_Store
 refs/
 
+# Prebuild static artifacts
+apps/web/public/graph.json
+apps/web/public/preview-index.json
+apps/web/public/content/
+
 .claude/
 .superset/

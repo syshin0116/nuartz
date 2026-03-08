@@ -7,6 +7,13 @@ export function PopoverPreview() {
     let popup: HTMLDivElement | null = null
     let timer: ReturnType<typeof setTimeout> | null = null
     let controller: AbortController | null = null
+    let previewIndex: Record<string, { title: string; excerpt: string }> | null = null
+
+    // Try loading static preview index (for static export)
+    fetch("/preview-index.json")
+      .then(r => { if (!r.ok) throw new Error(); return r.json() })
+      .then(data => { previewIndex = data })
+      .catch(() => { /* no static index, will use API */ })
 
     function hide() {
       if (timer) { clearTimeout(timer); timer = null }
@@ -34,13 +41,22 @@ export function PopoverPreview() {
       timer = setTimeout(async () => {
         controller = new AbortController()
         try {
-          const apiUrl = isExternal
-            ? `/api/preview?url=${encodeURIComponent(href)}`
-            : `/api/preview?slug=${encodeURIComponent(href.startsWith("/") ? href.slice(1) : href)}`
+          let data: { title: string; excerpt: string; image?: string; type?: string }
 
-          const res = await fetch(apiUrl, { signal: controller.signal })
-          if (!res.ok) return
-          const data = await res.json()
+          const slug = href.startsWith("/") ? href.slice(1) : href
+
+          // Use static preview index for internal links when available
+          if (!isExternal && previewIndex && previewIndex[slug]) {
+            data = { ...previewIndex[slug], type: "internal" }
+          } else {
+            const apiUrl = isExternal
+              ? `/api/preview?url=${encodeURIComponent(href)}`
+              : `/api/preview?slug=${encodeURIComponent(slug)}`
+
+            const res = await fetch(apiUrl, { signal: controller.signal })
+            if (!res.ok) return
+            data = await res.json()
+          }
 
           popup = document.createElement("div")
           popup.className =

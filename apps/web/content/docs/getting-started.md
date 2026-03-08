@@ -69,7 +69,7 @@ bun run build
 
 ## Deploying
 
-The easiest way to deploy is with [Vercel](https://vercel.com). Push your repository to GitHub and import it in Vercel — it will auto-detect Next.js and deploy.
+Nuartz supports **GitHub Pages** (static export) and **Vercel** (server-side). See [[docs/hosting|Hosting]] for setup instructions.
 
 > [!tip] Next Steps
 > - [[docs/authoring-content|Learn how to write content]]

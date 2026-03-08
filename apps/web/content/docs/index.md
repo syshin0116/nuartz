@@ -2,11 +2,9 @@
 title: Documentation
 ---
 
-Nuartz is a fast, minimalist digital garden template built on Next.js 15 and Tailwind CSS v4. It transforms plain Markdown files into a fully-functional, interconnected knowledge base.
+Nuartz turns your Obsidian vault into a Next.js website. It handles wikilinks, callouts, backlinks, graph view, and search — you get a normal Next.js app you can customise with React components and shadcn/ui.
 
 ## Get Started
-
-Nuartz uses **Bun** and is structured as a monorepo.
 
 ```shell
 git clone https://github.com/syshin0116/nuartz.git
@@ -15,13 +13,13 @@ bun install
 bun dev
 ```
 
-Then drop your Markdown files into `apps/web/content/` and start writing.
+Drop your Markdown files into `apps/web/content/` and start writing.
 
 1. [[authoring-content|Write content]] using Markdown + Obsidian syntax
 2. [[configuration|Configure]] site metadata and behaviour
 3. Understand the [[layout|layout system]]
 4. [[building|Build and preview]] the site locally
-5. [[hosting|Deploy]] to Vercel, Netlify, or your own server
+5. [[hosting|Deploy]] to GitHub Pages, Vercel, or your own server
 
 ## Features
 
@@ -40,11 +38,11 @@ For a full list, visit the [[features/index|features page]].
 
 ## Architecture
 
-nuartz is split into two packages:
+Nuartz is split into two packages:
 
 | Package | Description |
 |---------|-------------|
-| `packages/nuartz` | Core remark/rehype processing library |
-| `apps/web` | Next.js 15 app — the actual site template |
+| `packages/nuartz` | Headless data library — markdown parsing, wikilinks, backlinks, search index |
+| `apps/web` | Next.js 15 starter template with shadcn/ui |
 
 Read more on the [[advanced/architecture|architecture]] page or explore [[advanced/creating-plugins|creating plugins]].

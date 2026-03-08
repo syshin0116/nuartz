@@ -5,7 +5,7 @@ export default defineConfig({
   contentDir: path.join(process.cwd(), "content"),
   site: {
     title: "Nuartz",
-    description: "Obsidian-compatible digital garden built on Next.js + shadcn/ui",
+    description: "Publish your Obsidian vault as a Next.js website",
     baseUrl: "https://nuartz.vercel.app",
   },
   homePage: "index",

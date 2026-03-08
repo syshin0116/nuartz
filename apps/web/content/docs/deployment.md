@@ -7,7 +7,7 @@ tags:
 description: Deploy your nuartz garden to Vercel in a few steps.
 ---
 
-nuartz is a Next.js application, so it can be deployed anywhere that supports Next.js. The recommended and simplest option is [Vercel](https://vercel.com).
+nuartz is a Next.js application that supports both static export (GitHub Pages) and server-side deployment (Vercel, Netlify). See the [[docs/hosting|full hosting guide]] for all options including GitHub Pages.
 
 > [!info] Prerequisites
 > - Your nuartz project is pushed to a GitHub repository.

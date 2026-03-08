@@ -1,13 +1,57 @@
 ---
 title: Hosting
-description: Deploy Nuartz to Vercel, Netlify, or your own server.
+description: Deploy Nuartz to GitHub Pages, Vercel, Netlify, or your own server.
 ---
 
-Nuartz is a Next.js 15 app with server-side features (API routes, OG image generation, etc.) so it requires a Node.js-compatible host — not a plain static host like GitHub Pages.
+Nuartz supports both static and server-side deployment. Choose based on your needs:
+
+| Host | Type | Cost | Setup |
+|------|------|------|-------|
+| GitHub Pages | Static | Free | GitHub Actions workflow |
+| Vercel | Server-side | Free tier | One-click import |
+| Netlify | Server-side | Free tier | Import + plugin |
+| Docker / Node.js | Server-side | Self-hosted | Manual |
+
+## GitHub Pages
+
+GitHub Pages serves static files for free. Nuartz supports this via Next.js static export.
+
+### 1. Enable static export
+
+Uncomment `output: "export"` in `apps/web/next.config.ts`:
+
+```typescript
+const nextConfig: NextConfig = {
+  output: "export",
+  // ...
+}
+```
+
+### 2. Use the included workflow
+
+The repo includes `.github/workflows/deploy-pages.yml`. It runs the prebuild script (copies media, generates graph and preview data as static JSON) then builds and deploys to GitHub Pages.
+
+### 3. Enable Pages in repo settings
+
+Go to **Settings > Pages** and set the source to **GitHub Actions**.
+
+### 4. Push to main
+
+Every push to `main` triggers a build and deploy automatically.
+
+> [!note] What works in static export
+> Search, graph view, popover previews, dark mode, tags, backlinks — all work. The prebuild script generates `graph.json` and `preview-index.json` at build time so client components can fetch static data instead of API routes.
+
+> [!warning] What doesn't work in static export
+> - OG image generation (edge runtime) — use pre-made images or a third-party service
+> - External link previews (requires server-side fetch) — internal previews still work
+> - Next.js Image Optimization — images are served as-is
+
+---
 
 ## Vercel (recommended)
 
-Vercel is the easiest option and has first-class Next.js support.
+Vercel has first-class Next.js support and is the easiest option for the full feature set.
 
 ### 1. Import the repository
 
@@ -15,7 +59,7 @@ Go to [vercel.com/new](https://vercel.com/new), click **Import Git Repository**,
 
 ### 2. Configure the project
 
-Nuartz is a **monorepo** — the Next.js app lives in `apps/web`, not the root. You must override the defaults:
+Nuartz is a **monorepo** — the Next.js app lives in `apps/web`, not the root. Override the defaults:
 
 | Setting | Value |
 |---------|-------|
@@ -30,22 +74,22 @@ Nuartz is a **monorepo** — the Next.js app lives in `apps/web`, not the root. 
 
 ### 3. Environment variables
 
-Add these in **Settings → Environment Variables** if you use optional features:
+Add these in **Settings > Environment Variables** if you use optional features:
 
 ```
+# Site URL (used for RSS, OG images)
+NEXT_PUBLIC_SITE_URL=https://your-site.vercel.app
+
 # Giscus comments (optional)
 NEXT_PUBLIC_GISCUS_REPO=your-user/your-repo
 NEXT_PUBLIC_GISCUS_REPO_ID=R_xxx
 NEXT_PUBLIC_GISCUS_CATEGORY=Announcements
 NEXT_PUBLIC_GISCUS_CATEGORY_ID=DIC_xxx
-
-# Site URL (used for RSS, OG images)
-NEXT_PUBLIC_SITE_URL=https://your-site.vercel.app
 ```
 
 ### 4. Deploy
 
-Click **Deploy**. Vercel will rebuild automatically on every push to `main`.
+Click **Deploy**. Vercel rebuilds automatically on every push to `main`.
 
 ---
 
@@ -99,15 +143,3 @@ CMD ["node", "apps/web/server.js"]
 docker build -t nuartz .
 docker run -p 3000:3000 nuartz
 ```
-
----
-
-## Why not GitHub Pages?
-
-GitHub Pages only serves static files. Nuartz uses:
-- `/api/graph` — server-side API route
-- `/api/preview` — server-side API route
-- `/app/og` — Edge runtime OG image generation
-- Next.js Image Optimization
-
-These require a Node.js runtime, so GitHub Pages is not compatible.
