@@ -1,6 +1,6 @@
 {
   "name": "nuartz",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Obsidian-compatible markdown pipeline for Next.js",
   "license": "MIT",
   "repository": {
@@ -11,9 +11,11 @@
   "homepage": "https://github.com/syshin0116/nuartz#readme",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": ["dist"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
+  "files": ["dist"],
       "default": "./dist/index.js"
     }
   },
