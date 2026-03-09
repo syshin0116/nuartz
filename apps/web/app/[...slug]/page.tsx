@@ -1,3 +1,5 @@
+export const revalidate = false
+
 import { notFound, redirect } from "next/navigation"
 import { renderMarkdown, getAllMarkdownFiles, buildBacklinkIndex, getBacklinks } from "nuartz"
 import fs from "node:fs/promises"

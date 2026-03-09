@@ -1,3 +1,5 @@
+export const revalidate = false
+
 import Link from "next/link"
 import { getAllMarkdownFiles, getMarkdownBySlug, renderMarkdown } from "nuartz"
 import path from "node:path"
