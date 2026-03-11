@@ -1,7 +1,7 @@
 export const revalidate = false
 
 import { notFound, redirect } from "next/navigation"
-import { renderMarkdown, getAllMarkdownFiles, buildBacklinkIndex, getBacklinks } from "nuartz"
+import { renderMarkdown, getAllMarkdownFiles } from "nuartz"
 import fs from "node:fs/promises"
 import path from "node:path"
 import matter from "gray-matter"
@@ -238,17 +238,30 @@ export default async function NotePage({
   const knownSlugs = new Set(files.map((f) => f.slug))
   const result = await renderMarkdown(raw, { resolveLink, knownSlugs })
 
-  // Build backlink index: render all files to extract their outgoing wikilinks
+  // Build backlinks via regex pattern matching (avoids rendering all files)
   const slugStr = slug.join("/")
-  const pages = new Map<string, { result: Awaited<ReturnType<typeof renderMarkdown>>; raw: string }>()
-  await Promise.all(
-    files.map(async (file) => {
-      const r = file.slug === slugStr ? result : await renderMarkdown(file.raw, { resolveLink })
-      pages.set(file.slug, { result: r, raw: file.raw })
-    })
-  )
-  const backlinkIndex = buildBacklinkIndex(pages)
-  const backlinks = getBacklinks(backlinkIndex, slugStr)
+  const wikilinkPattern = /\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g
+  const backlinks: { slug: string; title: string; excerpt: string }[] = []
+  for (const file of files) {
+    if (file.slug === slugStr) continue
+    const matches = file.raw.matchAll(wikilinkPattern)
+    for (const match of matches) {
+      const target = match[1].trim()
+      const normalized = target.toLowerCase().replace(/\s+/g, "-")
+      const slugParts = slugStr.split("/")
+      const lastPart = slugParts[slugParts.length - 1]
+      if (normalized === lastPart || normalized === slugStr.replace(/\//g, "-") || file.raw.includes(`[[${slugStr.split("/").pop()}`)) {
+        const excerpt = (file.frontmatter.description as string) ??
+          file.raw.replace(/^---[\s\S]*?---\n?/, "").trim().split("\n")[0]?.slice(0, 150) ?? ""
+        backlinks.push({
+          slug: file.slug,
+          title: file.frontmatter.title ?? file.slug.split("/").pop() ?? file.slug,
+          excerpt,
+        })
+        break
+      }
+    }
+  }
 
   const date = result.frontmatter.date
     ? new Date(result.frontmatter.date).toLocaleDateString("en-CA")

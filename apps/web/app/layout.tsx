@@ -6,11 +6,21 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Header } from "@/components/layout/header"
 import { NavSidebar } from "@/components/layout/nav-sidebar"
 import { CommandPaletteDynamic } from "@/components/command-palette-dynamic"
-import { getAllMarkdownFiles, buildFileTree, buildSearchIndex } from "nuartz"
+import { getAllMarkdownFiles, buildFileTree } from "nuartz"
+import { unstable_cache } from "next/cache"
 import config from "@/nuartz.config"
 import path from "node:path"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
+
+const getCachedLayoutData = unstable_cache(
+  async () => {
+    const files = await getAllMarkdownFiles(CONTENT_DIR)
+    return { tree: buildFileTree(files) }
+  },
+  ["layout-data"],
+  { revalidate: false }
+)
 
 export const metadata: Metadata = {
   title: config.site.title,
@@ -25,12 +35,12 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
-  const tree = buildFileTree(files)
-  const searchEntries = buildSearchIndex(files)
-
+  const { tree } = await getCachedLayoutData()
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="prefetch" href="/api/search" as="fetch" crossOrigin="anonymous" />
+      </head>
       <body>
         <ThemeProvider
           attribute="class"
@@ -51,7 +61,7 @@ export default async function RootLayout({
               </main>
             </div>
           </div>
-          <CommandPaletteDynamic entries={searchEntries} />
+          <CommandPaletteDynamic />
         </ThemeProvider>
         <Analytics />
       </body>

@@ -33,26 +33,44 @@ function GiscusWidget({
   useEffect(() => {
     if (!ref.current) return
 
-    const existing = ref.current.querySelector("script")
-    if (existing) existing.remove()
+    const container = ref.current
 
-    const script = document.createElement("script")
-    script.src = "https://giscus.app/client.js"
-    script.setAttribute("data-repo", repo)
-    script.setAttribute("data-repo-id", repoId)
-    script.setAttribute("data-category", category)
-    script.setAttribute("data-category-id", categoryId)
-    script.setAttribute("data-mapping", "pathname")
-    script.setAttribute("data-strict", "0")
-    script.setAttribute("data-reactions-enabled", "1")
-    script.setAttribute("data-emit-metadata", "0")
-    script.setAttribute("data-input-position", "top")
-    script.setAttribute("data-theme", giscusTheme)
-    script.setAttribute("data-lang", "en")
-    script.crossOrigin = "anonymous"
-    script.async = true
+    const loadGiscus = () => {
+      const existing = container.querySelector("script")
+      if (existing) existing.remove()
 
-    ref.current.appendChild(script)
+      const script = document.createElement("script")
+      script.src = "https://giscus.app/client.js"
+      script.setAttribute("data-repo", repo)
+      script.setAttribute("data-repo-id", repoId)
+      script.setAttribute("data-category", category)
+      script.setAttribute("data-category-id", categoryId)
+      script.setAttribute("data-mapping", "pathname")
+      script.setAttribute("data-strict", "0")
+      script.setAttribute("data-reactions-enabled", "1")
+      script.setAttribute("data-emit-metadata", "0")
+      script.setAttribute("data-input-position", "top")
+      script.setAttribute("data-theme", giscusTheme)
+      script.setAttribute("data-lang", "en")
+      script.crossOrigin = "anonymous"
+      script.async = true
+
+      container.appendChild(script)
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadGiscus()
+          observer.disconnect()
+        }
+      },
+      { rootMargin: "200px" }
+    )
+
+    observer.observe(container)
+
+    return () => observer.disconnect()
   }, [repo, repoId, category, categoryId, giscusTheme])
 
   useEffect(() => {

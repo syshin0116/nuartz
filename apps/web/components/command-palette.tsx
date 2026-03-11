@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { FileText, Hash } from "lucide-react"
-import FlexSearch from "flexsearch"
+import { Document as FlexDocument } from "flexsearch"
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,10 +14,6 @@ import {
   CommandSeparator,
 } from "@/components/ui/command"
 import type { SearchEntry } from "nuartz"
-
-interface CommandPaletteProps {
-  entries: SearchEntry[]
-}
 
 interface Result {
   slug: string
@@ -53,29 +49,38 @@ function cjkEncoder(str: string): string[] {
 
 type IndexDoc = { id: number; slug: string; title: string; content: string; tags: string[] }
 
-export function CommandPalette({ entries }: CommandPaletteProps) {
+export function CommandPalette() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<{ notes: Result[]; tags: Result[] }>({ notes: [], tags: [] })
-  const indexRef = useRef<FlexSearch.Document<IndexDoc> | null>(null)
+  const indexRef = useRef<FlexDocument<IndexDoc> | null>(null)
+  const entriesRef = useRef<SearchEntry[]>([])
+  const fetchedRef = useRef(false)
 
-  // Build FlexSearch index once
+  // Fetch search index after mount
   useEffect(() => {
-    const idx = new FlexSearch.Document<IndexDoc>({
-      encode: cjkEncoder,
-      document: {
-        id: "id",
-        index: [
-          { field: "title", tokenize: "forward" },
-          { field: "content", tokenize: "forward" },
-          { field: "tags", tokenize: "forward" },
-        ],
-      },
-    })
-    entries.forEach((e, i) => idx.add({ id: i, slug: e.slug, title: e.title, content: e.content, tags: e.tags }))
-    indexRef.current = idx
-  }, [entries])
+    if (fetchedRef.current) return
+    fetchedRef.current = true
+    fetch("/api/search")
+      .then((res) => res.json())
+      .then((entries: SearchEntry[]) => {
+        entriesRef.current = entries
+        const idx = new FlexDocument<IndexDoc>({
+          encode: cjkEncoder,
+          document: {
+            id: "id",
+            index: [
+              { field: "title", tokenize: "forward" },
+              { field: "content", tokenize: "forward" },
+              { field: "tags", tokenize: "forward" },
+            ],
+          },
+        })
+        entries.forEach((e, i) => idx.add({ id: i, slug: e.slug, title: e.title, content: e.content, tags: e.tags }))
+        indexRef.current = idx
+      })
+  }, [])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -90,6 +95,7 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
 
   const search = useCallback(
     (q: string) => {
+      const entries = entriesRef.current
       if (!q.trim()) { setResults({ notes: [], tags: [] }); return }
 
       // Tag search mode
@@ -131,7 +137,7 @@ export function CommandPalette({ entries }: CommandPaletteProps) {
 
       setResults({ notes, tags: [] })
     },
-    [entries]
+    []
   )
 
   useEffect(() => { search(query) }, [query, search])
