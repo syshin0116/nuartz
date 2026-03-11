@@ -240,24 +240,30 @@ export default async function NotePage({
 
   // Build backlinks via regex pattern matching (avoids rendering all files)
   const slugStr = slug.join("/")
-  const wikilinkPattern = /\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g
+  const wikilinkPattern = /\[\[([^\[\]|#]+?)(?:#[^\[\]|]*?)?(?:\|[^\[\]]*?)?\]\]/g
   const backlinks: { slug: string; title: string; excerpt: string }[] = []
+  const currentLastPart = slugStr.split("/").pop()!
   for (const file of files) {
     if (file.slug === slugStr) continue
-    const matches = file.raw.matchAll(wikilinkPattern)
-    for (const match of matches) {
+    // Strip frontmatter and code blocks before matching
+    const body = file.raw
+      .replace(/^---[\s\S]*?---\n?/, "")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/`[^`]+`/g, "")
+    let found = false
+    for (const match of body.matchAll(wikilinkPattern)) {
+      if (match[0].startsWith("!")) continue // skip embeds
       const target = match[1].trim()
-      const normalized = target.toLowerCase().replace(/\s+/g, "-")
-      const slugParts = slugStr.split("/")
-      const lastPart = slugParts[slugParts.length - 1]
-      if (normalized === lastPart || normalized === slugStr.replace(/\//g, "-") || file.raw.includes(`[[${slugStr.split("/").pop()}`)) {
+      const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
+      if (normalized === slugStr || normalized === currentLastPart || normalized.endsWith("/" + currentLastPart)) {
         const excerpt = (file.frontmatter.description as string) ??
-          file.raw.replace(/^---[\s\S]*?---\n?/, "").trim().split("\n")[0]?.slice(0, 150) ?? ""
+          body.trim().split("\n")[0]?.slice(0, 150) ?? ""
         backlinks.push({
           slug: file.slug,
           title: file.frontmatter.title ?? file.slug.split("/").pop() ?? file.slug,
           excerpt,
         })
+        found = true
         break
       }
     }
