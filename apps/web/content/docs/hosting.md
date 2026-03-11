@@ -106,7 +106,7 @@ Nuartz is a **monorepo** — the Next.js app lives in `apps/web`, not the root. 
 
 Add these in **Settings > Environment Variables** if you use optional features:
 
-```
+```.env
 # Site URL (used for RSS, OG images)
 NEXT_PUBLIC_SITE_URL=https://your-site.vercel.app
 
