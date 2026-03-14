@@ -86,7 +86,7 @@ export async function renderMarkdown(
     .use(remarkFrontmatter, ["yaml", "toml"])
     .use(remarkObsidianComment)
     .use(remarkGfm)
-    .use(remarkMath, { singleDollarTextMath: false })
+    .use(remarkMath)
     .use(remarkBreaks)
     .use(remarkWikilink, { baseUrl, resolve: resolveLink, knownSlugs })
     .use(remarkCallout)

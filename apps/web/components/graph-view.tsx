@@ -153,10 +153,10 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           el.append("circle")
             .attr("r", d.id === currentSlug ? 8 : 5)
             .attr("fill", d.id === currentSlug ? "hsl(var(--primary))" : "hsl(var(--foreground))")
-            .attr("fill-opacity", d.id === currentSlug ? 1 : 0.55)
-            .attr("stroke", "hsl(var(--background))")
+            .attr("fill-opacity", d.id === currentSlug ? 1 : 0.7)
+            .attr("stroke", "hsl(var(--foreground))")
             .attr("stroke-width", 1.5)
-            .attr("stroke-opacity", 1)
+            .attr("stroke-opacity", 0.3)
         }
       })
 
