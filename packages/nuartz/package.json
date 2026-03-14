@@ -1,6 +1,6 @@
 {
   "name": "nuartz",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Publish your Obsidian vault as a Next.js website — wikilinks, backlinks, graph view, search",
   "license": "MIT",
   "repository": {
