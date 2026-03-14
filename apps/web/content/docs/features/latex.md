@@ -11,15 +11,15 @@ nuartz renders LaTeX math expressions using [remark-math](https://github.com/rem
 
 ## Inline math
 
-Wrap an expression in double dollar signs `$$...$$` for inline math.
+Wrap an expression in single dollar signs `$...$` for inline math.
 
 ```
-The famous identity is $$e^{i\pi} + 1 = 0$$.
+The famous identity is $e^{i\pi} + 1 = 0$.
 ```
 
-Renders as: The famous identity is $$e^{i\pi} + 1 = 0$$.
+Renders as: The famous identity is $e^{i\pi} + 1 = 0$.
 
-Another example: the energy-mass equivalence $$E = mc^2$$ is perhaps the most recognisable equation in physics.
+Another example: the energy-mass equivalence $E = mc^2$ is perhaps the most recognisable equation in physics.
 
 ## Block math
 
@@ -58,7 +58,7 @@ $$
 
 ## Dollar signs in text
 
-Literal `$` signs in text are safe — they will not be parsed as math delimiters. Only `$$...$$` triggers math rendering.
+A lone `$` followed by a space is safe and will not trigger math. Only `$...$` (no spaces after opening / before closing `$`) is parsed as inline math.
 
 ```
 I have $5 and you have $10.
@@ -66,9 +66,8 @@ I have $5 and you have $10.
 
 Renders as: I have $5 and you have $10.
 
-> [!info] Why not single dollar `$...$`?
->
-> Single dollar math is disabled by default. Blog content — especially Korean/CJK text — frequently contains stray `$` characters that would be misinterpreted as math delimiters, producing KaTeX warnings. Double dollar `$$` is explicit and safe.
+> [!tip]
+> If you need a literal `$` next to text without spaces, escape it with `\$`.
 
 ## Supported functions
 
