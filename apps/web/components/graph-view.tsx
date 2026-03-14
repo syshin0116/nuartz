@@ -144,9 +144,9 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
             .attr("width", 7).attr("height", 7)
             .attr("x", -3.5).attr("y", -3.5)
             .attr("transform", "rotate(45)")
-            .attr("fill", "var(--chart-1)")
-            .attr("fill-opacity", 0.7)
-            .attr("stroke", "var(--chart-1)")
+            .attr("fill", "var(--foreground)")
+            .attr("fill-opacity", 0.5)
+            .attr("stroke", "var(--foreground)")
             .attr("stroke-width", 1)
             .attr("stroke-opacity", 0.9)
         } else {
