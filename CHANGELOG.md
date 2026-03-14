@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2026-03-14
+
+### Fixed
+- **Inline math support** — enable `$...$` for inline math, `$$...$$` for block math (matching Obsidian behavior)
+- **Graph view dark mode** — nodes were invisible because `hsl()` wrapped oklch CSS variables, producing invalid colors
+- **Graph view tag styling** — tag nodes now use muted gray instead of accent color
+
+### Changed
+- Updated LaTeX docs to reflect single dollar inline math syntax
+
+## [0.1.6] - 2026-03-13
+
+### Fixed
+- **Blog pagination** — converted from query string to path-based SSG
+- **Backlink regex** — improved accuracy to match original quality
+- **Performance** — lazy-load search index, static graph API, optimized backlinks
+
 ## [0.1.5] - 2026-03-08
 
 ### Added
