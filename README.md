@@ -9,7 +9,7 @@
 
 [Documentation & Demo](https://nuartz.vercel.app) · [Use Case](https://syshin0116.vercel.app/blog) · [npm](https://www.npmjs.com/package/nuartz)
 
-![Nuartz Homepage](./assets/nuartz-homepage.png)
+[![Nuartz Homepage](./assets/nuartz-homepage.png)](https://nuartz.vercel.app)
 
 </div>
 
