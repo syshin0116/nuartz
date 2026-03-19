@@ -2,7 +2,7 @@
 
 # Nuartz
 
-**Publish your Obsidian vault as a Next.js website.**
+**A free, open-source Obsidian Publish alternative built on Next.js.**
 
 [![npm version](https://img.shields.io/npm/v/nuartz)](https://www.npmjs.com/package/nuartz)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
