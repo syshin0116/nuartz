@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2026-03-23
+
+### Fixed
+- **Relative image paths in wikilinks** — `![[attachments/image.png]]` now resolves relative to the current file's directory, not the content root. Previously, images in subdirectories (e.g. `![[attachments/sub/image.png]]` from `AI/post.md`) would 404 because the path wasn't prefixed with the file's directory.
+
+### Added
+- `filePath` option in `RenderOptions` — pass the current file's path to enable relative image resolution
+
 ## [0.1.7] - 2026-03-14
 
 ### Fixed

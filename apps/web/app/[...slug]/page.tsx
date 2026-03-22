@@ -236,7 +236,7 @@ export default async function NotePage({
   }
 
   const knownSlugs = new Set(files.map((f) => f.slug))
-  const result = await renderMarkdown(raw, { resolveLink, knownSlugs })
+  const result = await renderMarkdown(raw, { resolveLink, knownSlugs, filePath: slug.join("/") + ".md" })
 
   // Build backlinks via regex pattern matching (avoids rendering all files)
   const slugStr = slug.join("/")

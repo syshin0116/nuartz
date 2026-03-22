@@ -76,7 +76,8 @@ export async function renderMarkdown(
   content: string,
   options: RenderOptions = {}
 ): Promise<RenderResult> {
-  const { baseUrl = "/", resolveLink = (t) => t, knownSlugs } = options
+  const { baseUrl = "/", resolveLink = (t) => t, knownSlugs, filePath } = options
+  const fileDir = filePath?.includes("/") ? filePath.substring(0, filePath.lastIndexOf("/")) : undefined
 
   // Parse frontmatter with gray-matter
   const { data: frontmatter, content: body } = matter(content)
@@ -88,7 +89,7 @@ export async function renderMarkdown(
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkBreaks)
-    .use(remarkWikilink, { baseUrl, resolve: resolveLink, knownSlugs })
+    .use(remarkWikilink, { baseUrl, resolve: resolveLink, knownSlugs, fileDir })
     .use(remarkCallout)
     .use(remarkTag)
     .use(remarkHighlight)

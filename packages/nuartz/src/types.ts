@@ -32,4 +32,6 @@ export interface RenderOptions {
   knownSlugs?: Set<string>
   /** Whether to strip draft pages (default: false) */
   stripDrafts?: boolean
+  /** Path of the current file relative to content root (e.g. 'AI/my-post.md'). Used to resolve relative image paths in wikilinks. */
+  filePath?: string
 }

@@ -19,10 +19,12 @@ export interface WikilinkOptions {
   resolve?: (target: string, heading?: string) => string
   /** Known slugs for dead-link detection. If provided, unresolved targets get class "broken". */
   knownSlugs?: Set<string>
+  /** Directory of the current file relative to content root (e.g. 'AI'). Used to resolve relative image paths. */
+  fileDir?: string
 }
 
 export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) => {
-  const { baseUrl = "/", resolve, knownSlugs } = options
+  const { baseUrl = "/", resolve, knownSlugs, fileDir } = options
 
   const defaultResolve = (target: string, heading?: string): string => {
     const slug = target
@@ -65,9 +67,14 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
           const extMatch = target.match(/\.(\w+)$/)
           const isImage = extMatch ? IMAGE_EXTS.has("." + extMatch[1].toLowerCase()) : false
 
+          // Resolve image path: if target doesn't start from content root and fileDir is set, prepend it
+          const resolvedTarget = isImage && fileDir && !target.startsWith(fileDir + "/")
+            ? `${fileDir}/${target}`
+            : target
+
           nodes.push({
             type: "image",
-            url: isImage ? `/api/content/${target}` : href,
+            url: isImage ? `/api/content/${resolvedTarget}` : href,
             alt: displayText,
             data: { hProperties: { className: isImage ? "embed-image" : "embed-note", "data-embed": target } },
           })
