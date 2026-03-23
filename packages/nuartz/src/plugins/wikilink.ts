@@ -30,7 +30,7 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
     const slug = target
       .toLowerCase()
       .replace(/\s+/g, "-")
-      .replace(/[^\w-]/g, "")
+      .replace(/[^\p{L}\p{N}_-]/gu, "")
     const hash = heading ? `#${heading.toLowerCase().replace(/\s+/g, "-")}` : ""
     return `${baseUrl}${slug}${hash}`
   }
@@ -80,7 +80,7 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
           })
         } else {
           outgoingLinks.push(target)
-          const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
+          const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}_/-]/gu, "")
           const isKnown = !knownSlugs || [...knownSlugs].some(
             (s) => s === normalized || s.endsWith("/" + normalized)
           )

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.9] - 2026-03-23
+
+### Fixed
+- **Unicode wikilink resolution** — `\w` regex stripped non-ASCII characters (Korean, Japanese, Chinese, etc.) from wikilink targets, causing 404s. Replaced with `\p{L}\p{N}` unicode-aware character classes.
+
 ## [0.1.8] - 2026-03-23
 
 ### Fixed
