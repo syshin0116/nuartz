@@ -151,6 +151,7 @@ function NavNode({
   return (
     <Link
       href={`/${node.path}`}
+      aria-current={isActive ? "page" : undefined}
       className={cn(
         "flex items-center rounded-md py-1.5 pr-2 transition-colors hover:bg-muted truncate",
         isActive

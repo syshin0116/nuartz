@@ -49,17 +49,20 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg focus:border">
+            Skip to content
+          </a>
           <div className="flex min-h-screen flex-col">
             <Header tree={tree} />
             <div className="flex flex-1 mx-auto w-full max-w-[1440px]">
               <aside className="hidden lg:block w-[var(--sidebar-width)] shrink-0 border-r">
-                <ScrollArea className="sticky top-14 h-[calc(100vh-3.5rem)]">
+                <ScrollArea className="sticky top-14 h-[calc(100vh-3.5rem)] scroll-mask">
                   <div className="pl-6 pr-4 pt-4 pb-6">
                     <NavSidebar tree={tree} />
                   </div>
                 </ScrollArea>
               </aside>
-              <main className="min-w-0 flex-1">
+              <main id="main-content" className="min-w-0 flex-1">
                 {children}
               </main>
             </div>

@@ -29,8 +29,49 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  ::selection {
+    background: oklch(0.8 0.04 250 / 0.3);
+  }
+  .dark ::selection {
+    background: oklch(0.5 0.06 250 / 0.35);
+  }
+
+  /* Heading target highlight when navigated via anchor */
+  :target {
+    animation: target-highlight 1.5s ease;
+  }
+  @keyframes target-highlight {
+    0% { background-color: oklch(0.92 0.05 250 / 0.5); }
+    100% { background-color: transparent; }
+  }
+  .dark :target {
+    animation: target-highlight-dark 1.5s ease;
+  }
+  @keyframes target-highlight-dark {
+    0% { background-color: oklch(0.3 0.05 250 / 0.4); }
+    100% { background-color: transparent; }
+  }
+
+  /* Focus-visible ring for keyboard navigation */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Print: hide navigation, show content only */
+  @media print {
+    header, aside, nav, .copy-code-btn, .code-lang-label { display: none !important; }
+    main { margin: 0 !important; max-width: 100% !important; }
   }
 }
 
@@ -155,6 +196,12 @@ mark {
   background-color: oklch(0.35 0.12 85);
 }
 
+/* Scroll mask — fade-out at top/bottom edges */
+.scroll-mask {
+  mask-image: linear-gradient(to bottom, transparent, black 2rem, black calc(100% - 2rem), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 2rem, black calc(100% - 2rem), transparent);
+}
+
 /* Reader mode */
 html.reader-mode aside {
   display: none !important;
@@ -239,9 +286,34 @@ html.reader-mode main > div {
 }
 [data-highlighted-line] {
   background-color: oklch(0.97 0.01 250 / 0.4);
+  border-left: 2px solid oklch(0.6 0.15 250);
+  padding-left: calc(0.5rem - 2px);
 }
 .dark [data-highlighted-line] {
   background-color: oklch(0.3 0.01 250 / 0.3);
+  border-left-color: oklch(0.5 0.15 250);
+}
+
+/* Code block filename/title tab */
+[data-rehype-pretty-code-title] {
+  font-size: 0.75rem;
+  font-family: ui-monospace, monospace;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 0.5rem 0.5rem 0 0;
+  padding: 0.4rem 1rem;
+  margin-top: 1rem;
+}
+[data-rehype-pretty-code-title] + pre {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  margin-top: 0;
+}
+/* When title is inside figure, adjust figure margin */
+[data-rehype-pretty-code-figure]:has([data-rehype-pretty-code-title]) {
+  margin-top: 0;
 }
 
 /* ── Callout styles (Quartz-style with SVG mask icons) ── */

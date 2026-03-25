@@ -7,6 +7,7 @@ import path from "node:path"
 import matter from "gray-matter"
 import type { Metadata } from "next"
 import Link from "next/link"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb } from "@/components/breadcrumb"
@@ -17,6 +18,7 @@ import { GraphView } from "@/components/graph-view"
 import { HeadingAnchors } from "@/components/heading-anchors"
 import { PopoverPreview } from "@/components/popover-preview"
 import { CopyCode } from "@/components/copy-code"
+import { ImageZoom } from "@/components/image-zoom"
 import { GiscusComments } from "@/components/giscus"
 import config from "@/nuartz.config"
 
@@ -162,7 +164,7 @@ export default async function NotePage({
     const folderFiles = await getFolderFiles(slug)
     if (folderFiles) {
       return (
-        <div className="mx-auto max-w-3xl px-6 py-10">
+        <div className="max-w-6xl mx-auto w-full px-6 py-10">
           <div className="mb-6">
             <Breadcrumb slug={slug} />
           </div>
@@ -348,8 +350,13 @@ export default async function NotePage({
         />
         <MermaidRenderer />
         <CopyCode />
+        <ImageZoom />
 
         <Backlinks backlinks={backlinks} />
+
+        {/* Previous / Next navigation */}
+        <PrevNextNav currentSlug={slugStr} files={files} />
+
         <GiscusComments />
       </div>
 
@@ -358,5 +365,69 @@ export default async function NotePage({
         <GraphView currentSlug={slugStr} />
       </TableOfContents>
     </div>
+  )
+}
+
+function PrevNextNav({
+  currentSlug,
+  files,
+}: {
+  currentSlug: string
+  files: { slug: string; frontmatter: Record<string, unknown> }[]
+}) {
+  // Find siblings in the same folder
+  const parts = currentSlug.split("/")
+  const folder = parts.slice(0, -1).join("/")
+  const siblings = files
+    .filter((f) => {
+      const fParts = f.slug.split("/")
+      const fFolder = fParts.slice(0, -1).join("/")
+      return fFolder === folder
+    })
+    .sort((a, b) => a.slug.localeCompare(b.slug))
+
+  const idx = siblings.findIndex((f) => f.slug === currentSlug)
+  if (idx === -1) return null
+
+  const prev = idx > 0 ? siblings[idx - 1] : null
+  const next = idx < siblings.length - 1 ? siblings[idx + 1] : null
+
+  if (!prev && !next) return null
+
+  return (
+    <nav className="mt-12 flex items-stretch gap-4 border-t pt-6">
+      {prev ? (
+        <Link
+          href={`/${prev.slug}`}
+          className="group flex flex-1 items-center gap-2 rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50"
+        >
+          <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <div className="min-w-0">
+            <div className="text-xs text-muted-foreground">Previous</div>
+            <div className="truncate text-sm font-medium group-hover:underline">
+              {(prev.frontmatter.title as string) ?? prev.slug.split("/").pop()}
+            </div>
+          </div>
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+      {next ? (
+        <Link
+          href={`/${next.slug}`}
+          className="group flex flex-1 items-center justify-end gap-2 rounded-lg border px-4 py-3 text-right transition-colors hover:bg-muted/50"
+        >
+          <div className="min-w-0">
+            <div className="text-xs text-muted-foreground">Next</div>
+            <div className="truncate text-sm font-medium group-hover:underline">
+              {(next.frontmatter.title as string) ?? next.slug.split("/").pop()}
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </Link>
+      ) : (
+        <div className="flex-1" />
+      )}
+    </nav>
   )
 }
