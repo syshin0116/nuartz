@@ -8,6 +8,7 @@ export function PopoverPreview() {
     let timer: ReturnType<typeof setTimeout> | null = null
     let controller: AbortController | null = null
     let previewIndex: Record<string, { title: string; excerpt: string }> | null = null
+    let longPressTimer: ReturnType<typeof setTimeout> | null = null
 
     // Try loading static preview index (for static export)
     fetch("/preview-index.json")
@@ -17,14 +18,18 @@ export function PopoverPreview() {
 
     function hide() {
       if (timer) { clearTimeout(timer); timer = null }
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
       if (controller) { controller.abort(); controller = null }
-      if (popup) { popup.remove(); popup = null }
+      if (popup) {
+        const el = popup
+        el.style.opacity = "0"
+        el.style.transform = "translateY(4px) scale(0.98)"
+        setTimeout(() => el.remove(), 150)
+        popup = null
+      }
     }
 
-    function handleEnter(e: MouseEvent) {
-      const a = (e.target as HTMLElement).closest("article.prose a") as HTMLAnchorElement | null
-      if (!a) return
-
+    function showPreview(a: HTMLAnchorElement, x: number, y: number) {
       const href = a.getAttribute("href")
       if (!href) return
 
@@ -34,9 +39,6 @@ export function PopoverPreview() {
       if (!isWikilink && !isExternal) return
 
       hide()
-
-      const x = e.clientX
-      const y = e.clientY
 
       timer = setTimeout(async () => {
         controller = new AbortController()
@@ -61,6 +63,10 @@ export function PopoverPreview() {
           popup = document.createElement("div")
           popup.className =
             "fixed z-50 rounded-lg border bg-popover text-popover-foreground shadow-lg p-3 max-w-[320px] text-sm pointer-events-none"
+          // Start hidden for fade-in
+          popup.style.opacity = "0"
+          popup.style.transform = "translateY(4px) scale(0.98)"
+          popup.style.transition = "opacity 0.15s ease, transform 0.15s ease"
 
           let inner = `<div class="font-medium leading-snug">${escapeHtml(data.title)}</div>`
 
@@ -89,10 +95,24 @@ export function PopoverPreview() {
 
           popup.style.left = `${left}px`
           popup.style.top = `${top}px`
+
+          // Trigger fade-in on next frame
+          requestAnimationFrame(() => {
+            if (popup) {
+              popup.style.opacity = "1"
+              popup.style.transform = "translateY(0) scale(1)"
+            }
+          })
         } catch {
           // aborted or failed
         }
       }, 250)
+    }
+
+    function handleEnter(e: MouseEvent) {
+      const a = (e.target as HTMLElement).closest("article.prose a") as HTMLAnchorElement | null
+      if (!a) return
+      showPreview(a, e.clientX, e.clientY)
     }
 
     function handleLeave(e: MouseEvent) {
@@ -101,13 +121,41 @@ export function PopoverPreview() {
       hide()
     }
 
+    // Mobile: long-press to show preview
+    function handleTouchStart(e: TouchEvent) {
+      const a = (e.target as HTMLElement).closest("article.prose a") as HTMLAnchorElement | null
+      if (!a) return
+
+      const href = a.getAttribute("href")
+      if (!href) return
+      const isExternal = href.startsWith("http://") || href.startsWith("https://")
+      const isWikilink = a.classList.contains("wikilink")
+      if (!isWikilink && !isExternal) return
+
+      const touch = e.touches[0]
+      longPressTimer = setTimeout(() => {
+        e.preventDefault()
+        showPreview(a, touch.clientX, touch.clientY)
+      }, 500)
+    }
+
+    function handleTouchEnd() {
+      if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null }
+      // Auto-hide popup after 3s on mobile
+      if (popup) setTimeout(hide, 3000)
+    }
+
     document.addEventListener("mouseover", handleEnter)
     document.addEventListener("mouseout", handleLeave)
+    document.addEventListener("touchstart", handleTouchStart, { passive: true })
+    document.addEventListener("touchend", handleTouchEnd)
 
     return () => {
       hide()
       document.removeEventListener("mouseover", handleEnter)
       document.removeEventListener("mouseout", handleLeave)
+      document.removeEventListener("touchstart", handleTouchStart)
+      document.removeEventListener("touchend", handleTouchEnd)
     }
   }, [])
 

@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useCallback, useRef, useDeferredValue } from "react"
 import { useRouter } from "next/navigation"
-import { FileText, Hash } from "lucide-react"
+import { FileText, Hash, Loader2 } from "lucide-react"
 import { Document as FlexDocument } from "flexsearch"
 import {
   CommandDialog,
@@ -54,9 +54,11 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<{ notes: Result[]; tags: Result[] }>({ notes: [], tags: [] })
+  const [indexReady, setIndexReady] = useState(false)
   const indexRef = useRef<FlexDocument<IndexDoc> | null>(null)
   const entriesRef = useRef<SearchEntry[]>([])
   const fetchedRef = useRef(false)
+  const deferredQuery = useDeferredValue(query)
 
   // Fetch search index after mount
   useEffect(() => {
@@ -79,6 +81,7 @@ export function CommandPalette() {
         })
         entries.forEach((e, i) => idx.add({ id: i, slug: e.slug, title: e.title, content: e.content, tags: e.tags }))
         indexRef.current = idx
+        setIndexReady(true)
       })
   }, [])
 
@@ -140,13 +143,16 @@ export function CommandPalette() {
     []
   )
 
-  useEffect(() => { search(query) }, [query, search])
+  useEffect(() => { search(deferredQuery) }, [deferredQuery, search])
 
   const handleSelect = (slug: string) => {
     router.push(`/${slug}`)
     setOpen(false)
     setQuery("")
   }
+
+  const isSearching = query !== deferredQuery
+  const hasResults = results.tags.length > 0 || results.notes.length > 0
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
@@ -156,31 +162,54 @@ export function CommandPalette() {
         onValueChange={setQuery}
       />
       <CommandList>
-        <CommandEmpty>No results for &ldquo;{query}&rdquo;</CommandEmpty>
-        {results.tags.length > 0 && (
-          <CommandGroup heading="Tags">
-            {results.tags.map((r) => (
-              <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
-                <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>{r.title}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+        {/* Loading state: index not ready yet */}
+        {!indexReady && query.trim() && !query.startsWith("#") && (
+          <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading search index…
+          </div>
         )}
-        {results.tags.length > 0 && results.notes.length > 0 && <CommandSeparator />}
-        {results.notes.length > 0 && (
-          <CommandGroup heading="Notes">
-            {results.notes.map((r) => (
-              <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
-                <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium">{r.title}</div>
-                  <div className="truncate text-xs text-muted-foreground">{r.excerpt}</div>
-                </div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+
+        {/* Searching indicator */}
+        {isSearching && indexReady && (
+          <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Searching…
+          </div>
         )}
+
+        {/* No results */}
+        {!isSearching && indexReady && query.trim() && !hasResults && (
+          <CommandEmpty>No results for &ldquo;{query}&rdquo;</CommandEmpty>
+        )}
+
+        {/* Results with fade-in animation */}
+        <div className={hasResults ? "animate-in fade-in-0 duration-200" : ""}>
+          {results.tags.length > 0 && (
+            <CommandGroup heading="Tags">
+              {results.tags.map((r) => (
+                <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
+                  <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <span>{r.title}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {results.tags.length > 0 && results.notes.length > 0 && <CommandSeparator />}
+          {results.notes.length > 0 && (
+            <CommandGroup heading="Notes">
+              {results.notes.map((r) => (
+                <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
+                  <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium">{r.title}</div>
+                    <div className="truncate text-xs text-muted-foreground">{r.excerpt}</div>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+        </div>
       </CommandList>
     </CommandDialog>
   )

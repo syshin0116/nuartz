@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronRight } from "lucide-react"
@@ -37,6 +37,52 @@ export function NavSidebar({ tree }: NavSidebarProps) {
   )
 }
 
+/** Animated collapse wrapper — measures child height and transitions */
+function Collapse({ open, children }: { open: boolean; children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState<number | undefined>(open ? undefined : 0)
+  const isInitial = useRef(true)
+
+  const recalc = useCallback(() => {
+    if (ref.current) setHeight(ref.current.scrollHeight)
+  }, [])
+
+  useEffect(() => {
+    // Skip animation on first render
+    if (isInitial.current) {
+      isInitial.current = false
+      setHeight(open ? undefined : 0)
+      return
+    }
+    if (open) {
+      recalc()
+      // After transition ends, switch to auto so children can grow
+      const timer = setTimeout(() => setHeight(undefined), 300)
+      return () => clearTimeout(timer)
+    } else {
+      // Set explicit height first so transition can animate from it
+      if (ref.current) setHeight(ref.current.scrollHeight)
+      requestAnimationFrame(() => setHeight(0))
+    }
+  }, [open, recalc])
+
+  return (
+    <div
+      ref={ref}
+      className="overflow-hidden"
+      style={{
+        height: height === undefined ? "auto" : height,
+        opacity: open ? 1 : 0,
+        transition: open
+          ? "height 300ms ease-out, opacity 250ms ease-out"
+          : "height 200ms ease-in, opacity 150ms ease-in",
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
 function NavNode({
   node,
   currentSlug,
@@ -61,11 +107,12 @@ function NavNode({
         >
           <button
             onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
             className="flex items-center py-1.5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <ChevronRight
               className={cn(
-                "h-3 w-3 shrink-0 transition-transform duration-150",
+                "h-3 w-3 shrink-0 transition-transform duration-200",
                 open && "rotate-90"
               )}
             />
@@ -83,18 +130,20 @@ function NavNode({
           </Link>
         </div>
 
-        {open && node.children && (
-          <div style={{ paddingLeft: `${8 + indent + 12}px` }} className="space-y-0.5">
-            {node.children.map((child) => (
-              <NavNode
-                key={child.path}
-                node={child}
-                currentSlug={currentSlug}
-                depth={depth + 1}
-              />
-            ))}
-          </div>
-        )}
+        <Collapse open={open}>
+          {node.children && (
+            <div style={{ paddingLeft: `${8 + indent + 12}px` }} className="space-y-0.5">
+              {node.children.map((child) => (
+                <NavNode
+                  key={child.path}
+                  node={child}
+                  currentSlug={currentSlug}
+                  depth={depth + 1}
+                />
+              ))}
+            </div>
+          )}
+        </Collapse>
       </div>
     )
   }

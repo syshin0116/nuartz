@@ -152,7 +152,8 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           const scale = e.transform.k
           if (Math.abs(scale - currentZoomScale) > 0.05) {
             currentZoomScale = scale
-            labels.attr("opacity", scale > 1.0 ? Math.min((scale - 1.0) / 0.6, 1) : 0)
+            const targetOpacity = scale > 1.0 ? Math.min((scale - 1.0) / 0.6, 1) : 0
+            labels.transition().duration(150).attr("opacity", targetOpacity)
           }
         })
 
@@ -192,15 +193,17 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           })
 
           node.selectAll<SVGCircleElement | SVGRectElement, GraphNode>("circle, rect")
+            .transition().duration(200)
             .attr("opacity", n => connected.has(n.id) ? 1 : 0.12)
             .attr("filter", n => connected.has(n.id) ? "url(#node-glow)" : "none")
 
           // Show full title on hover (undo truncation)
           labels
-            .attr("opacity", n => connected.has(n.id) ? 1 : 0)
             .text(n => connected.has(n.id) ? n.title : (n.title.length > 20 ? n.title.slice(0, 18) + "…" : n.title))
+            .transition().duration(200)
+            .attr("opacity", n => connected.has(n.id) ? 1 : 0)
 
-          link
+          link.transition().duration(200)
             .attr("stroke-opacity", l => {
               const s = (l.source as GraphNode).id
               const t = (l.target as GraphNode).id
@@ -214,12 +217,14 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
         })
         .on("mouseleave", () => {
           node.selectAll<SVGCircleElement | SVGRectElement, GraphNode>("circle, rect")
+            .transition().duration(300)
             .attr("opacity", 1)
             .attr("filter", "none")
           labels
-            .attr("opacity", currentZoomScale > 1.0 ? Math.min((currentZoomScale - 1.0) / 0.6, 1) : 0)
             .text(n => n.title.length > 20 ? n.title.slice(0, 18) + "…" : n.title)
-          link.attr("stroke-opacity", 0.15).attr("stroke-width", 1)
+            .transition().duration(300)
+            .attr("opacity", currentZoomScale > 1.0 ? Math.min((currentZoomScale - 1.0) / 0.6, 1) : 0)
+          link.transition().duration(300).attr("stroke-opacity", 0.15).attr("stroke-width", 1)
         })
         .call(d3.drag<SVGGElement, GraphNode>()
           .on("start", (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y })
@@ -310,7 +315,10 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       <div className="w-full mt-4">
         <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Graph</p>
         <div className="flex h-[260px] items-center justify-center rounded-lg border bg-muted/5 text-xs text-muted-foreground">
-          Loading…
+          <svg className="h-5 w-5 animate-spin text-muted-foreground/50" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
         </div>
       </div>
     )
@@ -323,7 +331,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">Graph</p>
       <svg
         ref={svgRef}
-        className="w-full rounded-lg border bg-muted/5"
+        className="w-full rounded-lg border bg-muted/5 animate-in fade-in-0 duration-500"
         style={{ height: 260 }}
       />
     </div>

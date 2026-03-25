@@ -12,13 +12,38 @@ function addCopyButton(container: HTMLElement, codeEl: HTMLElement, elements: HT
 
   const btn = document.createElement("button")
   btn.className = "copy-code-btn"
-  btn.innerHTML = copySvg
+  btn.setAttribute("aria-label", "Copy code")
+
+  // Two icons stacked via CSS grid, check icon hidden by default
+  const icons = document.createElement("span")
+  icons.style.cssText = "display:grid;place-items:center"
+
+  const copyIcon = document.createElement("span")
+  copyIcon.innerHTML = copySvg
+  copyIcon.style.cssText = "grid-area:1/1;transition:opacity .2s,transform .2s;display:flex"
+
+  const checkIcon = document.createElement("span")
+  checkIcon.innerHTML = checkSvg
+  checkIcon.style.cssText = "grid-area:1/1;transition:opacity .2s,transform .2s;display:flex;opacity:0;transform:scale(0.5)"
+
+  icons.appendChild(copyIcon)
+  icons.appendChild(checkIcon)
+  btn.appendChild(icons)
 
   btn.addEventListener("click", () => {
     navigator.clipboard.writeText(codeEl.innerText ?? "")
-    btn.innerHTML = checkSvg
+    // Animate: fade out copy, fade in check
+    copyIcon.style.opacity = "0"
+    copyIcon.style.transform = "scale(0.5)"
+    checkIcon.style.opacity = "1"
+    checkIcon.style.transform = "scale(1)"
+    checkIcon.style.color = "#22c55e"
+
     setTimeout(() => {
-      btn.innerHTML = copySvg
+      copyIcon.style.opacity = "1"
+      copyIcon.style.transform = "scale(1)"
+      checkIcon.style.opacity = "0"
+      checkIcon.style.transform = "scale(0.5)"
     }, 1500)
   })
 
@@ -51,7 +76,6 @@ export function CopyCode() {
     document.querySelectorAll<HTMLPreElement>(".prose pre").forEach((pre) => {
       if (pre.closest("[data-rehype-pretty-code-figure]")) return
 
-      // Wrap in a relative container for absolute positioning of the button
       if (!pre.parentElement?.classList.contains("pre-wrapper")) {
         const wrapper = document.createElement("div")
         wrapper.className = "pre-wrapper"
