@@ -13,6 +13,7 @@ apps/web/.server-routes-backup/
 apps/web/public/graph.json
 apps/web/public/preview-index.json
 apps/web/public/content/
+apps/web/public/pagefind/
 
 .claude/
 .superset/

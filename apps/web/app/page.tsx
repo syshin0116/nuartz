@@ -28,6 +28,7 @@ export default async function HomePage() {
         <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
           <div className="min-w-0 flex-1">
             <article
+              data-pagefind-body
               className="prose max-w-none"
               dangerouslySetInnerHTML={{ __html: html }}
             />

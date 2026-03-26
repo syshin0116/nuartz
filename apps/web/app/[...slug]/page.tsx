@@ -345,6 +345,7 @@ export default async function NotePage({
         <HeadingAnchors />
         <PopoverPreview />
         <article
+          data-pagefind-body
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: result.html }}
         />

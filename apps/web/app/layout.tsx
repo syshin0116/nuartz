@@ -39,9 +39,7 @@ export default async function RootLayout({
   const { tree } = await getCachedLayoutData()
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="prefetch" href="/api/search" as="fetch" crossOrigin="anonymous" />
-      </head>
+      <head />
       <body>
         <ThemeProvider
           attribute="class"

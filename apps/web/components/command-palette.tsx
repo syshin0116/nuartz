@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef, useDeferredValue } from "react"
 import { useRouter } from "next/navigation"
 import { FileText, Hash, Loader2 } from "lucide-react"
-import { Document as FlexDocument } from "flexsearch"
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,7 +12,6 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command"
-import type { SearchEntry } from "nuartz"
 
 interface Result {
   slug: string
@@ -22,67 +20,49 @@ interface Result {
   type: "note" | "tag"
 }
 
-// CJK-aware tokenizer — each Korean/Japanese/Chinese character is its own token
-function cjkEncoder(str: string): string[] {
-  const tokens: string[] = []
-  let buf = ""
-  for (const char of str.toLowerCase()) {
-    const cp = char.codePointAt(0)!
-    const isCJK =
-      (cp >= 0x3040 && cp <= 0x309f) ||
-      (cp >= 0x30a0 && cp <= 0x30ff) ||
-      (cp >= 0x4e00 && cp <= 0x9fff) ||
-      (cp >= 0xac00 && cp <= 0xd7af)
-    const isSpace = cp === 32 || cp === 9 || cp === 10 || cp === 13
-    if (isCJK) {
-      if (buf) { tokens.push(buf); buf = "" }
-      tokens.push(char)
-    } else if (isSpace) {
-      if (buf) { tokens.push(buf); buf = "" }
-    } else {
-      buf += char
-    }
-  }
-  if (buf) tokens.push(buf)
-  return tokens
+interface PagefindResult {
+  id: string
+  data: () => Promise<{
+    url: string
+    meta?: { title?: string }
+    excerpt?: string
+  }>
 }
 
-type IndexDoc = { id: number; slug: string; title: string; content: string; tags: string[] }
+interface PagefindResponse {
+  results: PagefindResult[]
+}
+
+interface Pagefind {
+  init: () => Promise<void>
+  search: (query: string) => Promise<PagefindResponse>
+}
 
 export function CommandPalette() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<{ notes: Result[]; tags: Result[] }>({ notes: [], tags: [] })
+  const [results, setResults] = useState<Result[]>([])
   const [indexReady, setIndexReady] = useState(false)
-  const indexRef = useRef<FlexDocument<IndexDoc> | null>(null)
-  const entriesRef = useRef<SearchEntry[]>([])
-  const fetchedRef = useRef(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const pagefindRef = useRef<Pagefind | null>(null)
   const deferredQuery = useDeferredValue(query)
 
-  // Fetch search index after mount
+  // Load Pagefind on mount
   useEffect(() => {
-    if (fetchedRef.current) return
-    fetchedRef.current = true
-    fetch("/api/search")
-      .then((res) => res.json())
-      .then((entries: SearchEntry[]) => {
-        entriesRef.current = entries
-        const idx = new FlexDocument<IndexDoc>({
-          encode: cjkEncoder,
-          document: {
-            id: "id",
-            index: [
-              { field: "title", tokenize: "forward" },
-              { field: "content", tokenize: "forward" },
-              { field: "tags", tokenize: "forward" },
-            ],
-          },
-        })
-        entries.forEach((e, i) => idx.add({ id: i, slug: e.slug, title: e.title, content: e.content, tags: e.tags }))
-        indexRef.current = idx
+    async function loadPagefind() {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pf = await (Function('return import("/pagefind/pagefind.js")')() as Promise<any>) as Pagefind
+        await pf.init()
+        pagefindRef.current = pf
         setIndexReady(true)
-      })
+      } catch {
+        // Pagefind not available (dev mode) — fall back to API search
+        setIndexReady(true)
+      }
+    }
+    loadPagefind()
   }, [])
 
   useEffect(() => {
@@ -97,48 +77,87 @@ export function CommandPalette() {
   }, [])
 
   const search = useCallback(
-    (q: string) => {
-      const entries = entriesRef.current
-      if (!q.trim()) { setResults({ notes: [], tags: [] }); return }
+    async (q: string) => {
+      if (!q.trim()) { setResults([]); return }
 
-      // Tag search mode
-      if (q.startsWith("#")) {
-        const lower = q.slice(1).toLowerCase()
-        const tags = [...new Set(entries.flatMap((e) => e.tags))]
-          .filter((t) => t.toLowerCase().includes(lower))
-          .slice(0, 5)
-          .map((t) => ({ slug: `tags/${t}`, title: `#${t}`, excerpt: "Browse tag", type: "tag" as const }))
-        setResults({ notes: [], tags })
+      const pf = pagefindRef.current
+      if (!pf) {
+        // Fallback: API-based search for dev mode
+        try {
+          const res = await fetch(`/api/search`)
+          const entries = await res.json() as Array<{
+            slug: string; title: string; content: string; tags: string[]
+            description?: string
+          }>
+
+          // Tag search mode
+          if (q.startsWith("#")) {
+            const lower = q.slice(1).toLowerCase()
+            const tags = [...new Set(entries.flatMap((e) => e.tags))]
+              .filter((t) => t.toLowerCase().includes(lower))
+              .slice(0, 5)
+              .map((t) => ({ slug: `tags/${t}`, title: `#${t}`, excerpt: "Browse tag", type: "tag" as const }))
+            setResults(tags)
+            return
+          }
+
+          const lower = q.toLowerCase()
+          const tokens = lower.split(/\s+/).filter(Boolean)
+          const found = entries
+            .filter(e => {
+              const text = `${e.title} ${e.content} ${e.tags.join(' ')}`.toLowerCase()
+              return tokens.every(t => text.includes(t))
+            })
+            .slice(0, 7)
+            .map(e => {
+              const pos = e.content.toLowerCase().indexOf(tokens[0])
+              const start = Math.max(0, pos - 50)
+              const excerpt = pos >= 0
+                ? "…" + e.content.slice(start, start + 120) + "…"
+                : (e.description ?? e.content.slice(0, 120) + "…")
+              return { slug: e.slug, title: e.title, excerpt, type: "note" as const }
+            })
+          setResults(found)
+        } catch {
+          setResults([])
+        }
         return
       }
 
-      // Full-text search
-      const idx = indexRef.current
-      if (!idx) return
+      // Pagefind search
+      setIsSearching(true)
+      try {
+        const response = await pf.search(q)
+        const items: Result[] = []
 
-      // Split query into individual tokens and intersect results (AND logic)
-      const tokens = q.trim().split(/\s+/).filter(Boolean)
-      const tokenSets = tokens.map((token) => {
-        const raw = idx.search(token, { limit: 100, enrich: false }) as Array<{ field: string; result: number[] }>
-        const set = new Set<number>()
-        for (const r of raw) for (const id of r.result) set.add(id)
-        return set
-      })
-      const ids: number[] = tokenSets.length === 0 ? [] :
-        [...tokenSets[0]].filter((id) => tokenSets.every((s) => s.has(id))).slice(0, 8)
+        const top = response.results.slice(0, 7)
+        const dataPromises = top.map(r => r.data())
+        const dataResults = await Promise.all(dataPromises)
 
-      const lower = q.toLowerCase()
-      const notes: Result[] = ids.slice(0, 7).map((id) => {
-        const e = entries[id]
-        const pos = e.content.toLowerCase().indexOf(lower)
-        const start = Math.max(0, pos - 50)
-        const excerpt = pos >= 0
-          ? "…" + e.content.slice(start, start + 120) + "…"
-          : (e.description ?? e.content.slice(0, 120) + "…")
-        return { slug: e.slug, title: e.title, excerpt, type: "note" as const }
-      })
+        for (const data of dataResults) {
+          // Convert pagefind URL to slug
+          let slug = data.url
+            .replace(/^\//, "")
+            .replace(/\/index\.html$/, "")
+            .replace(/\.html$/, "")
 
-      setResults({ notes, tags: [] })
+          // Skip non-content pages
+          if (slug === "" || slug === "_global-error") continue
+
+          const title = data.meta?.title || slug.split("/").pop() || slug
+          const excerpt = data.excerpt
+            ? data.excerpt.replace(/<[^>]*>/g, "").slice(0, 120)
+            : ""
+
+          items.push({ slug, title, excerpt, type: "note" })
+        }
+
+        setResults(items)
+      } catch {
+        setResults([])
+      } finally {
+        setIsSearching(false)
+      }
     },
     []
   )
@@ -151,8 +170,10 @@ export function CommandPalette() {
     setQuery("")
   }
 
-  const isSearching = query !== deferredQuery
-  const hasResults = results.tags.length > 0 || results.notes.length > 0
+  const isPending = query !== deferredQuery || isSearching
+  const hasResults = results.length > 0
+  const tags = results.filter(r => r.type === "tag")
+  const notes = results.filter(r => r.type === "note")
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
@@ -163,7 +184,7 @@ export function CommandPalette() {
       />
       <CommandList>
         {/* Loading state: index not ready yet */}
-        {!indexReady && query.trim() && !query.startsWith("#") && (
+        {!indexReady && query.trim() && (
           <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading search index…
@@ -171,7 +192,7 @@ export function CommandPalette() {
         )}
 
         {/* Searching indicator */}
-        {isSearching && indexReady && (
+        {isPending && indexReady && (
           <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             Searching…
@@ -179,15 +200,15 @@ export function CommandPalette() {
         )}
 
         {/* No results */}
-        {!isSearching && indexReady && query.trim() && !hasResults && (
+        {!isPending && indexReady && query.trim() && !hasResults && (
           <CommandEmpty>No results for &ldquo;{query}&rdquo;</CommandEmpty>
         )}
 
         {/* Results with fade-in animation */}
         <div className={hasResults ? "animate-in fade-in-0 duration-200" : ""}>
-          {results.tags.length > 0 && (
+          {tags.length > 0 && (
             <CommandGroup heading="Tags">
-              {results.tags.map((r) => (
+              {tags.map((r) => (
                 <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
                   <Hash className="mr-2 h-4 w-4 text-muted-foreground" />
                   <span>{r.title}</span>
@@ -195,10 +216,10 @@ export function CommandPalette() {
               ))}
             </CommandGroup>
           )}
-          {results.tags.length > 0 && results.notes.length > 0 && <CommandSeparator />}
-          {results.notes.length > 0 && (
+          {tags.length > 0 && notes.length > 0 && <CommandSeparator />}
+          {notes.length > 0 && (
             <CommandGroup heading="Notes">
-              {results.notes.map((r) => (
+              {notes.map((r) => (
                 <CommandItem key={r.slug} value={r.slug} onSelect={() => handleSelect(r.slug)}>
                   <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
                   <div className="min-w-0 flex-1">
