@@ -1,24 +1,17 @@
 export const revalidate = false
 
 import Link from "next/link"
-import { getAllMarkdownFiles } from "nuartz"
-import path from "node:path"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import type { Metadata } from "next"
-
-const CONTENT_DIR = path.join(process.cwd(), "content")
+import tagIndex from "@/.generated/tags.json"
 
 export const metadata: Metadata = { title: "Tags" }
 
 export default async function TagsPage() {
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
-
   const tagMap = new Map<string, number>()
-  for (const file of files) {
-    for (const tag of file.frontmatter.tags ?? []) {
-      tagMap.set(tag, (tagMap.get(tag) ?? 0) + 1)
-    }
+  for (const [tag, files] of Object.entries(tagIndex)) {
+    tagMap.set(tag, (files as unknown[]).length)
   }
 
   const sorted = [...tagMap.entries()].sort((a, b) => b[1] - a[1])

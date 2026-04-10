@@ -6,8 +6,9 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "bun run --cwd apps/web dev",
-    "build": "bun run build:pkg && bun run build:app",
+    "dev": "bun run prebuild && bun run --cwd apps/web dev",
+    "prebuild": "bun scripts/prebuild.ts",
+    "build": "bun run build:pkg && bun run prebuild && bun run build:app",
     "build:pkg": "bun run --cwd packages/nuartz build",
     "build:app": "bun run --cwd apps/web build",
     "typecheck": "bun run --cwd packages/nuartz typecheck && bun run --cwd apps/web typecheck",

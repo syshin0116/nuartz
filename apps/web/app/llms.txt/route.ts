@@ -1,14 +1,10 @@
-import { getAllMarkdownFiles } from "nuartz"
-import path from "node:path"
 import config from "@/nuartz.config"
+import notesList from "@/.generated/notes-list.json"
 
 export const dynamic = "force-static"
 
-const CONTENT_DIR = path.join(process.cwd(), "content")
-
 export async function GET() {
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
-  const published = files.filter((f) => !f.frontmatter.draft)
+  const published = notesList.filter((f) => !f.draft)
 
   const lines: string[] = [
     `# ${config.site.title}`,
@@ -22,10 +18,8 @@ export async function GET() {
   ]
 
   for (const file of published) {
-    const title = (file.frontmatter.title as string | undefined) ?? file.slug
-    const desc = (file.frontmatter.description as string | undefined) ?? ""
     const url = `${config.site.baseUrl}/${file.slug}`
-    lines.push(`- [${title}](${url})${desc ? `: ${desc}` : ""}`)
+    lines.push(`- [${file.title}](${url})${file.description ? `: ${file.description}` : ""}`)
   }
 
   return new Response(lines.join("\n"), {

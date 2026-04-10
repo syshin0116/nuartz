@@ -1,20 +1,11 @@
-import { getAllMarkdownFiles } from "nuartz"
-import path from "node:path"
-
-const CONTENT_DIR = path.join(process.cwd(), "content")
+import notesList from "@/.generated/notes-list.json"
 
 export const NOTES_PER_PAGE = 10
 
-export async function getSortedNotes() {
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
+export type NoteEntry = (typeof notesList)[number]
 
-  return files
-    .filter((f) => f.slug !== "index")
-    .sort((a, b) => {
-      const da = a.frontmatter.date ? new Date(a.frontmatter.date).getTime() : 0
-      const db = b.frontmatter.date ? new Date(b.frontmatter.date).getTime() : 0
-      return db - da
-    })
+export async function getSortedNotes() {
+  return notesList.filter((f) => !f.draft)
 }
 
 export function getTotalPages(totalNotes: number): number {

@@ -1,12 +1,14 @@
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import type { Frontmatter } from "nuartz"
 
 interface NoteFile {
   slug: string
-  frontmatter: Frontmatter
-  raw: string
+  title: string
+  description: string | null
+  summary?: string | null
+  date: string | null
+  tags: string[]
 }
 
 interface PaginationProps {
@@ -100,32 +102,27 @@ export function NotesList({
 
       <div className="space-y-2">
         {notes.map((file) => {
-          const title = file.frontmatter.title ?? file.slug
-          const summary = (file.frontmatter.summary ?? file.frontmatter.description) as string | undefined
-          const tags: string[] = file.frontmatter.tags ?? []
-          const date = file.frontmatter.date
-            ? new Date(file.frontmatter.date).toLocaleDateString("en-CA")
-            : null
+          const summary = file.summary ?? file.description
 
           return (
             <Link key={file.slug} href={`/${file.slug}`} className="group block">
               <div className="rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50">
                 <div className="flex items-start justify-between gap-4">
                   <span className="font-medium group-hover:underline underline-offset-4">
-                    {title}
+                    {file.title}
                   </span>
-                  {date && (
+                  {file.date && (
                     <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                      {date}
+                      {file.date}
                     </span>
                   )}
                 </div>
                 {summary && (
                   <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{summary}</p>
                 )}
-                {tags.length > 0 && (
+                {file.tags.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
-                    {tags.map((tag) => (
+                    {file.tags.map((tag) => (
                       <Badge key={tag} variant="secondary" className="text-xs font-normal">
                         #{tag}
                       </Badge>

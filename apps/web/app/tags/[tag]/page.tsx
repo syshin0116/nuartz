@@ -1,19 +1,16 @@
 export const revalidate = false
 
 import Link from "next/link"
-import { getAllMarkdownFiles } from "nuartz"
-import path from "node:path"
 import { notFound } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import type { Metadata } from "next"
+import tagIndex from "@/.generated/tags.json"
 
-const CONTENT_DIR = path.join(process.cwd(), "content")
+const typedTagIndex = tagIndex as Record<string, { slug: string; title: string; description: string | null; date: string | null }[]>
 
 export async function generateStaticParams() {
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
-  const tags = new Set(files.flatMap((f) => f.frontmatter.tags ?? []))
-  return [...tags].map((tag) => ({ tag }))
+  return Object.keys(typedTagIndex).map((tag) => ({ tag }))
 }
 
 export async function generateMetadata({
@@ -31,16 +28,9 @@ export default async function TagPage({
   params: Promise<{ tag: string }>
 }) {
   const { tag } = await params
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
-  const tagged = files
-    .filter((f) => f.frontmatter.tags?.includes(tag))
-    .sort((a, b) => {
-      const da = a.frontmatter.date ? new Date(a.frontmatter.date).getTime() : 0
-      const db = b.frontmatter.date ? new Date(b.frontmatter.date).getTime() : 0
-      return db - da
-    })
+  const tagged = typedTagIndex[tag]
 
-  if (!tagged.length) notFound()
+  if (!tagged?.length) notFound()
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-10">
@@ -62,33 +52,25 @@ export default async function TagPage({
       <Separator className="mb-6" />
 
       <div className="space-y-2">
-        {tagged.map((file) => {
-          const title = file.frontmatter.title ?? file.slug
-          const summary = (file.frontmatter.summary ?? file.frontmatter.description) as string | undefined
-          const date = file.frontmatter.date
-            ? new Date(file.frontmatter.date).toLocaleDateString("en-CA")
-            : null
-
-          return (
-            <Link key={file.slug} href={`/${file.slug}`} className="group block">
-              <div className="rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50">
-                <div className="flex items-start justify-between gap-4">
-                  <span className="font-medium group-hover:underline underline-offset-4">
-                    {title}
+        {tagged.map((file) => (
+          <Link key={file.slug} href={`/${file.slug}`} className="group block">
+            <div className="rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50">
+              <div className="flex items-start justify-between gap-4">
+                <span className="font-medium group-hover:underline underline-offset-4">
+                  {file.title}
+                </span>
+                {file.date && (
+                  <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
+                    {file.date}
                   </span>
-                  {date && (
-                    <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
-                      {date}
-                    </span>
-                  )}
-                </div>
-                {summary && (
-                  <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{summary}</p>
                 )}
               </div>
-            </Link>
-          )
-        })}
+              {file.description && (
+                <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{file.description}</p>
+              )}
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   )

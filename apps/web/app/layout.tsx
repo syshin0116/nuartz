@@ -7,21 +7,8 @@ import { Header } from "@/components/layout/header"
 import { NavSidebar } from "@/components/layout/nav-sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CommandPaletteDynamic } from "@/components/command-palette-dynamic"
-import { getAllMarkdownFiles, buildFileTree } from "nuartz"
-import { unstable_cache } from "next/cache"
 import config from "@/nuartz.config"
-import path from "node:path"
-
-const CONTENT_DIR = path.join(process.cwd(), "content")
-
-const getCachedLayoutData = unstable_cache(
-  async () => {
-    const files = await getAllMarkdownFiles(CONTENT_DIR)
-    return { tree: buildFileTree(files) }
-  },
-  ["layout-data"],
-  { revalidate: false }
-)
+import fileTree from "@/.generated/file-tree.json"
 
 export const metadata: Metadata = {
   title: config.site.title,
@@ -36,7 +23,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { tree } = await getCachedLayoutData()
+  const tree = fileTree as any
   return (
     <html lang="en" suppressHydrationWarning>
       <head />

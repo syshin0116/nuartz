@@ -1,12 +1,7 @@
-import { getAllMarkdownFiles, buildSearchIndex } from "nuartz"
-import path from "node:path"
-
-const CONTENT_DIR = path.join(process.cwd(), "content")
+import searchData from "@/.generated/search.json"
 
 export const dynamic = "force-static"
 
 export async function GET() {
-  const files = await getAllMarkdownFiles(CONTENT_DIR)
-  const entries = buildSearchIndex(files)
-  return Response.json(entries)
+  return Response.json(searchData)
 }
