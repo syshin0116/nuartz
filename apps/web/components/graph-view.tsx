@@ -13,8 +13,9 @@ interface GraphLink { source: string | GraphNode; target: string | GraphNode }
 interface GraphData { nodes: GraphNode[]; links: GraphLink[] }
 
 const LOCAL_DEPTH = 2
+const MAX_LOCAL_NODES = 28
 
-/** Extract the subgraph reachable within `depth` hops from `rootId`. */
+/** Extract the subgraph reachable within `depth` hops from `rootId`, capped at MAX_LOCAL_NODES. */
 function extractLocalGraph(data: GraphData, rootId: string, depth: number): GraphData {
   const adjacency = new Map<string, Set<string>>()
   for (const l of data.links) {
@@ -26,21 +27,57 @@ function extractLocalGraph(data: GraphData, rootId: string, depth: number): Grap
     adjacency.get(t)!.add(s)
   }
 
-  const visited = new Set<string>()
-  let frontier = [rootId]
-  for (let d = 0; d <= depth && frontier.length; d++) {
-    const next: string[] = []
-    for (const id of frontier) {
-      if (visited.has(id)) continue
-      visited.add(id)
-      for (const neighbor of adjacency.get(id) ?? []) {
-        if (!visited.has(neighbor)) next.push(neighbor)
+  // Always include the root node
+  const nodeSet = new Set<string>()
+  if (data.nodes.some(n => n.id === rootId)) nodeSet.add(rootId)
+
+  // Collect 1-hop neighbors
+  const oneHop = [...(adjacency.get(rootId) ?? [])]
+    .filter(id => data.nodes.some(n => n.id === id))
+
+  if (oneHop.length + 1 <= MAX_LOCAL_NODES) {
+    // All 1-hop neighbors fit — add them all
+    for (const id of oneHop) nodeSet.add(id)
+
+    // Try adding 2-hop neighbors if depth allows
+    if (depth >= 2) {
+      // Sort 2-hop candidates by their total connection count (most connected first)
+      const twoHopCandidates: { id: string; connections: number }[] = []
+      const seen = new Set<string>(nodeSet)
+      for (const neighbor of oneHop) {
+        for (const hop2 of adjacency.get(neighbor) ?? []) {
+          if (!seen.has(hop2) && data.nodes.some(n => n.id === hop2)) {
+            seen.add(hop2)
+            // Count how many nodes already in the graph this candidate connects to
+            const connectionsToGraph = [...(adjacency.get(hop2) ?? [])]
+              .filter(id => nodeSet.has(id)).length
+            twoHopCandidates.push({ id: hop2, connections: connectionsToGraph })
+          }
+        }
+      }
+      // Prioritize 2-hop nodes with more connections to the existing graph
+      twoHopCandidates.sort((a, b) => b.connections - a.connections)
+      for (const candidate of twoHopCandidates) {
+        if (nodeSet.size >= MAX_LOCAL_NODES) break
+        nodeSet.add(candidate.id)
       }
     }
-    frontier = next
+  } else {
+    // Too many 1-hop neighbors — keep only the most connected ones
+    const rankedNeighbors = oneHop
+      .map(id => ({
+        id,
+        // Prioritize by total adjacency count (hub nodes are more informative)
+        totalConnections: adjacency.get(id)?.size ?? 0,
+      }))
+      .sort((a, b) => b.totalConnections - a.totalConnections)
+
+    for (const neighbor of rankedNeighbors) {
+      if (nodeSet.size >= MAX_LOCAL_NODES) break
+      nodeSet.add(neighbor.id)
+    }
   }
 
-  const nodeSet = visited
   const nodes = data.nodes.filter(n => nodeSet.has(n.id))
   const links = data.links.filter(l => {
     const s = typeof l.source === "string" ? l.source : l.source.id
@@ -84,7 +121,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
         .attr("x", "-50%").attr("y", "-50%")
         .attr("width", "200%").attr("height", "200%")
       glowFilter.append("feGaussianBlur")
-        .attr("stdDeviation", "2.5")
+        .attr("stdDeviation", "1.5")
         .attr("result", "blur")
       glowFilter.append("feComposite")
         .attr("in", "SourceGraphic")
@@ -108,19 +145,19 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       const nodesCopy = graphData.nodes.map(n => ({ ...n, linkCount: linkCounts.get(n.id) ?? 0 }))
       const linksCopy = graphData.links.map(l => ({ ...l }))
 
-      // Node radius: scale by link count (min 4, max 12, current page always prominent)
+      // Node radius: scale by link count — compact for small sidebar widget
       const maxLinks = Math.max(...nodesCopy.map(n => n.linkCount), 1)
       const nodeRadius = (d: GraphNode) => {
-        if (d.id === currentSlug) return Math.max(8, 4 + (d.linkCount / maxLinks) * 8)
-        if (d.type === "tag") return 3.5
-        return 4 + (d.linkCount / maxLinks) * 6
+        if (d.id === currentSlug) return 5
+        if (d.type === "tag") return 2.5
+        return 2.5 + (d.linkCount / maxLinks) * 2.5
       }
 
       const sim = d3.forceSimulation<GraphNode>(nodesCopy)
-        .force("link", d3.forceLink<GraphNode, GraphLink>(linksCopy).id(d => d.id).distance(55))
-        .force("charge", d3.forceManyBody().strength(-90))
+        .force("link", d3.forceLink<GraphNode, GraphLink>(linksCopy).id(d => d.id).distance(40))
+        .force("charge", d3.forceManyBody().strength(-60))
         .force("center", d3.forceCenter(0, 0))
-        .force("collision", d3.forceCollide<GraphNode>(d => nodeRadius(d) + 4))
+        .force("collision", d3.forceCollide<GraphNode>(d => nodeRadius(d) + 3))
 
       sim.stop()
       for (let i = 0; i < 300; i++) sim.tick()
@@ -136,7 +173,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       const gh = Math.max(maxY - minY, 1)
       const pad = 24
       const rawScale = Math.min((w - pad * 2) / gw, (h - pad * 2) / gh)
-      const fitScale = Math.min(Math.max(rawScale, 0.5), 2)
+      const fitScale = Math.min(Math.max(rawScale, 0.5), 1.4)
       const initTransform = d3.zoomIdentity
         .translate(w / 2 - cx * fitScale, h / 2 - cy * fitScale)
         .scale(fitScale)
