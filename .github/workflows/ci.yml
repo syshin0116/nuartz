@@ -19,6 +19,8 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Build nuartz package
         run: bun run --cwd packages/nuartz build
+      - name: Prebuild generated data
+        run: bun run prebuild
       - name: Type check web app
         run: bun run --cwd apps/web typecheck
 
