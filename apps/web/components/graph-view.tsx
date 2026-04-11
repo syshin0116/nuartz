@@ -118,15 +118,23 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       const defs = svg.append("defs")
       const glowFilter = defs.append("filter")
         .attr("id", "node-glow")
-        .attr("x", "-50%").attr("y", "-50%")
-        .attr("width", "200%").attr("height", "200%")
+        .attr("x", "-80%").attr("y", "-80%")
+        .attr("width", "260%").attr("height", "260%")
+      // Outer soft glow
       glowFilter.append("feGaussianBlur")
-        .attr("stdDeviation", "1.5")
-        .attr("result", "blur")
-      glowFilter.append("feComposite")
         .attr("in", "SourceGraphic")
-        .attr("in2", "blur")
-        .attr("operator", "over")
+        .attr("stdDeviation", "4")
+        .attr("result", "blur1")
+      // Inner sharper glow
+      glowFilter.append("feGaussianBlur")
+        .attr("in", "SourceGraphic")
+        .attr("stdDeviation", "1.5")
+        .attr("result", "blur2")
+      // Merge: outer glow + inner glow + original
+      const merge = glowFilter.append("feMerge")
+      merge.append("feMergeNode").attr("in", "blur1")
+      merge.append("feMergeNode").attr("in", "blur2")
+      merge.append("feMergeNode").attr("in", "SourceGraphic")
 
       // Local graph: only nodes within LOCAL_DEPTH hops of current page
       const graphData = currentSlug
@@ -147,10 +155,13 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
 
       // Node radius: scale by link count — compact for small sidebar widget
       const maxLinks = Math.max(...nodesCopy.map(n => n.linkCount), 1)
-      const nodeRadius = (d: GraphNode) => {
-        if (d.id === currentSlug) return 5
+      const baseRadius = (d: GraphNode) => {
         if (d.type === "tag") return 2.5
         return 2.5 + (d.linkCount / maxLinks) * 2.5
+      }
+      const nodeRadius = (d: GraphNode) => {
+        if (d.id === currentSlug) return Math.min(baseRadius(d) + 2, 6)
+        return baseRadius(d)
       }
 
       const sim = d3.forceSimulation<GraphNode>(nodesCopy)
@@ -256,7 +267,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
           node.selectAll<SVGCircleElement | SVGRectElement, GraphNode>("circle, rect")
             .transition().duration(300)
             .attr("opacity", 1)
-            .attr("filter", "none")
+            .attr("filter", n => n.id === currentSlug ? "url(#node-glow)" : "none")
           labels
             .text(n => n.title.length > 20 ? n.title.slice(0, 18) + "…" : n.title)
             .transition().duration(300)
