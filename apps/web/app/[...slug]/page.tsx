@@ -84,7 +84,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string[] }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const slugStr = slug.join("/")
+  const slugStr = decodeURIComponent(slug.join("/"))
   const pageData = await readJSON<PageData>(path.join(GENERATED_DIR, "pages", `${slugStr}.json`))
   if (!pageData) return {}
 
@@ -117,7 +117,7 @@ export default async function NotePage({
   params: Promise<{ slug: string[] }>
 }) {
   const { slug } = await params
-  const slugStr = slug.join("/")
+  const slugStr = decodeURIComponent(slug.join("/"))
 
   // Try loading precomputed page data
   const pageData = await readJSON<PageData>(path.join(GENERATED_DIR, "pages", `${slugStr}.json`))
