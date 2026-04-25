@@ -3,6 +3,7 @@ export interface Frontmatter {
   date?: string | Date
   tags?: string[]
   description?: string
+  summary?: string
   draft?: boolean
   aliases?: string[]
   [key: string]: unknown
