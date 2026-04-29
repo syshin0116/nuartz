@@ -1,6 +1,7 @@
 import fs from "node:fs/promises"
 import path from "node:path"
-import { getAllMarkdownFiles, renderMarkdown } from "nuartz"
+import { getAllMarkdownFiles } from "nuartz"
+import { renderMarkdown } from "nuartz/markdown"
 import matter from "gray-matter"
 
 const SCRIPT_DIR = path.dirname(new URL(import.meta.url).pathname)

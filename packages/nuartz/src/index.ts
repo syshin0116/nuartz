@@ -1,4 +1,3 @@
-export { renderMarkdown } from "./markdown.js"
 export { buildBacklinkIndex, getBacklinks } from "./backlinks.js"
 export { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree } from "./fs.js"
 export { buildSearchIndex } from "./search.js"

@@ -18,8 +18,8 @@ import {
   getAllMarkdownFiles,
   buildFileTree,
   buildSearchIndex,
-  renderMarkdown,
 } from "nuartz"
+import { renderMarkdown } from "nuartz/markdown"
 import type { MarkdownFile, RenderResult, Frontmatter, TocEntry } from "nuartz"
 
 const CONTENT_DIR = path.join(import.meta.dir, "../apps/web/content")
