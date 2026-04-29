@@ -614,4 +614,22 @@ a.tag {
     font-size: 0.875rem;
     color: var(--muted-foreground);
   }
+
+  figure.beoe {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+  }
+  figure.beoe svg {
+    max-width: 100%;
+    height: auto;
+    color: var(--foreground);
+  }
+  figure.beoe.graphviz svg [fill="black"],
+  figure.beoe.d2 svg [fill="black"] {
+    fill: currentColor;
+  }
+  figure.beoe.graphviz svg [stroke="black"],
+  figure.beoe.d2 svg [stroke="black"] {
+    stroke: currentColor;
+  }
 }

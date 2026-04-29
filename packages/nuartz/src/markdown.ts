@@ -17,6 +17,8 @@ import type { Plugin } from "unified"
 
 import remarkBreaks from "remark-breaks"
 import { rehypePrettyCode } from "rehype-pretty-code"
+import rehypeGraphviz from "@beoe/rehype-graphviz"
+import rehypeD2 from "@beoe/rehype-d2"
 import { remarkCallout } from "./plugins/callout.js"
 import { remarkTag } from "./plugins/tag.js"
 import { remarkWikilink } from "./plugins/wikilink.js"
@@ -72,6 +74,8 @@ function buildTocTree(flat: TocEntry[]): TocEntry[] {
   return root
 }
 
+const diagramCache = new Map<string, unknown>()
+
 export async function renderMarkdown(
   content: string,
   options: RenderOptions = {}
@@ -96,6 +100,8 @@ export async function renderMarkdown(
     .use(remarkArrows)
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
+    .use(rehypeGraphviz as never, { strategy: "inline", darkScheme: "class", cache: diagramCache, class: "graphviz" })
+    .use(rehypeD2 as never, { strategy: "inline", darkScheme: "class", cache: diagramCache, class: "d2" })
     .use(rehypePrettyCode, {
       theme: { light: "github-light", dark: "github-dark" },
       keepBackground: false,
