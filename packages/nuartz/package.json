@@ -81,7 +81,7 @@
   "devDependencies": {
     "@types/node": "^20",
     "@vitest/coverage-v8": "^4.1.10",
-    "typescript": "^5",
+    "typescript": "^7",
     "vitest": "^4.1.10"
   }
 }
