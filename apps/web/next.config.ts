@@ -1,6 +1,9 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
+  experimental: {
+    useTypeScriptCli: true,
+  },
   // Uncomment for static export (GitHub Pages, etc.):
   // output: "export",
   transpilePackages: ["nuartz"],
