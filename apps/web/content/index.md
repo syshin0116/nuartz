@@ -9,7 +9,7 @@ description: Publish your Obsidian vault as a Next.js website. Full wikilink sup
 
 # Publish your Obsidian vault as a Next.js website.
 
-**Nuartz** = **N**ext.js + Q**uartz**. Write in Obsidian, publish with Next.js 15 + shadcn/ui + Tailwind CSS v4. Full wikilink support, graph view, and every component is swappable.
+**Nuartz** = **N**ext.js + Q**uartz**. Write in Obsidian, publish with Next.js 16 + shadcn/ui + Tailwind CSS v4. Full wikilink support, graph view, and every component is swappable.
 
 > [!tip] You're looking at it
 > This documentation site is built with Nuartz. The sidebar, search (`Cmd+K`), graph view, dark mode, wikilinks — everything you see here is Nuartz. Go ahead, explore.
@@ -38,7 +38,7 @@ See [[docs/getting-started|Installation & Setup]] for details →
 
 ### Developer Features
 
-- [[docs/features/search|Full-text Search]] — `Cmd+K`, FlexSearch-powered, CJK-aware
+- [[docs/features/search|Full-text Search]]: `Cmd+K`, Pagefind-powered, CJK-aware
 - [[docs/features/syntax-highlighting|Syntax Highlighting]] — VS Code-quality code blocks via Shiki
 - [[docs/features/social-images|Dynamic OG Images]] — auto-generated social cards per page
 - [[docs/features/rss-feed|RSS Feed]], [[docs/features/table-of-contents|TOC]], [[docs/features/reader-mode|Reader Mode]], [[docs/features/comments|Comments (Giscus)]]
@@ -53,7 +53,7 @@ Heavily inspired by [Quartz](https://github.com/jackyzha0/quartz). Nuartz borrow
 
 |  | Nuartz | Static generators |
 |--|--------|-------------------|
-| **Framework** | Next.js 15 (App Router) | Custom templating |
+| **Framework** | Next.js 16 (App Router) | Custom templating |
 | **UI** | shadcn/ui + Tailwind v4 | Built-in themes |
 | **Obsidian syntax** | Full (wikilinks, callouts, tags, graph) | Partial / plugin-dependent |
 | **Customization** | Any React component | Plugin API / theme overrides |

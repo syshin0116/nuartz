@@ -5,6 +5,7 @@
 **A free, open-source Obsidian Publish alternative built on Next.js.**
 
 [![npm version](https://img.shields.io/npm/v/nuartz)](https://www.npmjs.com/package/nuartz)
+[![CI](https://github.com/syshin0116/nuartz/actions/workflows/ci.yml/badge.svg)](https://github.com/syshin0116/nuartz/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [Documentation & Demo](https://nuartz.vercel.app) · [Use Case](https://syshin0116.vercel.app/blog) · [npm](https://www.npmjs.com/package/nuartz)
@@ -13,9 +14,9 @@
 
 </div>
 
-Nuartz parses Obsidian-flavored markdown — wikilinks, callouts, backlinks, tags, math, graph — and gives you a polished site built with **Next.js 15**, **shadcn/ui**, and **Tailwind CSS v4**. Every component is swappable. It's just React.
+Nuartz parses Obsidian-flavored markdown, including wikilinks, callouts, backlinks, tags, math, and graphs. It gives you a polished site built with **Next.js 16**, **shadcn/ui**, and **Tailwind CSS v4**. Every component is swappable. It's just React.
 
-Heavily inspired by [Quartz](https://github.com/jackyzha0/quartz). Quartz is an amazing project that pioneered Obsidian-to-website publishing, and Nuartz borrows many of its ideas — the difference is the stack. Nuartz runs on Next.js + shadcn/ui, so you get the full React ecosystem, copy-paste UI components from [ui.shadcn.com](https://ui.shadcn.com), and deploy anywhere Next.js runs.
+Heavily inspired by [Quartz](https://github.com/jackyzha0/quartz). Quartz pioneered Obsidian-to-website publishing, and Nuartz borrows many of its ideas. The main difference is the stack. Nuartz runs on Next.js and shadcn/ui, so you get the full React ecosystem, copy-paste UI components from [ui.shadcn.com](https://ui.shadcn.com), and deployment anywhere Next.js runs.
 
 ## Who is this for?
 
@@ -29,8 +30,8 @@ Nuartz has two layers:
 
 | Layer | What it is | How to use it |
 |-------|-----------|---------------|
-| **`nuartz` (npm package)** | Headless data library — markdown → HTML, file tree, wikilinks, backlinks, search index | `bun add nuartz` and wire into any Next.js app |
-| **`apps/web` (starter template)** | Complete Next.js 15 app with shadcn/ui, sidebar, graph view, search, dark mode | Clone the repo and deploy |
+| **`nuartz` (npm package)** | Headless data library for markdown, HTML, file trees, wikilinks, backlinks, and search data | `bun add nuartz` and wire it into any Next.js app |
+| **`apps/web` (starter template)** | Complete Next.js 16 app with shadcn/ui, sidebar, graph view, search, dark mode | Clone the repo and deploy |
 
 Most people start with the starter template. If you want to embed a garden into an existing Next.js app, use the package directly.
 
@@ -38,7 +39,7 @@ Most people start with the starter template. If you want to embed a garden into 
 
 - **Obsidian syntax** — Wikilinks (`[[page]]`, `[[page|alias]]`, `[[page#heading]]`), callouts, inline tags, `==highlights==`, `%%comments%%`
 - **Graph view** — Interactive D3 force-directed graph, just like Obsidian
-- **Full-text search** — `Cmd+K` powered by FlexSearch with CJK support
+- **Full-text search**: `Cmd+K` powered by Pagefind with CJK support
 - **Backlinks & popover previews** — Navigate your vault like in Obsidian
 - **Dark mode** — System-aware theme switching
 - **Math & code** — KaTeX for equations, Shiki for syntax highlighting
@@ -96,19 +97,20 @@ bun add nuartz
 
 ```typescript
 import {
-  renderMarkdown,      // string -> { html, frontmatter, toc, links, tags }
   buildBacklinkIndex,  // build slug -> backlinks map
   buildFileTree,       // flat file list -> nested tree
   buildSearchIndex,    // files -> search-ready entries
   defineConfig,        // typed config helper
 } from "nuartz"
+
+import { renderMarkdown } from "nuartz/markdown"
 ```
 
 ## Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | UI | shadcn/ui + Radix UI |
 | Styling | Tailwind CSS v4 |
 | Markdown | unified / remark / rehype |
@@ -117,7 +119,7 @@ import {
 
 ## Acknowledgements
 
-Nuartz stands on the shoulders of [Quartz](https://github.com/jackyzha0/quartz) by [@jackyzha0](https://github.com/jackyzha0). The project's approach to Obsidian syntax parsing, graph visualization, and overall UX are directly inspired by Quartz. If you want a battle-tested solution that works out of the box, Quartz is an excellent choice — Nuartz simply brings those ideas into the Next.js ecosystem for developers who want React-level customization.
+Nuartz stands on the shoulders of [Quartz](https://github.com/jackyzha0/quartz) by [@jackyzha0](https://github.com/jackyzha0). The project's approach to Obsidian syntax parsing, graph visualization, and overall UX are directly inspired by Quartz. If you want a battle-tested solution that works out of the box, Quartz is an excellent choice. Nuartz brings those ideas into the Next.js ecosystem for developers who want React-level customization.
 
 ## Showcase
 

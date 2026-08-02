@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an improvement to Nuartz.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Are you willing to contribute this change?
+      options:
+        - "Yes"
+        - "No"
+        - I need guidance
+    validations:
+      required: true

@@ -19,7 +19,6 @@ bun install
 nuartz/
   apps/web/          # Next.js digital garden app
   packages/nuartz/   # Core markdown processing library
-  refs/              # Reference materials
 ```
 
 See [[architecture]] for details on how the pieces fit together.
@@ -29,15 +28,13 @@ See [[architecture]] for details on how the pieces fit together.
 Start the dev server:
 
 ```bash
-cd apps/web
 bun dev
 ```
 
 Run tests:
 
 ```bash
-cd packages/nuartz
-bun test
+bun run check
 ```
 
 ## Making changes

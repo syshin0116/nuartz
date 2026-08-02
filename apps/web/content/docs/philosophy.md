@@ -16,7 +16,7 @@ That means you get React components, shadcn/ui, Tailwind CSS, the entire npm eco
 Nuartz is split into a library and a starter template:
 
 - **`nuartz` (npm package)** — the data layer. Parses Obsidian markdown, resolves wikilinks, builds backlink graphs, generates search indices. Ships zero UI. You can `bun add nuartz` and wire it into any Next.js app.
-- **`apps/web` (starter template)** — a complete Next.js 15 app using shadcn/ui. Sidebar, graph view, search, dark mode, OG images, comments — all included. Clone it, drop in your markdown, deploy.
+- **`apps/web` (starter template)**: a complete Next.js 16 app using shadcn/ui. Sidebar, graph view, search, dark mode, OG images, and comments are included. Clone it, add your markdown, and deploy.
 
 Most people start with the starter template and customise from there. If you have an existing Next.js app (portfolio, blog, docs site), install the package and integrate only what you need.
 

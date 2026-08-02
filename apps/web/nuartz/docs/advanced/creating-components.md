@@ -54,7 +54,7 @@ import { NoteCount } from "@/components/note-count"
 
 ## Client vs Server Components
 
-Next.js 15 uses React Server Components by default. Most layout components can be server components (no `"use client"` directive needed).
+Next.js 16 uses React Server Components by default. Most layout components can be server components (no `"use client"` directive needed).
 
 Use `"use client"` only when you need:
 - Browser APIs (`window`, `document`, `localStorage`)
@@ -98,7 +98,8 @@ nuartz uses **Tailwind CSS v4** with oklch-based CSS variables defined in `apps/
 Server components can read content from the filesystem using nuartz's core functions:
 
 ```tsx
-import { getAllMarkdownFiles, renderMarkdown } from "nuartz"
+import { getAllMarkdownFiles } from "nuartz"
+import { renderMarkdown } from "nuartz/markdown"
 import path from "node:path"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")

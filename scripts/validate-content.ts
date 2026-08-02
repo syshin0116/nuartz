@@ -4,7 +4,8 @@
  * Usage: bun scripts/validate-content.ts [content-dir]
  */
 import path from "node:path"
-import { getAllMarkdownFiles, renderMarkdown } from "nuartz"
+import { getAllMarkdownFiles } from "nuartz"
+import { renderMarkdown } from "nuartz/markdown"
 
 const CONTENT_DIR = path.resolve(process.argv[2] ?? "apps/web/content")
 
