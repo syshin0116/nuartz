@@ -72,7 +72,9 @@ interface FolderData {
 export async function generateStaticParams() {
   const { pages, folders, aliases } = allSlugsData
   return [
-    ...pages.map((slug: string[]) => ({ slug })),
+    ...pages
+      .filter((slug: string[]) => slug.join("/") !== config.homePage)
+      .map((slug: string[]) => ({ slug })),
     ...folders.map((slug: string[]) => ({ slug })),
     ...aliases.map((slug: string[]) => ({ slug })),
   ]
