@@ -14,7 +14,7 @@
     "typecheck": "bun run --cwd packages/nuartz typecheck && bun run --cwd apps/web typecheck",
     "test": "bun run --cwd packages/nuartz test",
     "validate": "bun run build:pkg && bun scripts/validate-content.ts",
-    "check": "bun run typecheck && bun run test && bun run validate"
+    "check": "bun run build:pkg && bun run prebuild && bun run typecheck && bun run test && bun scripts/validate-content.ts"
   },
   "version": "0.0.1",
   "packageManager": "bun@1.3.10",
