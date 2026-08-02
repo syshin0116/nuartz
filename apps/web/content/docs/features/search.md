@@ -4,10 +4,10 @@ date: 2026-03-01
 tags:
   - feature
   - navigation
-description: Client-side full-text search powered by FlexSearch, triggered by Cmd+K.
+description: Client-side full-text search powered by Pagefind, triggered by Cmd+K.
 ---
 
-nuartz includes client-side full-text search powered by [FlexSearch](https://github.com/nextapps-de/flexsearch). The search index is built at compile time and shipped to the browser — no server required.
+nuartz includes client-side full-text search powered by [Pagefind](https://pagefind.app/). The search index is built after the production site is compiled and is served with the static assets. No search server is required.
 
 ## Opening search
 

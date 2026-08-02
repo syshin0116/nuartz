@@ -41,7 +41,7 @@ HTML string + metadata (links, tags, toc)
 All plugins are wired together in `packages/nuartz/src/markdown.ts` via the `renderMarkdown()` function:
 
 ```ts
-import { renderMarkdown } from "nuartz"
+import { renderMarkdown } from "nuartz/markdown"
 
 const result = await renderMarkdown(rawMarkdownString, {
   knownSlugs: new Set(allSlugs),  // optional: enables broken-link detection

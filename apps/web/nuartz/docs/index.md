@@ -26,7 +26,7 @@ Drop your Markdown files into `apps/web/content/` and start writing.
 - [[features/wikilinks|Wikilinks]] and [[features/backlinks|backlinks]] for interconnected notes
 - [[features/graph-view|Interactive graph view]] showing relationships between notes
 - [[features/callouts|Callouts]], [[features/syntax-highlighting|syntax highlighting]], [[features/latex|LaTeX]], [[features/mermaid|Mermaid diagrams]]
-- [[features/search|Full-text search]] powered by FlexSearch (Cmd+K, CJK-aware)
+- [[features/search|Full-text search]] powered by Pagefind (Cmd+K, CJK-aware)
 - [[features/table-of-contents|Table of contents]], [[features/breadcrumbs|breadcrumbs]], [[features/recent-notes|recent notes]]
 - [[features/rss-feed|RSS feed]], [[features/social-images|social images]], [[features/popover-previews|popover previews]]
 - [[features/dark-mode|Dark mode]] with system preference detection
@@ -43,6 +43,6 @@ Nuartz is split into two packages:
 | Package | Description |
 |---------|-------------|
 | `packages/nuartz` | Headless data library — markdown parsing, wikilinks, backlinks, search index |
-| `apps/web` | Next.js 15 starter template with shadcn/ui |
+| `apps/web` | Next.js 16 starter template with shadcn/ui |
 
 Read more on the [[advanced/architecture|architecture]] page or explore [[advanced/creating-plugins|creating plugins]].

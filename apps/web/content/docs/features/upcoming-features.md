@@ -7,7 +7,7 @@ These are features we're considering or actively working on for nuartz. This lis
 
 ## Under consideration
 
-- **Dead link detection** — Static analysis to find broken `[[wikilinks]]` at build time
+- **Strict link validation**: Optional CI failure when broken `[[wikilinks]]` are detected
 - **Sidenotes** — Margin notes as an alternative to footnotes
 - **Exact-match search** — Use double quotes in search for exact phrase matching
 - **Canvas support** — Rendering Obsidian Canvas (`.canvas`) files

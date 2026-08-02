@@ -1,0 +1,53 @@
+name: Bug report
+description: Report reproducible behavior that does not work as expected.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Nuartz. Do not report security vulnerabilities here.
+  - type: input
+    id: version
+    attributes:
+      label: Nuartz version
+      placeholder: 0.2.0
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment target
+      options:
+        - Local development
+        - Vercel
+        - GitHub Pages
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide a minimal repository, markdown sample, or exact steps.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, Bun or Node version, browser, and relevant configuration.
+    validations:
+      required: true

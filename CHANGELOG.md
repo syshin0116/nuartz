@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- Content validation uses the public `nuartz/markdown` export.
+- Package builds remove stale output before compiling.
+
+### Changed
+- Restored CI quality gates for type checking, tests, validation, package inspection, and production builds.
+- Added contributor, security, issue, and pull request documentation.
+
+## [0.2.0] - 2026-04-29
+
+### Added
+- Build-time Graphviz and D2 diagram rendering.
+- `summary` support in the `Frontmatter` type.
+- Complete Nuartz documentation site content.
+
+### Changed
+- Moved `renderMarkdown` to the `nuartz/markdown` export to keep browser-safe imports separate.
+
+### Fixed
+- URI-encoded slugs are decoded before content lookup.
+- Improved graph view sizing and interaction behavior.
+
 ## [0.1.9] - 2026-03-23
 
 ### Fixed

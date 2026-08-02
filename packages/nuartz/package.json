@@ -25,6 +25,9 @@
     "second-brain"
   ],
   "homepage": "https://github.com/syshin0116/nuartz#readme",
+  "bugs": {
+    "url": "https://github.com/syshin0116/nuartz/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -44,12 +47,14 @@
     "./styles.css": "./styles/prose.css"
   },
   "scripts": {
-    "build": "tsc",
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "bun run clean && tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "bun run typecheck && bun run test && bun run build"
   },
   "dependencies": {
     "@beoe/cache": "^0.1.1",
@@ -75,8 +80,8 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.10",
     "typescript": "^5",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.10"
   }
 }

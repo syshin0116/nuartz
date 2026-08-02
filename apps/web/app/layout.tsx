@@ -11,6 +11,7 @@ import config from "@/nuartz.config"
 import fileTree from "@/.generated/file-tree.json"
 
 export const metadata: Metadata = {
+  metadataBase: new URL(config.site.baseUrl),
   title: config.site.title,
   description: config.site.description,
   verification: {
