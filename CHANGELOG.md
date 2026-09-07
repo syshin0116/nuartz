@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.3.0] - 2026-09-07
 
 ### Added
 - All-notes browsing with URL-backed filtering and sorting.
