@@ -387,6 +387,21 @@ async function main() {
   // Copy media files (images, etc.) from content/ to public/content/
   await copyMediaFiles()
 
+  const viewerDir = path.join(PUBLIC_DIR, "graph-viewer")
+  const viewerSource = path.join(import.meta.dir, "../apps/web/graph-viewer")
+  await fs.rm(viewerDir, { recursive: true, force: true })
+  await ensureDir(viewerDir)
+  const viewerBuild = await Bun.build({
+    entrypoints: [path.join(viewerSource, "index.ts")], outdir: viewerDir,
+    target: "browser", format: "esm", splitting: true, minify: true,
+  })
+  if (!viewerBuild.success) throw new AggregateError(viewerBuild.logs, "Graph viewer build failed")
+  await Promise.all([
+    fs.copyFile(path.join(viewerSource, "index.html"), path.join(viewerDir, "index.html")),
+    fs.copyFile(path.join(import.meta.dir, "../node_modules/aframe/dist/aframe-master.min.js"), path.join(viewerDir, "aframe.js")),
+    fs.copyFile(path.join(import.meta.dir, "../node_modules/@ar-js-org/ar.js/aframe/build/aframe-ar.js"), path.join(viewerDir, "ar.js")),
+  ])
+
   const elapsed = ((performance.now() - start) / 1000).toFixed(2)
   console.log(`prebuild: done in ${elapsed}s - ${files.length} pages, ${graphLinks.length} links, ${backlinkIndex.size} pages with backlinks`)
 }
