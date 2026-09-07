@@ -106,6 +106,16 @@ import {
 import { renderMarkdown } from "nuartz/markdown"
 ```
 
+## Publishing the package
+
+The `Publish` workflow publishes version tags through npm trusted publishing. Configure
+`nuartz` on npm with owner `syshin0116`, repository `nuartz`, workflow `publish.yml`,
+environment `npm`, and permission to run `npm publish`. No npm token is required.
+
+Push a tag matching `packages/nuartz/package.json`, such as `v0.3.0`. To retry an
+unpublished tag after fixing release configuration, run
+`gh workflow run publish.yml --field tag=v0.3.0`. The workflow checks out that exact tag.
+
 ## Stack
 
 | Layer | Technology |
