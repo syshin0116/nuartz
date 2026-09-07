@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Selectable 2D, 3D, VR, and marker-based AR graph views with shared note selection and on-demand spatial assets.
+
+### Changed
+- Animate connected 2D nodes during dragging, with reduced-motion support and a 250-node limit.
+
 ## [0.3.0] - 2026-09-07
 
 ### Added

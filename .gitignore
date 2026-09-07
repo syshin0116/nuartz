@@ -19,3 +19,5 @@ apps/web/public/pagefind/
 .claude/
 .superset/
 .obsidian/
+
+apps/web/public/graph-viewer/
