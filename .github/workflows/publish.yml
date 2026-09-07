@@ -27,7 +27,8 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Verify tag matches package version
-        run: test "${GITHUB_REF_NAME}" = "v$(node -p \"require('./packages/nuartz/package.json').version\")"
+        run: |
+          test "$GITHUB_REF_NAME" = "v$(node -p "require('./packages/nuartz/package.json').version")"
 
       - name: Run quality checks
         run: bun run check
