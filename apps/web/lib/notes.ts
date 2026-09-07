@@ -1,8 +1,22 @@
-import notesList from "@/.generated/notes-list.json"
+import notesList from "../.generated/notes-list.json"
 
 export const NOTES_PER_PAGE = 10
 
-export type NoteEntry = (typeof notesList)[number]
+export interface NoteEntry {
+  slug: string
+  title: string
+  description: string | null
+  summary: string | null
+  date: string | null
+  dateRaw: string | null
+  tags: string[]
+  draft: boolean
+}
+
+export function filterNotes(notes: NoteEntry[], tag: string, sort: string) {
+  return notes.filter(note => !tag || note.tags.includes(tag)).sort((a, b) =>
+    (sort === "title" ? a.title.localeCompare(b.title) : (b.dateRaw ?? "").localeCompare(a.dateRaw ?? "")) || a.slug.localeCompare(b.slug))
+}
 
 export async function getSortedNotes() {
   return notesList.filter((f) => !f.draft)

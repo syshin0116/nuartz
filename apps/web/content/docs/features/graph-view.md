@@ -20,35 +20,29 @@ The graph is generated from the link structure of your content:
 
 ## Local vs Global
 
-- **Local graph** — shows notes directly connected to the current page (one hop away)
-- **Global graph** — shows all notes and their connections; toggle it from the graph icon
+- **Local graph**: shows up to 28 nodes within two hops of the current page, including shared tags
+- **Global graph**: choose **Explore**, then **All notes** to see the whole garden
 
 ## Building a Connected Garden
 
 The more you use wikilinks, the richer your graph becomes. Here are the docs in this garden and how they connect:
 
-- [[index|Home]] — the entry point, links to all major sections
-- [[docs/getting-started|Getting Started]] — setup guide
-- [[docs/authoring-content|Authoring Content]] — writing syntax reference
-- [[docs/configuration|Configuration]] — config options
-- [[docs/features/wikilinks|Wikilinks]] — the linking mechanism that powers the graph
-- [[docs/features/callouts|Callouts]] — callout block types
-- [[docs/features/syntax-highlighting|Syntax Highlighting]] — code rendering
-- [[docs/features/mermaid|Mermaid Diagrams]] — diagram rendering
+- [[index|Home]] - the entry point, links to all major sections
+- [[docs/getting-started|Getting Started]] - setup guide
+- [[docs/authoring-content|Authoring Content]] - writing syntax reference
+- [[docs/configuration|Configuration]] - config options
+- [[docs/features/wikilinks|Wikilinks]] - the linking mechanism that powers the graph
+- [[docs/features/callouts|Callouts]] - callout block types
+- [[docs/features/syntax-highlighting|Syntax Highlighting]] - code rendering
+- [[docs/features/mermaid|Mermaid Diagrams]] - diagram rendering
 
 > [!tip] Make Your Graph Interesting
 > Link liberally between notes. Each `[[wikilink]]` adds an edge to the graph, making it easier to discover related content.
 
-## Enabling Graph View
+## Exploring connections
 
-Graph view is enabled by default. You can toggle it in [[docs/configuration|nuartz.config.ts]]:
+Select a node to highlight its direct connections, then use the note link to open it. **Explore** opens a larger graph with note and tag filters. Use the search field to find a note in the current view, or choose a connected note in the side panel. Drag nodes to rearrange them, and use the zoom and fit buttons to adjust the view.
 
-```typescript
-features: {
-  // graph view is part of the core layout
-  backlinks: true, // backlinks power the graph edges
-}
-```
+The current note is teal. Tags use amber diamonds. Labels appear for the current note, selection, and hovered or focused nodes. On mobile, open **On this page** to reach the graph.
 
-> [!note] Visited Nodes
-> Like how browsers color visited links differently, the graph highlights nodes you have already visited.
+Use Tab to enter the graph, arrow keys to move between nodes, and Enter or Space to select one. In the sidebar, hold Ctrl or Command while scrolling to zoom; normal scrolling continues down the page.

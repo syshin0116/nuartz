@@ -1,4 +1,5 @@
 ---
+order: 2
 title: Authoring Content
 date: 2026-03-01
 tags:
@@ -43,9 +44,9 @@ aliases:
 
 Link to other notes using double brackets:
 
-- `[[docs/getting-started]]` — links to [[docs/getting-started]]
-- `[[docs/getting-started|Get Started]]` — links with custom text: [[docs/getting-started|Get Started]]
-- `[[docs/features/callouts#Showcase]]` — links to a heading anchor
+- `[[docs/getting-started]]` - links to [[docs/getting-started]]
+- `[[docs/getting-started|Get Started]]` - links with custom text: [[docs/getting-started|Get Started]]
+- `[[docs/features/callouts#Showcase]]` - links to a heading anchor
 
 See [[docs/features/wikilinks|Wikilinks]] for the full syntax reference.
 

@@ -39,7 +39,7 @@ export default async function RootLayout({
             Skip to content
           </a>
           <div className="flex min-h-screen flex-col">
-            <Header tree={tree} />
+            <Header tree={tree} title={config.site.title} links={config.nav?.links} />
             <div className="flex flex-1 mx-auto w-full max-w-[1440px]">
               <aside className="hidden lg:block w-[var(--sidebar-width)] shrink-0 border-r">
                 <ScrollArea className="sticky top-14 h-[calc(100vh-3.5rem)] scroll-mask">

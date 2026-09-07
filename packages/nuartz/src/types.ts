@@ -6,6 +6,7 @@ export interface Frontmatter {
   summary?: string
   draft?: boolean
   aliases?: string[]
+  order?: number
   [key: string]: unknown
 }
 
@@ -28,7 +29,9 @@ export interface RenderOptions {
   /** Base URL for wikilinks (default: '/') */
   baseUrl?: string
   /** Resolve wikilink target to URL path */
-  resolveLink?: (target: string) => string
+  resolveLink?: (target: string, heading?: string, filePath?: string) => string
+  /** Load a published note for transclusion. Return undefined for missing or private notes. */
+  resolveEmbed?: (target: string, filePath?: string) => { content: string; filePath: string } | undefined
   /** Known slugs for dead-link detection */
   knownSlugs?: Set<string>
   /** Whether to strip draft pages (default: false) */

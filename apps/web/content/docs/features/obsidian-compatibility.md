@@ -4,7 +4,7 @@ date: 2026-03-01
 tags:
   - feature
   - obsidian
-description: nuartz supports Obsidian Flavored Markdown — wikilinks, callouts, tags, highlights, comments, and more.
+description: nuartz supports Obsidian Flavored Markdown - wikilinks, callouts, tags, highlights, comments, and more.
 ---
 
 nuartz was designed to publish [Obsidian](https://obsidian.md/) vaults as websites with zero friction. Drop your vault's content folder into `content/` and nuartz handles the rest.
@@ -30,6 +30,20 @@ Embed images with the `!` prefix, optionally specifying dimensions:
 ![[screenshot.png|600x400]]
 ```
 
+### Note embeds
+
+Place a note embed in its own paragraph to include its content:
+
+```markdown
+![[docs/getting-started]]
+![[docs/getting-started#Installation]]
+![[my-note#^block-id]]
+```
+
+A section embed includes its subheadings until the next heading at the same or a higher level. Add `^block-id` at the end of a paragraph, or on a separate line after a block, to reference that block. Embedded content keeps its links relative to the source note.
+
+Missing targets, circular references, and embeds beyond four nested notes stay as links. Inline note embeds also remain links. Draft and unpublished notes are excluded from the embed lookup.
+
 ### Callouts
 
 Obsidian-style callout blocks using the `> [!type]` syntax. See [[docs/features/callouts|Callouts]] for all supported types.
@@ -53,7 +67,7 @@ This is ==highlighted== text.
 
 ### Comments
 
-Obsidian comments (`%%...%%`) are stripped from the output — they never appear in the published site:
+Obsidian comments (`%%...%%`) are stripped from the output - they never appear in the published site:
 
 ```markdown
 %% This comment is invisible to readers. %%
@@ -87,7 +101,7 @@ nuartz reads the same frontmatter fields as Obsidian (`title`, `tags`, `aliases`
 
 ## Related
 
-- [[docs/features/wikilinks|Wikilinks]] — full wikilink syntax reference
-- [[docs/features/callouts|Callouts]] — callout types and nesting
-- [[docs/features/tags|Tags]] — tag index and inline tags
-- [[docs/authoring-content|Authoring Content]] — full syntax guide
+- [[docs/features/wikilinks|Wikilinks]] - full wikilink syntax reference
+- [[docs/features/callouts|Callouts]] - callout types and nesting
+- [[docs/features/tags|Tags]] - tag index and inline tags
+- [[docs/authoring-content|Authoring Content]] - full syntax guide

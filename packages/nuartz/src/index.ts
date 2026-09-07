@@ -1,4 +1,5 @@
 export { buildBacklinkIndex, getBacklinks } from "./backlinks.js"
+export { createNoteResolver, normalizeNotePath, noteHref } from "./links.js"
 export { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree } from "./fs.js"
 export { buildSearchIndex } from "./search.js"
 export { defineConfig } from "./config.js"

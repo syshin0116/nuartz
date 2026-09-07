@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { usePathname } from "next/navigation"
 
 const copySvg =
   '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>'
@@ -52,6 +53,7 @@ function addCopyButton(container: HTMLElement, codeEl: HTMLElement, elements: HT
 }
 
 export function CopyCode() {
+  const pathname = usePathname()
   useEffect(() => {
     const elements: HTMLElement[] = []
 
@@ -89,9 +91,12 @@ export function CopyCode() {
     })
 
     return () => {
-      elements.forEach((el) => el.remove())
+      elements.forEach((el) => {
+        if (el.classList.contains("pre-wrapper")) el.replaceWith(...el.childNodes)
+        else el.remove()
+      })
     }
-  }, [])
+  }, [pathname])
 
   return null
 }

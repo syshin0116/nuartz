@@ -1,10 +1,11 @@
 ---
+order: 3
 title: Configuration
 date: 2026-03-01
 tags:
   - nuartz
   - configuration
-description: Reference for nuartz.config.ts — all available options for configuring your digital garden.
+description: Reference for nuartz.config.ts - all available options for configuring your digital garden.
 ---
 
 nuartz is configured through `nuartz.config.ts` in your project root. If your editor has TypeScript support, it will warn you about configuration errors as you type.
@@ -103,4 +104,4 @@ nav: {
 - `external`: Set `true` to open in a new tab with an external link icon.
 
 > [!note] Hot Reload
-> Changes to `nuartz.config.ts` are picked up automatically during development — no restart needed.
+> Changes to `nuartz.config.ts` are picked up automatically during development - no restart needed.

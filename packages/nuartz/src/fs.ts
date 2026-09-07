@@ -112,6 +112,7 @@ export interface FileTreeNode {
   children?: FileTreeNode[]
   mtime?: Date
   date?: number  // Resolved date timestamp for sorting (frontmatter > filename > 0)
+  order?: number
 }
 
 export interface BuildFileTreeOptions {
@@ -153,6 +154,7 @@ export function buildFileTree(files: MarkdownFile[], options?: BuildFileTreeOpti
           type: "file",
           mtime: file.mtime,
           date: extractDate(file),
+          order: file.frontmatter.order,
         }
         parentList.push(node)
       } else {
@@ -163,6 +165,7 @@ export function buildFileTree(files: MarkdownFile[], options?: BuildFileTreeOpti
           parentList.push(folderNode)
         }
         // Bubble up the latest date to the folder
+        if (file.frontmatter.order !== undefined) folderNode.order = Math.min(folderNode.order ?? Infinity, file.frontmatter.order)
         if (sortBy === 'date') {
           const fileDate = extractDate(file)
           if (fileDate > (folderNode.date ?? 0)) folderNode.date = fileDate
@@ -178,6 +181,7 @@ export function buildFileTree(files: MarkdownFile[], options?: BuildFileTreeOpti
   // Sort each level: folders first, then by chosen method
   function sortNodes(nodes: FileTreeNode[]): FileTreeNode[] {
     nodes.sort((a, b) => {
+      if (sortBy === "name" && a.order !== b.order) return (a.order ?? Infinity) - (b.order ?? Infinity)
       if (a.type !== b.type) return a.type === "folder" ? -1 : 1
       if (sortBy === 'date') return (b.date ?? 0) - (a.date ?? 0)
       if (sortBy === 'modified') return (b.mtime?.getTime() ?? 0) - (a.mtime?.getTime() ?? 0)

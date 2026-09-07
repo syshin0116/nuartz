@@ -4,7 +4,7 @@ date: 2026-03-01
 tags:
   - nuartz
   - getting-started
-description: Publish your Obsidian vault as a Next.js website. Full wikilink support, graph view, and shadcn/ui — deploy to Vercel or GitHub Pages.
+description: Publish your Obsidian vault as a Next.js website. Full wikilink support, graph view, and shadcn/ui - deploy to Vercel or GitHub Pages.
 ---
 
 # Publish your Obsidian vault as a Next.js website.
@@ -12,7 +12,9 @@ description: Publish your Obsidian vault as a Next.js website. Full wikilink sup
 **Nuartz** = **N**ext.js + Q**uartz**. Write in Obsidian, publish with Next.js 16 + shadcn/ui + Tailwind CSS v4. Full wikilink support, graph view, and every component is swappable.
 
 > [!tip] You're looking at it
-> This documentation site is built with Nuartz. The sidebar, search (`Cmd+K`), graph view, dark mode, wikilinks — everything you see here is Nuartz. Go ahead, explore.
+> This documentation site is built with Nuartz. The sidebar, search (`Cmd+K`), graph view, dark mode, wikilinks - everything you see here is Nuartz. Go ahead, explore.
+
+<div class="home-actions"><a href="/docs/getting-started">Get started →</a><a href="/docs/authoring-content">Explore syntax</a></div>
 
 ## Quick Start
 
@@ -31,25 +33,25 @@ See [[docs/getting-started|Installation & Setup]] for details →
 
 ### Full Obsidian Syntax
 
-- [[docs/features/wikilinks|Wikilinks]] — `[[note]]`, `[[note|alias]]`, `[[note#heading]]` with dead link detection
-- [[docs/features/callouts|Callouts]] — `> [!note]`, `> [!warning]+` with foldable support
-- [[docs/features/graph-view|Graph View]] — D3 force-directed graph visualizing note connections
-- [[docs/features/backlinks|Backlinks]] & [[docs/features/popover-previews|Popover Previews]] — navigate your vault like in Obsidian
+- [[docs/features/wikilinks|Wikilinks]] - `[[note]]`, `[[note|alias]]`, `[[note#heading]]` with dead link detection
+- [[docs/features/callouts|Callouts]] - `> [!note]`, `> [!warning]+` with foldable support
+- [[docs/features/graph-view|Graph View]] - D3 force-directed graph visualizing note connections
+- [[docs/features/backlinks|Backlinks]] & [[docs/features/popover-previews|Popover Previews]] - navigate your vault like in Obsidian
 
 ### Developer Features
 
 - [[docs/features/search|Full-text Search]]: `Cmd+K`, Pagefind-powered, CJK-aware
-- [[docs/features/syntax-highlighting|Syntax Highlighting]] — VS Code-quality code blocks via Shiki
-- [[docs/features/social-images|Dynamic OG Images]] — auto-generated social cards per page
+- [[docs/features/syntax-highlighting|Syntax Highlighting]] - VS Code-quality code blocks via Shiki
+- [[docs/features/social-images|Dynamic OG Images]] - auto-generated social cards per page
 - [[docs/features/rss-feed|RSS Feed]], [[docs/features/table-of-contents|TOC]], [[docs/features/reader-mode|Reader Mode]], [[docs/features/comments|Comments (Giscus)]]
 
 ### Built on shadcn/ui
 
-Every UI component is built with shadcn/ui. Grab any component from [ui.shadcn.com](https://ui.shadcn.com) and drop it in. No theme constraints — customize at the React component level.
+Every UI component is built with shadcn/ui. Grab any component from [ui.shadcn.com](https://ui.shadcn.com) and drop it in. No theme constraints - customize at the React component level.
 
 ## Why Nuartz?
 
-Heavily inspired by [Quartz](https://github.com/jackyzha0/quartz). Nuartz borrows many of Quartz's ideas — Obsidian parsing, graph visualization, overall UX — and reimplements them on top of the Next.js + React ecosystem.
+Heavily inspired by [Quartz](https://github.com/jackyzha0/quartz). Nuartz borrows many of Quartz's ideas - Obsidian parsing, graph visualization, overall UX - and reimplements them on top of the Next.js + React ecosystem.
 
 |  | Nuartz | Static generators |
 |--|--------|-------------------|

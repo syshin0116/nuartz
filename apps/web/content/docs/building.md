@@ -1,4 +1,5 @@
 ---
+order: 6
 title: Building Your Site
 description: How to build and preview your nuartz digital garden locally.
 ---

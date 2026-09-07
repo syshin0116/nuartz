@@ -4,11 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- All-notes browsing with URL-backed filtering and sorting.
+- Two-hop graph exploration with note search, connection details, keyboard controls, and reduced-motion-aware transitions.
+- Note, section, and block embeds with cycle protection, plus frontmatter ordering for navigation.
+
 ### Fixed
+- Share Unicode, relative-path, and alias resolution across wikilinks, backlinks, and graph generation.
+- Keep inline tags consistent across search, graph, and note listings.
+- Correct mobile navigation overflow and restore diagram, image zoom, and code-copy behavior after navigation.
 - Content validation uses the public `nuartz/markdown` export.
 - Package builds remove stale output before compiling.
 
 ### Changed
+- Simplify document navigation, reading layout, and lazy-loaded search.
+- Move graph layout into a Web Worker, batch large SVG creation, and avoid repeated layout during selection and dragging.
 - Restored CI quality gates for type checking, tests, validation, package inspection, and production builds.
 - Added contributor, security, issue, and pull request documentation.
 

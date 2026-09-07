@@ -1,4 +1,5 @@
 ---
+order: 8
 title: GitHub Repository Setup
 description: How to set up a GitHub repository for your nuartz digital garden.
 ---
@@ -56,6 +57,6 @@ If you have [[deployment]] set up with Vercel, pushing to `main` will automatica
 
 ## Repository structure tips
 
-- Keep personal content in `apps/web/content/` — this is the only directory you need to modify for most use cases
+- Keep personal content in `apps/web/content/` - this is the only directory you need to modify for most use cases
 - Configuration lives in `apps/web/` (layout, styles, components)
 - The core library in `packages/nuartz/` rarely needs changes unless you're adding [[creating-plugins|custom plugins]]

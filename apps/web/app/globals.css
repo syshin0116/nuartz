@@ -196,14 +196,14 @@ mark {
   background-color: oklch(0.35 0.12 85);
 }
 
-/* Scroll mask — fade-out at top/bottom edges */
+/* Scroll mask - fade-out at top/bottom edges */
 .scroll-mask {
   mask-image: linear-gradient(to bottom, transparent, black 2rem, black calc(100% - 2rem), transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 2rem, black calc(100% - 2rem), transparent);
 }
 
 /* Reader mode */
-html.reader-mode aside {
+html.reader-mode aside, html.reader-mode .reading-toc {
   display: none !important;
 }
 html.reader-mode main > div {
@@ -250,7 +250,7 @@ html.reader-mode main > div {
   pointer-events: none;
 }
 
-/* Copy button — visible on hover (desktop) and always visible (mobile) */
+/* Copy button - visible on hover (desktop) and always visible (mobile) */
 .copy-code-btn {
   position: absolute;
   top: 0.375rem;
@@ -340,7 +340,7 @@ html.reader-mode main > div {
   & > *:not(.callout-title):first-of-type {
     padding-top: 0.25rem;
   }
-  /* remarkBreaks adds a leading <br> in callout content — hide it */
+  /* remarkBreaks adds a leading <br> in callout content - hide it */
   & > *:not(.callout-title) > br:first-child {
     display: none;
   }
@@ -633,3 +633,68 @@ a.tag {
     stroke: currentColor;
   }
 }
+.reading-column { max-width: 72ch; margin-inline: auto; }
+.prose > :first-child { margin-top: 0; }
+.prose table { display: block; overflow-x: auto; }
+.prose { overflow-wrap: anywhere; }
+.copy-code-btn:focus-visible, .prose .heading-anchor:focus-visible { opacity: 1; }
+
+.graph-surface {
+  --graph-accent: oklch(0.53 0.105 185);
+  --graph-tag: oklch(0.59 0.10 70);
+  background: radial-gradient(circle, color-mix(in srgb, var(--muted-foreground) 18%, transparent) 0.7px, transparent 0.8px) 8px 8px / 16px 16px, color-mix(in srgb, var(--muted) 35%, var(--background));
+}
+.dark .graph-surface { --graph-accent: oklch(0.78 0.10 185); --graph-tag: oklch(0.78 0.10 70); }
+.graph-canvas { touch-action: none; cursor: grab; }
+.graph-canvas:active { cursor: grabbing; }
+.graph-edge { stroke: var(--muted-foreground); opacity: 0.16; }
+.graph-edge[data-active="true"] { stroke: var(--graph-accent); opacity: 0.6; stroke-width: 1.5; }
+.graph-canvas [data-node] { cursor: pointer; fill: var(--muted-foreground); transition: opacity 150ms; }
+.graph-canvas [data-kind="tag"] { fill: var(--graph-tag); }
+.graph-canvas [data-dimmed="true"] { opacity: 0.4; }
+.graph-canvas [data-current="true"], .graph-canvas [data-selected="true"] { fill: var(--graph-accent); opacity: 1; }
+.graph-hit { fill: transparent; pointer-events: all; }
+.graph-canvas [data-selected="true"] .graph-mark > :is(circle, rect):not(.graph-hit), .graph-canvas [data-node]:focus-visible .graph-mark > :is(circle, rect):not(.graph-hit) {
+  stroke: var(--graph-accent); stroke-width: 5; stroke-opacity: 0.25; paint-order: stroke;
+}
+.graph-label { fill: var(--foreground); stroke: var(--background); stroke-linejoin: round; paint-order: stroke; opacity: 0; pointer-events: none; }
+.graph-canvas [data-node]:hover .graph-label,
+.graph-canvas [data-node]:focus-visible .graph-label,
+.graph-canvas [data-labelled="true"]:not([data-dimmed="true"]) .graph-label { opacity: 1; }
+.graph-canvas [data-node]:hover, .graph-canvas [data-node]:focus-visible { opacity: 1; }
+
+.prose .embed-note { margin-block: 1.5rem; padding: 1rem 1.25rem; border: 1px solid var(--border); border-left: 3px solid var(--ring); border-radius: 0.5rem; }
+.prose .embed-source { display: block; margin-bottom: 1rem; font-size: 0.8rem; color: var(--muted-foreground); }
+.prose .home-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.75rem 0 2.5rem; }
+.prose .home-actions a { padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; text-decoration: none; font-size: 0.875rem; font-weight: 500; }
+.prose .home-actions a:first-child { color: var(--background); background: var(--foreground); border-color: var(--foreground); }
+.prose .home-actions a:hover { opacity: 0.8; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.graph-mark { transform: scale(var(--graph-inverse-scale, 1)); }
+
+.graph-dense .graph-edge { opacity: 0.025; }
+.graph-dense .graph-edge[data-active="true"] { opacity: 0.7; }
+.graph-dense [data-dimmed="true"] { opacity: 0.18; }
+.graph-dense .graph-mark > circle:not(.graph-hit) { r: 1.5px; }
+.graph-dense [data-dimmed="false"] .graph-mark > circle:not(.graph-hit) { r: 3px; }
+.graph-dense [data-current="true"] .graph-mark > circle:not(.graph-hit),
+.graph-dense [data-selected="true"] .graph-mark > circle:not(.graph-hit) { r: 6px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .graph-surface[data-status="ready"] > .graph-canvas:not(.graph-dense) { animation: graph-reveal 320ms ease-out; }
+  .graph-selection { animation: graph-selection-in 200ms ease-out; }
+  .graph-canvas:not(.graph-dense) .graph-edge { transition: opacity 180ms, stroke 180ms; }
+  .graph-canvas:not(.graph-dense) .graph-label { transition: opacity 140ms; }
+  .graph-canvas:not(.graph-dense) [data-selected="true"] .graph-mark > :is(circle, rect):not(.graph-hit) { animation: graph-select 360ms ease-out; }
+  .graph-dialog button, .graph-dialog a, .graph-surface button { transition: background-color 150ms, color 150ms, transform 150ms; }
+  .graph-dialog button:active, .graph-dialog a:active, .graph-surface button:active { transform: scale(0.97); }
+  .graph-dialog button > svg:last-child, .graph-dialog a > svg { transition: transform 150ms, opacity 150ms; }
+  .graph-dialog button:hover > svg:last-child, .graph-dialog a:hover > svg { transform: translateX(2px); }
+}
+@keyframes graph-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes graph-selection-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes graph-select { from { stroke-width: 12; stroke-opacity: 0; } to { stroke-width: 5; stroke-opacity: 0.25; } }

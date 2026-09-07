@@ -1,4 +1,5 @@
 ---
+order: 4
 title: Deployment
 date: 2026-03-01
 tags:
@@ -29,7 +30,7 @@ git push
 
 1. Go to [vercel.com/new](https://vercel.com/new) and click **Add New Project**.
 2. Select **Import Git Repository** and choose your nuartz repo.
-3. Vercel auto-detects Next.js — leave the framework preset as **Next.js**.
+3. Vercel auto-detects Next.js - leave the framework preset as **Next.js**.
 4. Leave the root directory as `./` (or `apps/web` if you use the monorepo layout).
 
 ### 3. Set the environment variable
@@ -84,6 +85,6 @@ Open `http://localhost:3000` to verify everything looks correct.
 
 ## Related
 
-- [[docs/getting-started|Getting Started]] — local development setup
-- [[docs/configuration|Configuration]] — `nuartz.config.ts` reference
-- [[docs/features/private-pages|Private Pages]] — exclude draft content from builds
+- [[docs/getting-started|Getting Started]] - local development setup
+- [[docs/configuration|Configuration]] - `nuartz.config.ts` reference
+- [[docs/features/private-pages|Private Pages]] - exclude draft content from builds

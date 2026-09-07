@@ -1,4 +1,5 @@
 ---
+order: 20
 title: Processing Pipeline
 ---
 
@@ -46,10 +47,10 @@ import { renderMarkdown } from "nuartz/markdown"
 const result = await renderMarkdown(rawMarkdownString, {
   knownSlugs: new Set(allSlugs),  // optional: enables broken-link detection
 })
-// result.html      — rendered HTML
-// result.toc       — table of contents entries
-// result.links     — outgoing wikilinks
-// result.tags      — all tags (frontmatter + inline)
+// result.html      - rendered HTML
+// result.toc       - table of contents entries
+// result.links     - outgoing wikilinks
+// result.tags      - all tags (frontmatter + inline)
 ```
 
 ## Plugin Reference
