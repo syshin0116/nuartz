@@ -4,6 +4,7 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import { TableOfContents } from "@/components/toc"
 import { GraphView } from "@/components/graph-view"
+import type { TocEntry } from "nuartz"
 import { NotesList } from "@/components/notes-list"
 import type { Metadata } from "next"
 import config from "@/nuartz.config"
@@ -23,10 +24,11 @@ export default async function HomePage() {
   if (homePage === "index") {
     try {
       const raw = await fs.readFile(path.join(GENERATED_DIR, "pages", "index.json"), "utf-8")
-      const pageData = JSON.parse(raw) as { html: string; toc: any[] }
+      const pageData = JSON.parse(raw) as { html: string; toc: TocEntry[] }
       return (
         <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
-          <div className="min-w-0 flex-1">
+          <div className="reading-column min-w-0 flex-1">
+            <TableOfContents toc={pageData.toc} mobile><GraphView currentSlug="index" /></TableOfContents>
             <article
               data-pagefind-body
               className="prose max-w-none"

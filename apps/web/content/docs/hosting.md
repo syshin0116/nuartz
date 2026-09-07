@@ -1,4 +1,5 @@
 ---
+order: 7
 title: Hosting
 description: Deploy Nuartz to GitHub Pages, Vercel, Netlify, or your own server.
 ---
@@ -29,8 +30,8 @@ GitHub Pages serves static files for free. Nuartz supports this by building all 
 ### How it works
 
 When you enable static export, Nuartz:
-1. **Pre-generates `graph.json`** — the same graph data that normally comes from `/api/graph`, saved as a static file
-2. **Pre-generates `preview-index.json`** — preview data for internal link popups, no API needed
+1. **Pre-generates `graph.json`** - the same graph data that normally comes from `/api/graph`, saved as a static file
+2. **Pre-generates `preview-index.json`** - preview data for internal link popups, no API needed
 3. **Copies media files** from `content/` to `public/content/` so images work without a server
 4. **Temporarily disables server-only routes** (API routes, OG image generation) that aren't compatible with static hosting
 5. **Builds all pages as static HTML** using Next.js `output: "export"`
@@ -89,7 +90,7 @@ Go to [vercel.com/new](https://vercel.com/new), click **Import Git Repository**,
 
 ### 2. Configure the project
 
-Nuartz is a **monorepo** — the Next.js app lives in `apps/web`, not the root. Override the defaults:
+Nuartz is a **monorepo** - the Next.js app lives in `apps/web`, not the root. Override the defaults:
 
 | Setting | Value |
 |---------|-------|

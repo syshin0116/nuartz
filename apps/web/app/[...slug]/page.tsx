@@ -164,13 +164,13 @@ export default async function NotePage({
       )
     }
 
-    // Check aliases — scan all-slugs for alias match
+    // Check aliases - scan all-slugs for alias match
     // For alias redirect, we need to check if any page has this as an alias
     // This is already handled by generateStaticParams including aliases,
     // but we need the actual page data. Try finding the canonical slug.
     const allPages = allSlugsData.pages as string[][]
     // If we got here and it's in aliases, we need to find the target
-    // For now, just 404 — alias redirects should be rare and can be handled separately
+    // For now, just 404 - alias redirects should be rare and can be handled separately
     notFound()
   }
 
@@ -202,7 +202,7 @@ export default async function NotePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       {/* Main content */}
-      <div className="min-w-0 flex-1">
+      <div className="reading-column min-w-0 flex-1">
         {slug.length > 1 && (
           <div className="mb-6">
             <Breadcrumb slug={slug} />
@@ -223,27 +223,25 @@ export default async function NotePage({
             {rt >= 1 && (
               <span className="text-sm text-muted-foreground">{rt} min read</span>
             )}
-            {date && tags.length > 0 && (
-              <span className="text-muted-foreground">·</span>
-            )}
+          </div>
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
+              <div className="mt-3 flex flex-wrap gap-1.5">
                 {tags.map((tag) => (
-                  <a key={tag} href={`/tags/${tag}`}>
+                  <Link key={tag} href={`/tags/${encodeURIComponent(tag)}`}>
                     <Badge variant="secondary" className="text-xs font-normal hover:bg-muted">
                       #{tag}
                     </Badge>
-                  </a>
+                  </Link>
                 ))}
               </div>
             )}
-          </div>
           {frontmatter.description && (
             <p className="mt-3 text-base text-muted-foreground">{frontmatter.description as string}</p>
           )}
         </header>
 
         <Separator className="mb-8" />
+        <TableOfContents toc={toc} mobile><GraphView currentSlug={slugStr} /></TableOfContents>
 
         <HeadingAnchors />
         <PopoverPreview />
@@ -285,7 +283,7 @@ function PrevNextNav({
       {prev ? (
         <Link
           href={`/${prev.slug}`}
-          className="group flex flex-1 items-center gap-2 rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50"
+          className="group flex min-w-0 flex-1 items-center gap-2 rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50"
         >
           <ChevronLeft className="h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0">
@@ -301,7 +299,7 @@ function PrevNextNav({
       {next ? (
         <Link
           href={`/${next.slug}`}
-          className="group flex flex-1 items-center justify-end gap-2 rounded-lg border px-4 py-3 text-right transition-colors hover:bg-muted/50"
+          className="group flex min-w-0 flex-1 items-center justify-end gap-2 rounded-lg border px-4 py-3 text-right transition-colors hover:bg-muted/50"
         >
           <div className="min-w-0">
             <div className="text-xs text-muted-foreground">Next</div>

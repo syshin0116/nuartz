@@ -1,166 +1,41 @@
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { FileTreeNode } from "nuartz"
 
-interface NavSidebarProps {
-  tree: FileTreeNode[]
-}
-
-export function NavSidebar({ tree }: NavSidebarProps) {
+export function NavSidebar({ tree }: { tree: FileTreeNode[] }) {
   const pathname = usePathname()
-  const currentSlug = pathname.replace(/^\//, "")
-
+  const currentSlug = decodeURIComponent(pathname.slice(1))
   return (
-    <nav className="space-y-0.5 text-sm">
-      <Link
-        href="/"
-        className={cn(
-          "flex items-center rounded-md px-2 py-1.5 transition-colors hover:bg-muted",
-          pathname === "/"
-            ? "font-medium text-foreground bg-muted"
-            : "text-muted-foreground hover:text-foreground"
-        )}
-      >
-        Home
-      </Link>
-      <div className="mt-2 space-y-0.5">
-        {tree.map((node) => (
-          <NavNode key={node.path} node={node} currentSlug={currentSlug} depth={0} />
-        ))}
-      </div>
+    <nav aria-label="Notes" className="space-y-1 text-sm">
+      <Link href="/" aria-current={pathname === "/" ? "page" : undefined} className={cn("block rounded-md px-2 py-2 hover:bg-muted", pathname === "/" ? "bg-muted font-medium" : "text-muted-foreground")}>Home</Link>
+      <Link href="/notes" aria-current={pathname === "/notes" ? "page" : undefined} className={cn("block rounded-md px-2 py-2 hover:bg-muted", pathname === "/notes" ? "bg-muted font-medium" : "text-muted-foreground")}>All notes</Link>
+      <div className="pt-2">{tree.filter(node => node.path !== "index").map(node => <NavNode key={node.path} node={node} currentSlug={currentSlug} depth={0} />)}</div>
     </nav>
   )
 }
 
-/** Animated collapse wrapper — measures child height and transitions */
-function Collapse({ open, children }: { open: boolean; children: React.ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [height, setHeight] = useState<number | undefined>(open ? undefined : 0)
-  const isInitial = useRef(true)
-
-  const recalc = useCallback(() => {
-    if (ref.current) setHeight(ref.current.scrollHeight)
-  }, [])
-
-  useEffect(() => {
-    // Skip animation on first render
-    if (isInitial.current) {
-      isInitial.current = false
-      setHeight(open ? undefined : 0)
-      return
-    }
-    if (open) {
-      recalc()
-      // After transition ends, switch to auto so children can grow
-      const timer = setTimeout(() => setHeight(undefined), 300)
-      return () => clearTimeout(timer)
-    } else {
-      // Set explicit height first so transition can animate from it
-      if (ref.current) setHeight(ref.current.scrollHeight)
-      requestAnimationFrame(() => setHeight(0))
-    }
-  }, [open, recalc])
-
-  return (
-    <div
-      ref={ref}
-      className="overflow-hidden"
-      style={{
-        height: height === undefined ? "auto" : height,
-        opacity: open ? 1 : 0,
-        transition: open
-          ? "height 300ms ease-out, opacity 250ms ease-out"
-          : "height 200ms ease-in, opacity 150ms ease-in",
-      }}
-    >
-      {children}
+function NavNode({ node, currentSlug, depth }: { node: FileTreeNode; currentSlug: string; depth: number }) {
+  const isActive = node.type === "file" && currentSlug === node.path
+  const isAncestor = node.type === "folder" && (currentSlug === node.path || currentSlug.startsWith(node.path + "/"))
+  const [open, setOpen] = useState(isAncestor || depth === 0)
+  const activeRef = useRef<HTMLAnchorElement>(null)
+  useEffect(() => { if (isAncestor) setOpen(true) }, [isAncestor])
+  useEffect(() => { if (isActive) activeRef.current?.scrollIntoView({ block: "nearest" }) }, [isActive])
+  if (node.type === "folder") return (
+    <div>
+      <div className="flex items-center gap-1">
+        <button onClick={() => setOpen(value => !value)} aria-expanded={open} aria-label={`${open ? "Collapse" : "Expand"} ${node.name}`} className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
+          <ChevronRight className={cn("size-3.5 transition-transform", open && "rotate-90")} />
+        </button>
+        <Link href={`/${node.path}`} className={cn("min-w-0 flex-1 truncate py-2 font-medium", isAncestor ? "text-foreground" : "text-muted-foreground")}>{node.name}</Link>
+      </div>
+      {open && <div className="ml-4 border-l pl-2">{node.children?.map(child => <NavNode key={child.path} node={child} currentSlug={currentSlug} depth={depth + 1} />)}</div>}
     </div>
   )
-}
-
-function NavNode({
-  node,
-  currentSlug,
-  depth,
-}: {
-  node: FileTreeNode
-  currentSlug: string
-  depth: number
-}) {
-  const isActive = node.type === "file" && currentSlug === node.path
-  const isAncestor = node.type === "folder" && currentSlug.startsWith(node.path + "/")
-  const [open, setOpen] = useState(isAncestor || depth === 0)
-  const indent = depth * 12
-
-  if (node.type === "folder") {
-    return (
-      <div>
-        {/* Section label style for folders */}
-        <div
-          className="flex w-full items-center gap-1 transition-colors"
-          style={{ paddingLeft: `${8 + indent}px` }}
-        >
-          <button
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="flex items-center py-1.5 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
-          >
-            <ChevronRight
-              className={cn(
-                "h-3 w-3 shrink-0 transition-transform duration-200",
-                open && "rotate-90"
-              )}
-            />
-          </button>
-          <Link
-            href={`/${node.path}`}
-            className={cn(
-              "flex-1 min-w-0 py-1.5 text-xs font-semibold uppercase tracking-wider truncate",
-              isAncestor
-                ? "text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {node.name}
-          </Link>
-        </div>
-
-        <Collapse open={open}>
-          {node.children && (
-            <div style={{ paddingLeft: `${8 + indent + 12}px` }} className="space-y-0.5">
-              {node.children.map((child) => (
-                <NavNode
-                  key={child.path}
-                  node={child}
-                  currentSlug={currentSlug}
-                  depth={depth + 1}
-                />
-              ))}
-            </div>
-          )}
-        </Collapse>
-      </div>
-    )
-  }
-
-  return (
-    <Link
-      href={`/${node.path}`}
-      aria-current={isActive ? "page" : undefined}
-      className={cn(
-        "flex items-center rounded-md py-1.5 pr-2 transition-colors hover:bg-muted truncate",
-        isActive
-          ? "font-medium text-foreground bg-muted"
-          : "text-muted-foreground hover:text-foreground"
-      )}
-      style={{ paddingLeft: `${8 + indent}px` }}
-    >
-      <span className="truncate">{node.name}</span>
-    </Link>
-  )
+  return <Link ref={activeRef} href={`/${node.path}`} aria-current={isActive ? "page" : undefined} title={node.name} className={cn("block truncate rounded-md px-2 py-2 hover:bg-muted", isActive ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground")}>{node.name}</Link>
 }

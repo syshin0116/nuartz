@@ -1,10 +1,11 @@
 ---
+order: 5
 title: Frontmatter
 date: 2026-03-01
 tags:
   - reference
   - authoring
-description: All frontmatter fields supported by nuartz — title, date, tags, draft, aliases, and more.
+description: All frontmatter fields supported by nuartz - title, date, tags, draft, aliases, and more.
 ---
 
 Every Markdown file in nuartz can include a YAML frontmatter block at the top. Frontmatter controls how the page is titled, indexed, and displayed.
@@ -96,14 +97,18 @@ enableToc: false
 ## Notes
 
 > [!tip]
-> All frontmatter fields are optional except in specific contexts. A file with no frontmatter at all is valid — nuartz uses the filename as the title.
+> All frontmatter fields are optional except in specific contexts. A file with no frontmatter at all is valid - nuartz uses the filename as the title.
 
 > [!note] Obsidian compatibility
 > nuartz reads the same fields Obsidian writes. If you open your content folder in Obsidian, the properties panel will display and edit these fields correctly. See [[docs/features/obsidian-compatibility|Obsidian Compatibility]].
 
 ## Related
 
-- [[docs/authoring-content|Authoring Content]] — full Markdown syntax reference
-- [[docs/features/tags|Tags]] — how tags work
-- [[docs/features/private-pages|Private Pages]] — using `draft: true`
-- [[docs/features/table-of-contents|Table of Contents]] — using `enableToc`
+- [[docs/authoring-content|Authoring Content]] - full Markdown syntax reference
+- [[docs/features/tags|Tags]] - how tags work
+- [[docs/features/private-pages|Private Pages]] - using `draft: true`
+- [[docs/features/table-of-contents|Table of Contents]] - using `enableToc`
+
+## Navigation order
+
+Set `order: 1` in frontmatter to place a document before higher numbers in the sidebar and previous/next navigation. Documents without an order follow the numbered documents. Recent-note date sorting is unchanged.

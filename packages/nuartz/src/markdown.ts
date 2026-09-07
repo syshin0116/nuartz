@@ -25,6 +25,8 @@ import { remarkWikilink } from "./plugins/wikilink.js"
 import { remarkHighlight } from "./plugins/highlight.js"
 import { remarkObsidianComment } from "./plugins/comment.js"
 import { remarkArrows } from "./plugins/arrows.js"
+import { embedContent, remarkEmbed, remarkBlockIds } from "./plugins/embed.js"
+import { noteHref, normalizeNotePath } from "./links.js"
 import type { Frontmatter, RenderResult, RenderOptions, TocEntry } from "./types.js"
 
 // Rehype plugin that extracts headings into vfile.data.toc
@@ -80,7 +82,11 @@ export async function renderMarkdown(
   content: string,
   options: RenderOptions = {}
 ): Promise<RenderResult> {
-  const { baseUrl = "/", resolveLink = (t) => t, knownSlugs, filePath } = options
+  return render(content, options, new Set(options.filePath ? [options.filePath] : []))
+}
+
+async function render(content: string, options: RenderOptions, ancestors: Set<string>): Promise<RenderResult> {
+  const { baseUrl = "/", resolveLink, knownSlugs, filePath } = options
   const fileDir = filePath?.includes("/") ? filePath.substring(0, filePath.lastIndexOf("/")) : undefined
 
   // Parse frontmatter with gray-matter
@@ -92,8 +98,18 @@ export async function renderMarkdown(
     .use(remarkObsidianComment)
     .use(remarkGfm)
     .use(remarkMath)
+    .use(remarkEmbed, { render: async (target, heading) => {
+      const source = options.resolveEmbed?.(target, filePath)
+      // ponytail: stop after four nested notes; deeper embeds remain navigable links.
+      if (!source || ancestors.has(source.filePath) || ancestors.size >= 4) return undefined
+      const embedded = embedContent(source.content, heading)
+      if (embedded === undefined) return undefined
+      const result = await render(embedded, { ...options, filePath: source.filePath }, new Set([...ancestors, source.filePath]))
+      return { html: result.html, href: resolveLink?.(target, heading, filePath) ?? noteHref(normalizeNotePath(target), heading, baseUrl) }
+    } })
+    .use(remarkBlockIds)
     .use(remarkBreaks)
-    .use(remarkWikilink, { baseUrl, resolve: resolveLink, knownSlugs, fileDir })
+    .use(remarkWikilink, { baseUrl, resolve: resolveLink ? (target, heading) => resolveLink(target, heading, filePath) : undefined, knownSlugs, fileDir })
     .use(remarkCallout)
     .use(remarkTag)
     .use(remarkHighlight)
@@ -109,6 +125,7 @@ export async function renderMarkdown(
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings, {
       behavior: "append",
+      test: node => !node.children.some(child => child.type === "element" && child.tagName === "a" && (child.properties.className as string[] | undefined)?.includes("heading-anchor")),
       properties: { className: "heading-anchor", ariaLabel: "Copy link to section" },
       content: {
         type: "element", tagName: "svg",

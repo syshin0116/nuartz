@@ -1,6 +1,7 @@
 import { visit } from "unist-util-visit"
 import type { Root, Text, PhrasingContent } from "mdast"
 import type { Plugin } from "unified"
+import { normalizeNotePath, noteHref } from "../links.js"
 
 /**
  * Matches:
@@ -10,7 +11,7 @@ import type { Plugin } from "unified"
  *   [[target#heading|alias]]
  *   ![[image.png]]          → embed (image or transclusion)
  */
-const WIKILINK_REGEX = /(!?)\[\[([^\[\]|#]+?)(?:#([^\[\]|]+?))?(?:\|([^\[\]]+?))?\]\]/g
+export const WIKILINK_REGEX = /(!?)\[\[([^\[\]|#]*?)(?:#([^\[\]|]+?))?(?:\|([^\[\]]+?))?\]\]/g
 
 export interface WikilinkOptions {
   /** Base URL prepended to all wikilink hrefs. Default: '/' */
@@ -27,12 +28,8 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
   const { baseUrl = "/", resolve, knownSlugs, fileDir } = options
 
   const defaultResolve = (target: string, heading?: string): string => {
-    const slug = target
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^\p{L}\p{N}_-]/gu, "")
-    const hash = heading ? `#${heading.toLowerCase().replace(/\s+/g, "-")}` : ""
-    return `${baseUrl}${slug}${hash}`
+    if (!target && heading) return noteHref("index", heading).slice(1)
+    return noteHref(normalizeNotePath(target), heading, baseUrl)
   }
 
   const resolveUrl = resolve
@@ -62,10 +59,8 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
         const href = resolveUrl(target, heading)
         const displayText = alias ?? (heading ? `${target} > ${heading}` : target)
 
-        if (bang === "!") {
-          const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".mp4"])
-          const extMatch = target.match(/\.(\w+)$/)
-          const isImage = extMatch ? IMAGE_EXTS.has("." + extMatch[1].toLowerCase()) : false
+        const isImage = /\.(png|jpe?g|gif|webp|svg|avif)$/i.test(target)
+        if (bang === "!" && isImage) {
 
           // Resolve image path: if target doesn't start from content root and fileDir is set, prepend it
           const resolvedTarget = isImage && fileDir && !target.startsWith(fileDir + "/")
@@ -80,10 +75,9 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
           })
         } else {
           outgoingLinks.push(target)
-          const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\p{L}\p{N}_/-]/gu, "")
-          const isKnown = !knownSlugs || [...knownSlugs].some(
-            (s) => s === normalized || s.endsWith("/" + normalized)
-          )
+          const hrefPath = decodeURIComponent(href.split("#")[0])
+          const pathname = (hrefPath.startsWith(baseUrl) ? hrefPath.slice(baseUrl.length) : hrefPath).replace(/^\/+/, "") || "index"
+          const isKnown = !knownSlugs || knownSlugs.has(pathname) || (!target && Boolean(heading))
           nodes.push({
             type: "link",
             url: href,

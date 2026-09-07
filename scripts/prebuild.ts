@@ -1,15 +1,15 @@
 /**
- * Prebuild script — generates all static data at build time.
+ * Prebuild script - generates all static data at build time.
  *
  * Run with: bun scripts/prebuild.ts
  *
  * Outputs to apps/web/.generated/:
- *   file-tree.json      — sidebar tree
- *   graph.json           — knowledge graph (also copied to public/)
- *   search.json          — search index
- *   all-slugs.json       — all slugs + folder paths + alias paths
- *   pages/{slug}.json    — per-page data (html, toc, frontmatter, backlinks, etc.)
- *   folders/{slug}.json  — folder listing data
+ *   file-tree.json      - sidebar tree
+ *   graph.json           - knowledge graph (also copied to public/)
+ *   search.json          - search index
+ *   all-slugs.json       - all slugs + folder paths + alias paths
+ *   pages/{slug}.json    - per-page data (html, toc, frontmatter, backlinks, etc.)
+ *   folders/{slug}.json  - folder listing data
  */
 
 import path from "node:path"
@@ -18,6 +18,10 @@ import {
   getAllMarkdownFiles,
   buildFileTree,
   buildSearchIndex,
+  buildBacklinkIndex,
+  createNoteResolver,
+  normalizeNotePath,
+  noteHref,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import type { MarkdownFile, RenderResult, Frontmatter, TocEntry } from "nuartz"
@@ -116,23 +120,11 @@ async function main() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)
   console.log(`prebuild: found ${files.length} markdown files`)
 
-  // 2. Build lookup maps
-  const slugByName = new Map<string, string>()
-  for (const f of files) {
-    const name = f.slug.split("/").pop()!.toLowerCase().replace(/\s+/g, "-")
-    if (!slugByName.has(name)) slugByName.set(name, f.slug)
-  }
-
-  const knownSlugs = new Set(files.map((f) => f.slug))
-
-  const resolveLink = (target: string): string => {
-    const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
-    const exact = files.find((f) => f.slug === normalized)
-    if (exact) return `/${exact.slug}`
-    const byName = slugByName.get(normalized.split("/").pop()!)
-    if (byName) return `/${byName}`
-    return `/${normalized}`
-  }
+  const filesBySlug = new Map(files.map(file => [file.slug, file]))
+  const resolveNote = createNoteResolver(files)
+  const knownSlugs = new Set(filesBySlug.keys())
+  const resolveLink = (target: string, heading?: string, from?: string) =>
+    noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading)
 
   // 3. Render all pages in parallel
   console.log("prebuild: rendering all pages...")
@@ -142,83 +134,20 @@ async function main() {
         resolveLink,
         knownSlugs,
         filePath: file.slug + ".md",
+        resolveEmbed: (target, from) => {
+          const source = filesBySlug.get(resolveNote(target, from) ?? "")
+          return source ? { content: source.raw, filePath: source.slug + ".md" } : undefined
+        },
       })
       return { file, result }
     })
   )
+  const resultsBySlug = new Map(rendered.map(({ file, result }) => [file.slug, result]))
 
   // 4. Build backlink index (reverse link map)
   console.log("prebuild: building backlink index...")
-  const backlinkIndex = new Map<string, { slug: string; title: string; excerpt: string }[]>()
-
-  for (const { file, result } of rendered) {
-    for (const linkTarget of result.links) {
-      const normalized = linkTarget.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
-      // Find the target file by exact slug or by last segment
-      const targetFile = files.find(
-        (other) => other.slug === normalized || other.slug.endsWith("/" + normalized)
-      )
-      if (targetFile && targetFile.slug !== file.slug) {
-        const targetSlug = targetFile.slug
-        if (!backlinkIndex.has(targetSlug)) backlinkIndex.set(targetSlug, [])
-        const existing = backlinkIndex.get(targetSlug)!
-        // Avoid duplicates
-        if (!existing.some((b) => b.slug === file.slug)) {
-          const body = file.raw
-            .replace(/^---[\s\S]*?---\n?/, "")
-            .replace(/```[\s\S]*?```/g, "")
-            .replace(/`[^`]+`/g, "")
-          const excerpt =
-            (file.frontmatter.description as string) ??
-            body.trim().split("\n")[0]?.slice(0, 150) ??
-            ""
-          existing.push({
-            slug: file.slug,
-            title: (file.frontmatter.title as string) ?? file.slug.split("/").pop() ?? file.slug,
-            excerpt,
-          })
-        }
-      }
-    }
-  }
-
-  // Also build regex-based backlinks (same as current runtime logic for Obsidian-style wikilinks)
-  const wikilinkPattern = /\[\[([^\[\]|#]+?)(?:#[^\[\]|]*?)?(?:\|[^\[\]]*?)?\]\]/g
-  for (const file of files) {
-    const body = file.raw
-      .replace(/^---[\s\S]*?---\n?/, "")
-      .replace(/```[\s\S]*?```/g, "")
-      .replace(/`[^`]+`/g, "")
-    for (const match of body.matchAll(wikilinkPattern)) {
-      if (match[0].startsWith("!")) continue
-      const target = match[1].trim()
-      const normalized = target.toLowerCase().replace(/\s+/g, "-").replace(/[^\w/-]/g, "")
-      // Find target by full slug or last segment
-      for (const targetFile of files) {
-        if (targetFile.slug === file.slug) continue
-        const targetSlug = targetFile.slug
-        const targetLastPart = targetSlug.split("/").pop()!
-        if (normalized === targetSlug || normalized === targetLastPart || normalized.endsWith("/" + targetLastPart)) {
-          // Actually: we need the target to match the normalized link, not the other way around
-          if (normalized === targetSlug || targetSlug.endsWith("/" + normalized) || normalized === targetLastPart) {
-            if (!backlinkIndex.has(targetSlug)) backlinkIndex.set(targetSlug, [])
-            const existing = backlinkIndex.get(targetSlug)!
-            if (!existing.some((b) => b.slug === file.slug)) {
-              const excerpt =
-                (file.frontmatter.description as string) ??
-                body.trim().split("\n")[0]?.slice(0, 150) ??
-                ""
-              existing.push({
-                slug: file.slug,
-                title: (file.frontmatter.title as string) ?? file.slug.split("/").pop() ?? file.slug,
-                excerpt,
-              })
-            }
-          }
-        }
-      }
-    }
-  }
+  const backlinkIndex = buildBacklinkIndex(new Map(rendered.map(({ file, result }) =>
+    [file.slug, { result, raw: file.raw }])))
 
   // 5. Build prev/next nav for each page (siblings in same folder)
   const filesByFolder = new Map<string, typeof files>()
@@ -229,7 +158,7 @@ async function main() {
     filesByFolder.get(folder)!.push(file)
   }
   for (const siblings of filesByFolder.values()) {
-    siblings.sort((a, b) => a.slug.localeCompare(b.slug))
+    siblings.sort((a, b) => (a.frontmatter.order ?? Infinity) - (b.frontmatter.order ?? Infinity) || (a.frontmatter.title ?? a.slug).localeCompare(b.frontmatter.title ?? b.slug))
   }
 
   // 6. Write all outputs in parallel
@@ -243,6 +172,7 @@ async function main() {
 
   // search.json
   const searchIndex = buildSearchIndex(files)
+  for (const entry of searchIndex) entry.tags = resultsBySlug.get(entry.slug)?.tags ?? entry.tags
   writes.push(writeJSON(path.join(OUT_DIR, "search.json"), searchIndex))
 
   // graph.json
@@ -265,13 +195,8 @@ async function main() {
 
   for (const { file, result } of rendered) {
     for (const linkTarget of result.links) {
-      const normalized = linkTarget.toLowerCase().replace(/\s+/g, "-")
-      const match = files.find(
-        (other) => other.slug === normalized || other.slug.endsWith("/" + normalized)
-      )
-      if (match && match.slug !== file.slug) {
-        addLink(file.slug, match.slug)
-      }
+      const target = resolveNote(linkTarget, file.slug)
+      if (target && target !== file.slug) addLink(file.slug, target)
     }
   }
 
@@ -321,10 +246,10 @@ async function main() {
   }
   writes.push(writeJSON(path.join(OUT_DIR, "all-slugs.json"), slugsData))
 
-  // tags.json — tag → list of files with that tag
+  // tags.json - tag → list of files with that tag
   const tagIndex: Record<string, { slug: string; title: string; description: string | null; date: string | null }[]> = {}
-  for (const file of files) {
-    const fileTags: string[] = (file.frontmatter.tags as string[]) ?? []
+  for (const { file, result } of rendered) {
+    const fileTags = result.tags
     for (const tag of fileTags) {
       if (!tagIndex[tag]) tagIndex[tag] = []
       tagIndex[tag].push({
@@ -343,7 +268,7 @@ async function main() {
   }
   writes.push(writeJSON(path.join(OUT_DIR, "tags.json"), tagIndex))
 
-  // sitemap-data.json — minimal data for sitemap generation
+  // sitemap-data.json - minimal data for sitemap generation
   const sitemapData = files
     .filter((f) => !f.frontmatter.draft)
     .map((f) => ({
@@ -352,7 +277,7 @@ async function main() {
     }))
   writes.push(writeJSON(path.join(OUT_DIR, "sitemap-data.json"), sitemapData))
 
-  // notes-list.json — sorted list of all notes with metadata (for homepage, RSS, llms.txt)
+  // notes-list.json - sorted list of all notes with metadata (for homepage, RSS, llms.txt)
   const notesList = files
     .filter((f) => f.slug !== "index")
     .map((f) => ({
@@ -362,13 +287,13 @@ async function main() {
       summary: (f.frontmatter.summary as string) ?? null,
       date: f.frontmatter.date ? new Date(f.frontmatter.date as string).toLocaleDateString("en-CA") : null,
       dateRaw: f.frontmatter.date ? new Date(f.frontmatter.date as string).toISOString() : null,
-      tags: (f.frontmatter.tags as string[]) ?? [],
+      tags: resultsBySlug.get(f.slug)?.tags ?? [],
       draft: f.frontmatter.draft === true,
     }))
     .sort((a, b) => (b.dateRaw ?? "").localeCompare(a.dateRaw ?? ""))
   writes.push(writeJSON(path.join(OUT_DIR, "notes-list.json"), notesList))
 
-  // preview-index.json — for popover previews (client-side)
+  // preview-index.json - for popover previews (client-side)
   const previewIndex: Record<string, { title: string; excerpt: string }> = {}
   for (const file of files) {
     const title = (file.frontmatter.title as string) ?? file.slug.split("/").pop() ?? file.slug
@@ -450,7 +375,7 @@ async function main() {
         date: f.frontmatter.date
           ? new Date(f.frontmatter.date as string).toLocaleDateString("en-CA")
           : null,
-        tags: (f.frontmatter.tags as string[]) ?? [],
+        tags: resultsBySlug.get(f.slug)?.tags ?? [],
       })),
     }
 
@@ -463,7 +388,7 @@ async function main() {
   await copyMediaFiles()
 
   const elapsed = ((performance.now() - start) / 1000).toFixed(2)
-  console.log(`prebuild: done in ${elapsed}s — ${files.length} pages, ${graphLinks.length} links, ${backlinkIndex.size} pages with backlinks`)
+  console.log(`prebuild: done in ${elapsed}s - ${files.length} pages, ${graphLinks.length} links, ${backlinkIndex.size} pages with backlinks`)
 }
 
 main().catch((err) => {

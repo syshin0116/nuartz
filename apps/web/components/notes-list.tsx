@@ -14,9 +14,10 @@ interface NoteFile {
 interface PaginationProps {
   currentPage: number
   totalPages: number
+  pageHref?: (page: number) => string
 }
 
-function Pagination({ currentPage, totalPages }: PaginationProps) {
+function Pagination({ currentPage, totalPages, pageHref = page => page === 1 ? "/" : `/page/${page}` }: PaginationProps) {
   if (totalPages <= 1) return null
 
   const pages: (number | "...")[] = []
@@ -34,10 +35,6 @@ function Pagination({ currentPage, totalPages }: PaginationProps) {
 
   // Always show last page
   if (totalPages > 1) pages.push(totalPages)
-
-  function pageHref(page: number): string {
-    return page === 1 ? "/" : `/page/${page}`
-  }
 
   return (
     <nav aria-label="Pagination" className="mt-8 flex items-center justify-center gap-1">
@@ -58,6 +55,7 @@ function Pagination({ currentPage, totalPages }: PaginationProps) {
           <Link
             key={page}
             href={pageHref(page)}
+            aria-current={page === currentPage ? "page" : undefined}
             className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
               page === currentPage
                 ? "bg-foreground text-background"
@@ -85,18 +83,25 @@ export function NotesList({
   totalCount,
   currentPage,
   totalPages,
+  title = "Recent Notes",
+  controls,
+  pageHref,
 }: {
   notes: NoteFile[]
   totalCount: number
   currentPage: number
   totalPages: number
+  title?: string
+  controls?: React.ReactNode
+  pageHref?: (page: number) => string
 }) {
   return (
     <div className="px-6 py-8 max-w-6xl mx-auto w-full">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Recent Notes</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{totalCount} notes</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{totalCount} {totalCount === 1 ? "note" : "notes"}</p>
       </div>
+      {controls}
 
       <Separator className="mb-6" />
 
@@ -105,12 +110,11 @@ export function NotesList({
           const summary = file.summary ?? file.description
 
           return (
-            <Link key={file.slug} href={`/${file.slug}`} className="group block">
-              <div className="rounded-lg border px-4 py-3 transition-colors hover:bg-muted/50">
+              <article key={file.slug} className="rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30">
                 <div className="flex items-start justify-between gap-4">
-                  <span className="font-medium group-hover:underline underline-offset-4">
+                  <Link href={`/${file.slug}`} className="font-medium hover:underline underline-offset-4">
                     {file.title}
-                  </span>
+                  </Link>
                   {file.date && (
                     <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
                       {file.date}
@@ -123,27 +127,24 @@ export function NotesList({
                 {file.tags.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {file.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs font-normal">
+                      <Link key={tag} href={`/notes?tag=${encodeURIComponent(tag)}`}><Badge variant="secondary" className="text-xs font-normal hover:bg-accent">
                         #{tag}
-                      </Badge>
+                      </Badge></Link>
                     ))}
                   </div>
                 )}
-              </div>
-            </Link>
+              </article>
           )
         })}
 
         {notes.length === 0 && (
           <p className="py-12 text-center text-sm text-muted-foreground">
-            No notes yet. Add markdown files to the{" "}
-            <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">content/</code>{" "}
-            directory.
+            No matching notes. Try another tag or clear the filter.
           </p>
         )}
       </div>
 
-      <Pagination currentPage={currentPage} totalPages={totalPages} />
+      <Pagination currentPage={currentPage} totalPages={totalPages} pageHref={pageHref} />
     </div>
   )
 }

@@ -111,6 +111,14 @@ World`
 })
 
 describe("buildFileTree", () => {
+  it("uses explicit document order before folder and alphabetical ordering", () => {
+    const files: MarkdownFile[] = [
+      { slug: "docs/authoring", filePath: "", raw: "", frontmatter: { title: "Authoring", order: 2 } },
+      { slug: "docs/getting-started", filePath: "", raw: "", frontmatter: { title: "Getting Started", order: 1 } },
+      { slug: "docs/features/graph", filePath: "", raw: "", frontmatter: { title: "Graph" } },
+    ]
+    expect(buildFileTree(files)[0].children?.map(node => node.path)).toEqual(["docs/getting-started", "docs/authoring", "docs/features"])
+  })
   it("builds tree from flat list of files", () => {
     const files: MarkdownFile[] = [
       { slug: "alpha", filePath: "/alpha.md", frontmatter: { title: "Alpha" }, raw: "" },

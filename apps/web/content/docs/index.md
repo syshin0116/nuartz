@@ -1,8 +1,9 @@
 ---
+order: 0
 title: Documentation
 ---
 
-Nuartz turns your Obsidian vault into a Next.js website. It handles wikilinks, callouts, backlinks, graph view, and search — you get a normal Next.js app you can customise with React components and shadcn/ui.
+Nuartz turns your Obsidian vault into a Next.js website. It handles wikilinks, callouts, backlinks, graph view, and search - you get a normal Next.js app you can customise with React components and shadcn/ui.
 
 ## Get Started
 
@@ -42,7 +43,7 @@ Nuartz is split into two packages:
 
 | Package | Description |
 |---------|-------------|
-| `packages/nuartz` | Headless data library — markdown parsing, wikilinks, backlinks, search index |
+| `packages/nuartz` | Headless data library - markdown parsing, wikilinks, backlinks, search index |
 | `apps/web` | Next.js 16 starter template with shadcn/ui |
 
 Read more on the [[advanced/architecture|architecture]] page or explore [[advanced/creating-plugins|creating plugins]].
