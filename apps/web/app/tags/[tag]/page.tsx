@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import type { Metadata } from "next"
 import tagIndex from "@/.generated/tags.json"
+import config from "@/nuartz.config"
 
 const typedTagIndex = tagIndex as Record<string, { slug: string; title: string; description: string | null; date: string | null }[]>
 
 export async function generateStaticParams() {
+  if (!config.features.tags) return []
   return Object.keys(typedTagIndex).map((tag) => ({ tag }))
 }
 
@@ -27,6 +29,7 @@ export default async function TagPage({
 }: {
   params: Promise<{ tag: string }>
 }) {
+  if (!config.features.tags) notFound()
   const { tag } = await params
   const tagged = typedTagIndex[tag]
 

@@ -110,4 +110,38 @@ Content with #beta and #gamma`
     const result = await renderMarkdown("## My Section")
     expect(result.html).toContain('id="my-section"')
   })
+
+  it("omits disabled wikilink, callout, tag, and toc transforms", async () => {
+    const result = await renderMarkdown("# Heading\n\n> [!note]\n> Body\n\n[[Target]] #topic", {
+      features: { wikilinks: false, callouts: false, tags: false, toc: false },
+    })
+
+    expect(result.links).toEqual([])
+    expect(result.tags).toEqual([])
+    expect(result.toc).toEqual([])
+    expect(result.html).not.toContain('class="wikilink"')
+    expect(result.html).not.toContain('class="callout')
+    expect(result.html).not.toContain('class="tag"')
+    expect(result.html).toContain("[[Target]] #topic")
+  })
+
+  it("keeps unspecified markdown features enabled", async () => {
+    const result = await renderMarkdown("[[Target]] #topic", { features: { callouts: false, tags: undefined } })
+
+    expect(result.links).toEqual(["Target"])
+    expect(result.tags).toEqual(["topic"])
+  })
+
+  it("strips drafts only when requested", async () => {
+    const markdown = "---\ndraft: true\n---\n\n# Private\n\n[[Target]] #topic"
+
+    expect((await renderMarkdown(markdown)).html).toContain("Private")
+    expect(await renderMarkdown(markdown, { stripDrafts: true })).toEqual({
+      html: "",
+      frontmatter: { draft: true },
+      toc: [],
+      links: [],
+      tags: [],
+    })
+  })
 })

@@ -149,7 +149,7 @@ export default async function NotePage({
                   {file.description && (
                     <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{file.description}</p>
                   )}
-                  {file.tags.length > 0 && (
+                  {config.features.tags && file.tags.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1">
                       {file.tags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="text-xs font-normal">#{tag}</Badge>
@@ -224,24 +224,24 @@ export default async function NotePage({
               <span className="text-sm text-muted-foreground">{rt} min read</span>
             )}
           </div>
-            {tags.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <Link key={tag} href={`/tags/${encodeURIComponent(tag)}`}>
-                    <Badge variant="secondary" className="text-xs font-normal hover:bg-muted">
-                      #{tag}
-                    </Badge>
-                  </Link>
-                ))}
-              </div>
-            )}
+          {config.features.tags && tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {tags.map((tag) => (
+                <Link key={tag} href={`/tags/${encodeURIComponent(tag)}`}>
+                  <Badge variant="secondary" className="text-xs font-normal hover:bg-muted">
+                    #{tag}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
           {frontmatter.description && (
             <p className="mt-3 text-base text-muted-foreground">{frontmatter.description as string}</p>
           )}
         </header>
 
         <Separator className="mb-8" />
-        <TableOfContents toc={toc} mobile><GraphView currentSlug={slugStr} /></TableOfContents>
+        <TableOfContents toc={config.features.toc ? toc : []} mobile><GraphView currentSlug={slugStr} /></TableOfContents>
 
         <HeadingAnchors />
         <PopoverPreview />
@@ -254,7 +254,7 @@ export default async function NotePage({
         <CopyCode />
         <ImageZoom />
 
-        <Backlinks backlinks={backlinks} />
+        {config.features.backlinks && <Backlinks backlinks={backlinks} />}
 
         {/* Previous / Next navigation */}
         <PrevNextNav prevNext={prevNext} />
@@ -263,7 +263,7 @@ export default async function NotePage({
       </div>
 
       {/* Right sidebar */}
-      <TableOfContents toc={toc}>
+      <TableOfContents toc={config.features.toc ? toc : []}>
         <GraphView currentSlug={slugStr} />
       </TableOfContents>
     </div>

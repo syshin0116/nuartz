@@ -41,7 +41,12 @@ export interface NuartzConfig {
   }
 }
 
-const DEFAULT_FEATURES: Required<NuartzConfig["features"]> = {
+export type ResolvedNuartzConfig = Omit<NuartzConfig, "site" | "features"> & {
+  site: NuartzConfig["site"] & { baseUrl: string }
+  features: Required<NonNullable<NuartzConfig["features"]>>
+}
+
+const DEFAULT_FEATURES: Required<NonNullable<NuartzConfig["features"]>> = {
   wikilinks: true,
   callouts: true,
   tags: true,
@@ -51,13 +56,21 @@ const DEFAULT_FEATURES: Required<NuartzConfig["features"]> = {
   darkMode: true,
 }
 
-export function defineConfig(config: NuartzConfig): NuartzConfig & { site: { baseUrl: string } } {
+export function defineConfig(config: NuartzConfig): ResolvedNuartzConfig {
   return {
     ...config,
     site: {
       baseUrl: "http://localhost:3000",
       ...config.site,
     },
-    features: { ...DEFAULT_FEATURES, ...config.features },
+    features: {
+      wikilinks: config.features?.wikilinks ?? DEFAULT_FEATURES.wikilinks,
+      callouts: config.features?.callouts ?? DEFAULT_FEATURES.callouts,
+      tags: config.features?.tags ?? DEFAULT_FEATURES.tags,
+      backlinks: config.features?.backlinks ?? DEFAULT_FEATURES.backlinks,
+      toc: config.features?.toc ?? DEFAULT_FEATURES.toc,
+      search: config.features?.search ?? DEFAULT_FEATURES.search,
+      darkMode: config.features?.darkMode ?? DEFAULT_FEATURES.darkMode,
+    },
   }
 }

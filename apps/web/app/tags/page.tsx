@@ -4,11 +4,14 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import type { Metadata } from "next"
+import { notFound } from "next/navigation"
 import tagIndex from "@/.generated/tags.json"
+import config from "@/nuartz.config"
 
 export const metadata: Metadata = { title: "Tags" }
 
 export default async function TagsPage() {
+  if (!config.features.tags) notFound()
   const tagMap = new Map<string, number>()
   for (const [tag, files] of Object.entries(tagIndex)) {
     tagMap.set(tag, (files as unknown[]).length)

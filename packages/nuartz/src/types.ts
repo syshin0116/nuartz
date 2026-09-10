@@ -38,4 +38,11 @@ export interface RenderOptions {
   stripDrafts?: boolean
   /** Path of the current file relative to content root (e.g. 'AI/my-post.md'). Used to resolve relative image paths in wikilinks. */
   filePath?: string
+  /** Disable individual transforms when embedding Nuartz in another renderer. */
+  features?: {
+    wikilinks?: boolean
+    callouts?: boolean
+    tags?: boolean
+    toc?: boolean
+  }
 }

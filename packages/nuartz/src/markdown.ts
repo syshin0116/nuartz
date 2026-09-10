@@ -87,31 +87,46 @@ export async function renderMarkdown(
 
 async function render(content: string, options: RenderOptions, ancestors: Set<string>): Promise<RenderResult> {
   const { baseUrl = "/", resolveLink, knownSlugs, filePath } = options
+  const features = {
+    wikilinks: options.features?.wikilinks ?? true,
+    callouts: options.features?.callouts ?? true,
+    tags: options.features?.tags ?? true,
+    toc: options.features?.toc ?? true,
+  }
   const fileDir = filePath?.includes("/") ? filePath.substring(0, filePath.lastIndexOf("/")) : undefined
 
   // Parse frontmatter with gray-matter
   const { data: frontmatter, content: body } = matter(content)
+  if (options.stripDrafts && (frontmatter.draft === true || frontmatter.published === false)) {
+    return { html: "", frontmatter: frontmatter as Frontmatter, toc: [], links: [], tags: [] }
+  }
 
-  const file = await unified()
+  const processor = unified()
     .use(remarkParse)
     .use(remarkFrontmatter, ["yaml", "toml"])
     .use(remarkObsidianComment)
     .use(remarkGfm)
     .use(remarkMath)
-    .use(remarkEmbed, { render: async (target, heading) => {
-      const source = options.resolveEmbed?.(target, filePath)
-      // ponytail: stop after four nested notes; deeper embeds remain navigable links.
-      if (!source || ancestors.has(source.filePath) || ancestors.size >= 4) return undefined
-      const embedded = embedContent(source.content, heading)
-      if (embedded === undefined) return undefined
-      const result = await render(embedded, { ...options, filePath: source.filePath }, new Set([...ancestors, source.filePath]))
-      return { html: result.html, href: resolveLink?.(target, heading, filePath) ?? noteHref(normalizeNotePath(target), heading, baseUrl) }
-    } })
-    .use(remarkBlockIds)
-    .use(remarkBreaks)
-    .use(remarkWikilink, { baseUrl, resolve: resolveLink ? (target, heading) => resolveLink(target, heading, filePath) : undefined, knownSlugs, fileDir })
-    .use(remarkCallout)
-    .use(remarkTag)
+
+  if (features.wikilinks) {
+    processor
+      .use(remarkEmbed, { render: async (target, heading) => {
+        const source = options.resolveEmbed?.(target, filePath)
+        // ponytail: stop after four nested notes; deeper embeds remain navigable links.
+        if (!source || ancestors.has(source.filePath) || ancestors.size >= 4) return undefined
+        const embedded = embedContent(source.content, heading)
+        if (embedded === undefined) return undefined
+        const result = await render(embedded, { ...options, filePath: source.filePath }, new Set([...ancestors, source.filePath]))
+        return { html: result.html, href: resolveLink?.(target, heading, filePath) ?? noteHref(normalizeNotePath(target), heading, baseUrl) }
+      } })
+      .use(remarkBlockIds)
+      .use(remarkWikilink, { baseUrl, resolve: resolveLink ? (target, heading) => resolveLink(target, heading, filePath) : undefined, knownSlugs, fileDir })
+  }
+
+  processor.use(remarkBreaks)
+  if (features.callouts) processor.use(remarkCallout)
+  if (features.tags) processor.use(remarkTag)
+  processor
     .use(remarkHighlight)
     .use(remarkArrows)
     .use(remarkRehype, { allowDangerousHtml: true })
@@ -138,18 +153,17 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
       } as ElementContent,
     })
     .use(rehypeKatex, { strict: "ignore" })
-    .use(rehypeExtractToc)
-    .use(rehypeStringify)
-    .process(body)
+  if (features.toc) processor.use(rehypeExtractToc)
+  const file = await processor.use(rehypeStringify).process(body)
 
   return {
     html: String(file),
     frontmatter: frontmatter as Frontmatter,
     toc: (file.data.toc as TocEntry[]) ?? [],
     links: (file.data.links as string[]) ?? [],
-    tags: [
+    tags: features.tags ? [
       ...((frontmatter.tags as string[]) ?? []),
       ...((file.data.tags as string[]) ?? []),
-    ].filter((t, i, a) => a.indexOf(t) === i),
+    ].filter((t, i, a) => a.indexOf(t) === i) : [],
   }
 }

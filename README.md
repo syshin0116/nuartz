@@ -106,6 +106,8 @@ import {
 import { renderMarkdown } from "nuartz/markdown"
 ```
 
+The package is a build-time data layer and does not ship React components or routes. Import `nuartz/styles.css` if you want the starter's content styles. Next.js consumers also need the diagram and D2 packages listed in `serverExternalPackages`; see the [package integration guide](packages/nuartz/README.md).
+
 ## Publishing the package
 
 The `Publish` workflow publishes version tags through npm trusted publishing. Configure

@@ -28,14 +28,14 @@ export default async function HomePage() {
       return (
         <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
           <div className="reading-column min-w-0 flex-1">
-            <TableOfContents toc={pageData.toc} mobile><GraphView currentSlug="index" /></TableOfContents>
+            <TableOfContents toc={config.features.toc ? pageData.toc : []} mobile><GraphView currentSlug="index" /></TableOfContents>
             <article
               data-pagefind-body
               className="prose max-w-none"
               dangerouslySetInnerHTML={{ __html: pageData.html }}
             />
           </div>
-          <TableOfContents toc={pageData.toc}>
+          <TableOfContents toc={config.features.toc ? pageData.toc : []}>
             <GraphView currentSlug="index" />
           </TableOfContents>
         </div>
