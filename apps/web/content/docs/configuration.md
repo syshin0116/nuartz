@@ -5,10 +5,10 @@ date: 2026-03-01
 tags:
   - nuartz
   - configuration
-description: Reference for nuartz.config.ts - all available options for configuring your digital garden.
+description: Reference for apps/web/nuartz.config.ts and all available digital garden options.
 ---
 
-nuartz is configured through `nuartz.config.ts` in your project root. If your editor has TypeScript support, it will warn you about configuration errors as you type.
+The starter is configured through `apps/web/nuartz.config.ts`. If your editor has TypeScript support, it will warn you about configuration errors as you type.
 
 > [!tip]
 > Use a TypeScript-aware editor like VS Code for autocomplete and validation.
@@ -17,10 +17,11 @@ nuartz is configured through `nuartz.config.ts` in your project root. If your ed
 
 ```typescript title="nuartz.config.ts"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 import { defineConfig } from "nuartz"
 
 export default defineConfig({
-  contentDir: path.join(process.cwd(), "content"),
+  contentDir: path.join(path.dirname(fileURLToPath(import.meta.url)), "content"),
   homePage: "index",          // "index" | "recent"
   site: {
     title: "My Garden",
@@ -48,7 +49,11 @@ export default defineConfig({
 
 ### `contentDir`
 
-Path to the directory containing your Markdown files. Defaults to `content/` in the project root.
+Absolute path to the Markdown content directory. The starter prebuild reads this value directly; it has no implicit default.
+
+### `features`
+
+All features default to `true`. `wikilinks`, `callouts`, `tags`, and `toc` control Markdown transforms. `backlinks`, `search`, and `darkMode` control the corresponding generated data and starter UI.
 
 ### `homePage`
 

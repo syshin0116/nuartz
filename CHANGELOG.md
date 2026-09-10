@@ -6,9 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - Selectable 2D, 3D, VR, and marker-based AR graph views with shared note selection and on-demand spatial assets.
+- Package-level integration guide with a build-time usage example and required Next.js settings.
 
 ### Changed
 - Animate connected 2D nodes during dragging, with reduced-motion support and a 250-node limit.
+- Apply `contentDir` and feature switches from `nuartz.config.ts` during rendering, data generation, and starter UI composition.
 
 ## [0.3.0] - 2026-09-07
 

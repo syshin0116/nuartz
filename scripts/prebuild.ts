@@ -25,8 +25,9 @@ import {
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import type { MarkdownFile, RenderResult, Frontmatter, TocEntry } from "nuartz"
+import config from "../apps/web/nuartz.config"
 
-const CONTENT_DIR = path.join(import.meta.dir, "../apps/web/content")
+const CONTENT_DIR = path.resolve(config.contentDir)
 const OUT_DIR = path.join(import.meta.dir, "../apps/web/.generated")
 const PUBLIC_DIR = path.join(import.meta.dir, "../apps/web/public")
 
@@ -131,6 +132,7 @@ async function main() {
   const rendered = await Promise.all(
     files.map(async (file) => {
       const result = await renderMarkdown(file.raw, {
+        features: config.features,
         resolveLink,
         knownSlugs,
         filePath: file.slug + ".md",
@@ -146,8 +148,9 @@ async function main() {
 
   // 4. Build backlink index (reverse link map)
   console.log("prebuild: building backlink index...")
-  const backlinkIndex = buildBacklinkIndex(new Map(rendered.map(({ file, result }) =>
-    [file.slug, { result, raw: file.raw }])))
+  const backlinkIndex = config.features.backlinks
+    ? buildBacklinkIndex(new Map(rendered.map(({ file, result }) => [file.slug, { result, raw: file.raw }])))
+    : new Map()
 
   // 5. Build prev/next nav for each page (siblings in same folder)
   const filesByFolder = new Map<string, typeof files>()
@@ -171,7 +174,7 @@ async function main() {
   writes.push(writeJSON(path.join(OUT_DIR, "file-tree.json"), fileTree))
 
   // search.json
-  const searchIndex = buildSearchIndex(files)
+  const searchIndex = config.features.search ? buildSearchIndex(files) : []
   for (const entry of searchIndex) entry.tags = resultsBySlug.get(entry.slug)?.tags ?? entry.tags
   writes.push(writeJSON(path.join(OUT_DIR, "search.json"), searchIndex))
 
