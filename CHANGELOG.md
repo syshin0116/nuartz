@@ -2,12 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.4.0] - 2026-10-25
 
 ### Added
 - Selectable 2D, 3D, VR, and marker-based AR graph views with shared note selection and on-demand spatial assets.
 - Package-level integration guide with a build-time usage example and required Next.js settings.
-
 - `resolveTag` render option and `defaultTagHref` for custom inline tag URLs, plus `inlineTags` on render results.
 
 ### Fixed

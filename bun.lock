@@ -49,7 +49,7 @@
     },
     "packages/nuartz": {
       "name": "nuartz",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "dependencies": {
         "@beoe/cache": "^0.1.1",
         "@beoe/rehype-d2": "^0.5.4",
