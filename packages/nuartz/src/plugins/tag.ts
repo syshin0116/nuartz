@@ -8,12 +8,12 @@ const BOUNDARY = /\s/u
 const LINK_TYPES = new Set(["link", "linkReference", "definition"])
 
 export interface TagOptions {
-  /** URL for a tag (default: `/tags/` followed by each `/` segment URL-encoded). */
+  /** URL for a tag (default: `/tags/` followed by the URL-encoded tag). */
   resolveTag?: (tag: string) => string
 }
 
 export function defaultTagHref(tag: string): string {
-  return `/tags/${tag.split("/").map(encodeURIComponent).join("/")}`
+  return `/tags/${encodeURIComponent(tag)}`
 }
 
 /**
@@ -25,28 +25,42 @@ function normalizeTag(raw: string): string | undefined {
   return /^\p{L}/u.test(tag) ? tag : undefined
 }
 
-/**
- * Source offsets of each character of a text node's value. Markdown escapes, entity
- * references, and stripped container markers make the value a subsequence of its source.
- */
-function sourceOffsets(node: Text, source: string): number[] | undefined {
+interface SourceHash {
+  /** Written as `\#` or a character reference, so it is text rather than a tag. */
+  escaped: boolean
+  /** Source character before the `#`; undefined at the start of the document. */
+  before: string | undefined
+}
+
+const ESCAPABLE = /[!-/:-@[-`{-~]/
+const CHARACTER_REFERENCE = /^&(?:#[xX][0-9a-fA-F]{1,6}|#\d{1,7}|[A-Za-z][A-Za-z0-9]{1,31});/
+const HASH_REFERENCE = /^&(?:#0*35|#[xX]0*23|num);$/
+
+/** Every `#` the parser turned into this text node's value, in order, read from the source. */
+function sourceHashes(node: Text, source: string): SourceHash[] | undefined {
   const start = node.position?.start.offset
   const end = node.position?.end.offset
   if (start === undefined || end === undefined) return undefined
-  const offsets: number[] = []
-  let cursor = start
-  for (const character of node.value) {
-    while (cursor < end && source[cursor] !== character) cursor += 1
-    if (cursor >= end) return undefined
-    offsets.push(cursor)
-    cursor += 1
+  const hashes: SourceHash[] = []
+  for (let cursor = start; cursor < end; cursor += 1) {
+    const character = source[cursor]
+    if (character === "\\" && ESCAPABLE.test(source[cursor + 1] ?? "")) {
+      if (source[cursor + 1] === "#") hashes.push({ escaped: true, before: source[cursor - 1] })
+      cursor += 1
+    } else if (character === "&") {
+      const reference = CHARACTER_REFERENCE.exec(source.slice(cursor, cursor + 40))?.[0]
+      if (!reference) continue
+      if (HASH_REFERENCE.test(reference)) hashes.push({ escaped: true, before: source[cursor - 1] })
+      cursor += reference.length - 1
+    } else if (character === "#") {
+      hashes.push({ escaped: false, before: cursor > 0 ? source[cursor - 1] : undefined })
+    }
   }
-  return offsets
+  return hashes
 }
 
-/** Character before the `#`, from the source when known, else from the rendered siblings. */
-function precedingCharacter(node: Text, index: number, siblings: Parent["children"], position: number, offsets: number[] | undefined, source: string): string | undefined {
-  if (offsets) return offsets[position] > 0 ? source[offsets[position] - 1] : undefined
+/** Character before a `#` in a node created by an earlier plugin, which has no source position. */
+function renderedPrecedingCharacter(node: Text, index: number, siblings: Parent["children"], position: number): string | undefined {
   if (position > 0) return node.value[position - 1]
   const previous = siblings[index - 1]
   if (!previous) return undefined
@@ -70,14 +84,18 @@ export const remarkTag: Plugin<[TagOptions?], Root> = (options = {}) => {
       if (node.type !== "text" || !parent || index === undefined) return
       const text = node as Text
 
+      const hashes = sourceHashes(text, source)
+      // Without a one-to-one source mapping the escape state is unknown, so leave the text alone.
+      if (hashes && hashes.length !== (text.value.match(/#/g)?.length ?? 0)) return
+
       const nodes: PhrasingContent[] = []
       let lastIndex = 0
-      let offsets: number[] | undefined | null = null
 
       for (const match of text.value.matchAll(TAG_REGEX)) {
         const position = match.index
-        if (offsets === null) offsets = sourceOffsets(text, source)
-        const before = precedingCharacter(text, index, parent.children, position, offsets, source)
+        const hash = hashes?.[text.value.slice(0, position).match(/#/g)?.length ?? 0]
+        if (hash?.escaped) continue
+        const before = hash ? hash.before : renderedPrecedingCharacter(text, index, parent.children, position)
         if (before !== undefined && !BOUNDARY.test(before)) continue
         const tag = normalizeTag(match[1])
         if (!tag) continue

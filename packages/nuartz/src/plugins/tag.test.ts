@@ -114,9 +114,14 @@ describe("remarkTag", () => {
     expect(tags).toEqual(["adsp중요", "한글태그", "aनमस्ते", "parent/child", "trail"])
   })
 
-  it("encodes each nested segment in the default href", async () => {
+  it("encodes the whole tag in the default href to match the single-segment tag route", async () => {
     const html = await process("#부모/자식")
-    expect(html).toContain(`href="/tags/${encodeURIComponent("부모")}/${encodeURIComponent("자식")}"`)
+    expect(html).toContain(`href="/tags/${encodeURIComponent("부모/자식")}"`)
+  })
+
+  it("keeps escaped and referenced hashes as text after emoji or entities", async () => {
+    const { tags } = await processWithData("😀 \\#한글 &copy; \\#다른 &#35;참조 then #진짜")
+    expect(tags).toEqual(["진짜"])
   })
 
   it("uses a custom tag URL", async () => {

@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Inline tags follow Obsidian's rules: a tag needs whitespace or a line start before `#`, may start with a letter of any script and continue with marks, digits, `_`, `-`, and `/`, and is never taken from code, link labels, URL fragments, or escaped `\#`.
 - Each inline tag renders as one anchor instead of an empty duplicate followed by the real link.
-- Default tag URLs encode each nested segment.
+- Default inline tag URLs URL-encode the whole tag, matching tag badges and the `/tags/[tag]` route.
 
 ### Changed
 - Animate connected 2D nodes during dragging, with reduced-motion support and a 250-node limit.
