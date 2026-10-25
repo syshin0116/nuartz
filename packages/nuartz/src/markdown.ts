@@ -98,7 +98,7 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
   // Parse frontmatter with gray-matter
   const { data: frontmatter, content: body } = matter(content)
   if (options.stripDrafts && (frontmatter.draft === true || frontmatter.published === false)) {
-    return { html: "", frontmatter: frontmatter as Frontmatter, toc: [], links: [], tags: [] }
+    return { html: "", frontmatter: frontmatter as Frontmatter, toc: [], links: [], tags: [], inlineTags: [] }
   }
 
   const processor = unified()
@@ -125,7 +125,7 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
 
   processor.use(remarkBreaks)
   if (features.callouts) processor.use(remarkCallout)
-  if (features.tags) processor.use(remarkTag)
+  if (features.tags) processor.use(remarkTag, { resolveTag: options.resolveTag })
   processor
     .use(remarkHighlight)
     .use(remarkArrows)
@@ -165,5 +165,6 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
       ...((frontmatter.tags as string[]) ?? []),
       ...((file.data.tags as string[]) ?? []),
     ].filter((t, i, a) => a.indexOf(t) === i) : [],
+    inlineTags: features.tags ? ((file.data.tags as string[]) ?? []) : [],
   }
 }

@@ -22,7 +22,8 @@ export interface RenderResult {
   frontmatter: Frontmatter
   toc: TocEntry[]
   links: string[]       // outgoing wikilinks
-  tags: string[]        // inline #tags
+  tags: string[]        // frontmatter tags followed by inline #tags
+  inlineTags: string[]  // inline #tags in document order, deduplicated
 }
 
 export interface RenderOptions {
@@ -32,6 +33,8 @@ export interface RenderOptions {
   resolveLink?: (target: string, heading?: string, filePath?: string) => string
   /** Load a published note for transclusion. Return undefined for missing or private notes. */
   resolveEmbed?: (target: string, filePath?: string) => { content: string; filePath: string } | undefined
+  /** URL for an inline #tag (default: `/tags/` followed by each `/` segment URL-encoded) */
+  resolveTag?: (tag: string) => string
   /** Known slugs for dead-link detection */
   knownSlugs?: Set<string>
   /** Whether to strip draft pages (default: false) */
