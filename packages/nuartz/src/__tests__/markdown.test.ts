@@ -142,6 +142,17 @@ Content with #beta and #gamma`
       toc: [],
       links: [],
       tags: [],
+      inlineTags: [],
     })
+  })
+
+  it("separates inline tags from frontmatter tags and links them through resolveTag", async () => {
+    const result = await renderMarkdown("---\ntags: [declared]\n---\n\nBody #inline and C# text", {
+      resolveTag: tag => `/blog/tags/${tag}`,
+    })
+    expect(result.tags).toEqual(["declared", "inline"])
+    expect(result.inlineTags).toEqual(["inline"])
+    expect(result.html).toContain('<a href="/blog/tags/inline" class="tag" data-tag="inline">#inline</a>')
+    expect(result.html.match(/class="tag"/g)).toHaveLength(1)
   })
 })

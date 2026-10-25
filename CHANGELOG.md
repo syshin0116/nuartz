@@ -8,6 +8,13 @@ All notable changes to this project will be documented in this file.
 - Selectable 2D, 3D, VR, and marker-based AR graph views with shared note selection and on-demand spatial assets.
 - Package-level integration guide with a build-time usage example and required Next.js settings.
 
+- `resolveTag` render option and `defaultTagHref` for custom inline tag URLs, plus `inlineTags` on render results.
+
+### Fixed
+- Inline tags follow Obsidian's rules: a tag needs whitespace or a line start before `#`, may start with a letter of any script and continue with marks, digits, `_`, `-`, and `/`, and is never taken from code, link labels, URL fragments, or escaped `\#`.
+- Each inline tag renders as one anchor instead of an empty duplicate followed by the real link.
+- Default tag URLs encode each nested segment.
+
 ### Changed
 - Animate connected 2D nodes during dragging, with reduced-motion support and a 250-node limit.
 - Apply `contentDir` and feature switches from `nuartz.config.ts` during rendering, data generation, and starter UI composition.
