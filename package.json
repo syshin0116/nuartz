@@ -6,16 +6,16 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "bun run prebuild && bun run --cwd apps/web dev",
-    "prebuild": "bun scripts/prebuild.ts",
-    "build": "bun run build:pkg && bun run prebuild && bun run build:app",
+    "dev": "bun run generate && bun run --cwd apps/web dev",
+    "generate": "bun scripts/prebuild.ts",
+    "build": "bun run build:pkg && bun run generate && bun run build:app",
     "build:static": "bun scripts/build-static.ts",
     "build:pkg": "bun run --cwd packages/nuartz build",
     "build:app": "bun run --cwd apps/web build",
     "typecheck": "bun run --cwd packages/nuartz typecheck && bun run --cwd apps/web typecheck",
     "test": "bun run --cwd packages/nuartz test",
     "validate": "bun run build:pkg && bun scripts/validate-content.ts",
-    "check": "bun run build:pkg && bun run prebuild && bun run lint && bun run typecheck && bun run test:coverage && bun scripts/validate-content.ts",
+    "check": "bun run build:pkg && bun run generate && bun run lint && bun run typecheck && bun run test:coverage && bun scripts/validate-content.ts",
     "lint": "eslint . --max-warnings 0",
     "test:coverage": "bun run --cwd packages/nuartz test:coverage"
   },

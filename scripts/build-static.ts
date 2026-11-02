@@ -22,7 +22,7 @@ async function run(cmd: string[], cwd: string, env: Record<string, string>) {
 const env = { NUARTZ_OUTPUT: "export" }
 const root = path.join(import.meta.dir, "..")
 await run(["bun", "run", "build:pkg"], root, env)
-await run(["bun", "run", "prebuild"], root, env)
+await run(["bun", "run", "generate"], root, env)
 
 // Cached route types from earlier builds still reference the moved routes.
 await fs.rm(path.join(APP_DIR, ".next"), { recursive: true, force: true })
