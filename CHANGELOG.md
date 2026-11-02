@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-03
+
 ### Security
 - `getAllMarkdownFiles` skips dot-folders such as `.trash` and `.obsidian`, so notes deleted in Obsidian are no longer published.
 - `getMarkdownBySlug` returns `null` for slugs that leave the content directory or point at hidden paths.
