@@ -13,6 +13,8 @@ Nuartz includes a rich set of features for publishing and navigating your digita
 - [latex](https://nuartz.vercel.app/docs/features/latex) - Math equations with KaTeX
 - [mermaid](https://nuartz.vercel.app/docs/features/mermaid) - Diagrams and flowcharts
 - [comments](https://nuartz.vercel.app/docs/features/comments) - Reader comments via Giscus (GitHub Discussions)
+- [canvas](https://nuartz.vercel.app/docs/features/canvas) - Obsidian Canvas (`.canvas`) files as pannable, zoomable pages
+- [bases](https://nuartz.vercel.app/docs/features/bases) - Obsidian Bases (`.base`) tables, cards, and lists built from note properties
 
 ## Navigation & Discovery
 

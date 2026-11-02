@@ -66,6 +66,10 @@ await renderMarkdown(markdown, {
 })
 ```
 
+### Canvas and Bases
+
+`getContentFiles(dir, [".canvas", ".base"])` lists Obsidian Canvas and Bases files, and `assignPageSlugs()` gives them URLs that never shadow a note. `parseCanvas()` validates a canvas against JSON Canvas 1.0; `canvasEdgeGeometry()` returns edge paths and arrowheads. `parseBase()` and `evaluateBase(definition, notes)` run a base's filters, formulas, sorting, and grouping over notes you describe as `BaseFile` objects, and `renderBaseViewHtml()` turns a view into static HTML. Unsupported expressions become `notices` instead of errors. Pass `renderBase` to `renderMarkdown()` to render ```` ```base ```` code blocks. See the [starter's prebuild script](https://github.com/syshin0116/nuartz/blob/main/scripts/prebuild.ts) for a complete example.
+
 ## Next.js
 
 Diagram rendering runs on the server. Add its native and WASM dependencies to `serverExternalPackages`:

@@ -92,7 +92,7 @@ nuartz reads the same frontmatter fields as Obsidian (`title`, `tags`, `aliases`
 > 3. Pages with `draft: true` are excluded from listings but still accessible by URL in dev mode.
 
 > [!warning] Unsupported features
-> Some Obsidian features (Canvas files, Dataview queries, custom plugins) have no equivalent in nuartz. Plain Markdown notes and the OFM features listed above work out of the box.
+> Some Obsidian features (Dataview queries, custom plugins) have no equivalent in nuartz. Plain Markdown notes, the OFM features listed above, [canvas](https://nuartz.vercel.app/docs/features/canvas) files, and a subset of [bases](https://nuartz.vercel.app/docs/features/bases) work out of the box.
 
 ## Related
 

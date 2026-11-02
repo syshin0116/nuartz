@@ -89,6 +89,65 @@ export async function getAllMarkdownFiles(
   return results
 }
 
+export interface ContentFile {
+  path: string        // relative path with extension, e.g. "maps/overview.canvas"
+  filePath: string    // absolute file path
+  raw: string
+  mtime?: Date
+  ctime?: Date
+  size?: number
+}
+
+/** Recursively collects visible files with one of `extensions` (e.g. [".canvas"]), sorted by path. */
+export async function getContentFiles(contentDir: string, extensions: string[]): Promise<ContentFile[]> {
+  const results: ContentFile[] = []
+  async function walk(dir: string) {
+    let entries: { name: string; isDirectory(): boolean }[]
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true }) as { name: string; isDirectory(): boolean }[]
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name)
+      if (isHiddenContentPath(entry.name)) continue
+      if (entry.isDirectory()) await walk(fullPath)
+      else if (extensions.some(ext => entry.name.toLowerCase().endsWith(ext))) {
+        const stat = await fs.stat(fullPath).catch(() => undefined)
+        results.push({
+          path: path.relative(contentDir, fullPath).replace(/\\/g, "/"),
+          filePath: fullPath,
+          raw: await fs.readFile(fullPath, "utf-8"),
+          mtime: stat?.mtime,
+          ctime: stat?.birthtime,
+          size: stat?.size,
+        })
+      }
+    }
+  }
+  await walk(contentDir)
+  return results.sort((a, b) => a.path.localeCompare(b.path))
+}
+
+/**
+ * Assigns URL slugs to non-markdown pages: the path without its extension
+ * (`maps/overview.canvas` -> `maps/overview`). A slug already taken by a note or
+ * an earlier path gets `-<extension>` appended (`maps/overview-canvas`), then a counter.
+ */
+export function assignPageSlugs(paths: string[], taken: Iterable<string>): Map<string, string> {
+  const used = new Set(taken)
+  const slugs = new Map<string, string>()
+  for (const filePath of paths) {
+    const ext = path.posix.extname(filePath)
+    const base = filePath.slice(0, -ext.length || undefined)
+    let slug = base
+    for (let n = 1; used.has(slug); n++) slug = `${base}-${ext.slice(1)}${n > 1 ? `-${n}` : ""}`
+    used.add(slug)
+    slugs.set(filePath, slug)
+  }
+  return slugs
+}
+
 /**
  * Reads a single markdown file by slug.
  * Returns null if the file doesn't exist, is hidden, or lies outside `contentDir`.

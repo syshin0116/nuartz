@@ -15,6 +15,8 @@ Nuartz includes a rich set of features for publishing and navigating your digita
 - [[latex]] - Math equations with KaTeX
 - [[mermaid]] - Diagrams and flowcharts
 - [[comments]] - Reader comments via Giscus (GitHub Discussions)
+- [[canvas]] - Obsidian Canvas (`.canvas`) files as pannable, zoomable pages
+- [[bases]] - Obsidian Bases (`.base`) tables, cards, and lists built from note properties
 
 ## Navigation & Discovery
 

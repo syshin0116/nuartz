@@ -26,6 +26,11 @@ All notable changes to this project will be documented in this file.
 - `normalizeFrontmatter` and `isUnpublished`, used by `getAllMarkdownFiles`, `getMarkdownBySlug`, and `renderMarkdown`.
 - `isHiddenContentPath` for applying the same visibility rule to assets.
 - `site.verification` config for search engine ownership tokens.
+- Obsidian Canvas: `parseCanvas`, `canvasBounds`, `canvasEdgeGeometry`, and `normalizeCanvasColor` for JSON Canvas 1.0 files. The starter publishes each `.canvas` file as a page with pan, zoom, fit-to-view, and keyboard controls; canvas text is searchable and canvas links appear in the graph.
+- Obsidian Bases: `parseBase`, `evaluateBase`, and `renderBaseViewHtml` evaluate a static subset of `.base` files (filters, formulas, table, cards, and list views with sort, limit, and groupBy) over published notes. Unsupported expressions become notices instead of build errors. The starter publishes `.base` files as pages with view tabs and renders `![[file.base]]` embeds.
+- `renderBase` render option and `remarkBaseBlock` for ```` ```base ```` code blocks.
+- `getContentFiles` and `assignPageSlugs` for publishing non-markdown files as pages. A `.canvas` or `.base` file whose URL is taken by a note is published at `<name>-canvas` or `<name>-base`.
+- `createNoteResolver` accepts an optional `path` per entry, so `[[overview.canvas]]` resolves to that file's page.
 
 ## [0.4.1] - 2026-11-02
 

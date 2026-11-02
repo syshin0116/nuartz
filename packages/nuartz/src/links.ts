@@ -13,7 +13,11 @@ export function noteHref(slug: string, heading?: string, baseUrl = "/"): string 
   return `${baseUrl.replace(/\/?$/, "/")}${pathname}${anchor ? `#${encodeURIComponent(anchor)}` : ""}`
 }
 
-export function createNoteResolver(files: { slug: string; frontmatter: Frontmatter }[]) {
+/**
+ * `path` marks a non-markdown page such as `maps/overview.canvas`: it resolves only by that
+ * file path or file name (with extension), like Obsidian, never by its slug.
+ */
+export function createNoteResolver(files: { slug: string; frontmatter: Frontmatter; path?: string }[]) {
   const exact = new Map<string, string | undefined>()
   const names = new Map<string, string | undefined>()
   const add = (map: Map<string, string | undefined>, key: string, slug: string) => {
@@ -21,6 +25,11 @@ export function createNoteResolver(files: { slug: string; frontmatter: Frontmatt
     else if (map.get(key) !== slug) map.set(key, undefined)
   }
   for (const file of files) {
+    if (file.path) {
+      add(exact, normalizeNotePath(file.path), file.slug)
+      add(names, normalizeNotePath(path.posix.basename(file.path)), file.slug)
+      continue
+    }
     add(exact, normalizeNotePath(file.slug), file.slug)
     add(names, normalizeNotePath(path.posix.basename(file.slug)), file.slug)
     for (const alias of file.frontmatter.aliases ?? []) add(names, normalizeNotePath(alias), file.slug)

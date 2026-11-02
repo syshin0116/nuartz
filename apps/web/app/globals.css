@@ -684,6 +684,21 @@ a.tag {
 
 .prose .embed-note { margin-block: 1.5rem; padding: 1rem 1.25rem; border: 1px solid var(--border); border-left: 3px solid var(--ring); border-radius: 0.5rem; }
 .prose .embed-source { display: block; margin-bottom: 1rem; font-size: 0.8rem; color: var(--muted-foreground); }
+/* Obsidian Bases embedded in notes (static HTML from renderBaseViewHtml) */
+.prose .base-embed { margin-block: 1.5rem; }
+.prose .base-view-name { margin: 1.25rem 0 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--muted-foreground); }
+.prose .base-table { overflow-x: auto; }
+.prose .base-table table { margin: 0; }
+.prose .base-group { margin: 1rem 0 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--muted-foreground); }
+.prose tr.base-group th { padding-top: 1rem; }
+.prose .base-cards { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); margin: 0.5rem 0; }
+.prose .base-card { padding: 0.875rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; }
+.prose .base-card dl { display: grid; grid-template-columns: auto 1fr; gap: 0.125rem 0.75rem; margin: 0.5rem 0 0; font-size: 0.8rem; }
+.prose .base-card dt { color: var(--muted-foreground); }
+.prose .base-card dd { margin: 0; overflow-wrap: anywhere; }
+.prose .base-list-meta { color: var(--muted-foreground); font-size: 0.875rem; }
+.prose .base-notice, .prose .base-empty { font-size: 0.8rem; color: var(--muted-foreground); }
+.prose .base-notice { padding: 0.25rem 0.75rem; border: 1px dashed var(--border); border-radius: 0.375rem; }
 .prose .home-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 1.75rem 0 2.5rem; }
 .prose .home-actions a { padding: 0.65rem 1rem; border: 1px solid var(--border); border-radius: 0.5rem; text-decoration: none; font-size: 0.875rem; font-weight: 500; }
 .prose .home-actions a:first-child { color: var(--background); background: var(--foreground); border-color: var(--foreground); }
