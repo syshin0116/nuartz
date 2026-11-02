@@ -2,20 +2,9 @@ import { visit } from "unist-util-visit"
 import type { Root, Blockquote, Paragraph, Text } from "mdast"
 import type { Plugin } from "unified"
 
-// All supported callout types (Obsidian-compatible)
-const CALLOUT_TYPES = new Set([
-  "note", "abstract", "summary", "tldr",
-  "info", "todo", "tip", "hint", "important",
-  "success", "check", "done",
-  "question", "help", "faq",
-  "warning", "caution", "attention",
-  "failure", "fail", "missing",
-  "danger", "error", "bug",
-  "example", "quote", "cite",
-])
-
-// [!type] or [!type]+ or [!type]- optionally followed by title
-const CALLOUT_REGEX = /^\[!(\w+)\]([+-]?)([ \t].*)?$/i
+// [!type], [!type|metadata], then an optional fold marker (+ open, - closed) and title.
+// Any type is accepted, as in Obsidian; unknown types use the default "note" style.
+const CALLOUT_REGEX = /^\[!([\w-]+)(?:\|([^\]]*))?\]([+-]?)(?:[ \t]+(.*))?$/i
 
 export const remarkCallout: Plugin<[], Root> = () => {
   return (tree) => {
@@ -30,9 +19,8 @@ export const remarkCallout: Plugin<[], Root> = () => {
       const match = firstLine.match(CALLOUT_REGEX)
       if (!match) return
 
-      const [, rawType, fold, titleText] = match
+      const [, rawType, metadata, fold, titleText] = match
       const type = rawType.toLowerCase()
-      if (!CALLOUT_TYPES.has(type)) return
 
       // Trim [!type] line from the paragraph
       const remainder = firstInline.value.slice(firstLine.length).trimStart()
@@ -51,12 +39,14 @@ export const remarkCallout: Plugin<[], Root> = () => {
         node.children.shift()
       }
 
-      const title = titleText?.trim() ?? type.charAt(0).toUpperCase() + type.slice(1)
+      const title = titleText?.trim() || type.charAt(0).toUpperCase() + type.slice(1).replace(/-/g, " ")
+      // Foldable callouts are <details>, so they toggle without JavaScript.
+      const foldable = fold === "+" || fold === "-"
 
       const titleParagraph: Paragraph = {
         type: "paragraph",
         data: {
-          hName: "div",
+          hName: foldable ? "summary" : "div",
           hProperties: { className: ["callout-title"] },
         },
         children: [{ type: "text", value: title }],
@@ -66,11 +56,13 @@ export const remarkCallout: Plugin<[], Root> = () => {
 
       node.data = {
         ...node.data,
-        hName: "div",
+        hName: foldable ? "details" : "div",
         hProperties: {
           className: ["callout", `callout-${type}`],
           "data-callout": type,
           "data-callout-fold": fold || null,
+          "data-callout-metadata": metadata?.trim() || null,
+          open: fold === "+" ? true : undefined,
         },
       }
     })

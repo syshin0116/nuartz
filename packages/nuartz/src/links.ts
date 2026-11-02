@@ -34,3 +34,24 @@ export function createNoteResolver(files: { slug: string; frontmatter: Frontmatt
       : exact.get(normalized) ?? exact.get(relative) ?? names.get(normalized)
   }
 }
+
+/**
+ * Finds attachments the way Obsidian does: exact vault path, then relative to
+ * the linking note, then by file name when exactly one file has that name.
+ * Returns the attachment's path relative to the content root.
+ */
+export function createAssetResolver(paths: string[]) {
+  const exact = new Map(paths.map(p => [p.normalize("NFC"), p]))
+  const byName = new Map<string, string | undefined>()
+  for (const p of paths) {
+    const name = path.posix.basename(p).normalize("NFC").toLowerCase()
+    byName.set(name, byName.has(name) ? undefined : p)
+  }
+  return (target: string, from = ""): string | undefined => {
+    const clean = target.trim().replace(/\\/g, "/").replace(/^\/+/, "").normalize("NFC")
+    if (!clean) return undefined
+    return exact.get(path.posix.normalize(clean))
+      ?? exact.get(path.posix.normalize(path.posix.join(path.posix.dirname(from), clean)))
+      ?? byName.get(path.posix.basename(clean).toLowerCase())
+  }
+}
