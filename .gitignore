@@ -15,6 +15,7 @@ apps/web/public/graph.json
 apps/web/public/preview-index.json
 apps/web/public/content/
 apps/web/public/pagefind/
+apps/web/public/md/
 
 .claude/
 .superset/

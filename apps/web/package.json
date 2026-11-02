@@ -13,6 +13,7 @@
     "3d-force-graph-ar": "^1.10.0",
     "3d-force-graph-vr": "^3.1.2",
     "@ar-js-org/ar.js": "^3.4.8",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-scroll-area": "^1.2.18",
     "@radix-ui/react-separator": "^1.1.15",
@@ -33,7 +34,8 @@
     "radix-ui": "^1.6.7",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

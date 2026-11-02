@@ -4,14 +4,14 @@
  *   NUARTZ_BASE_PATH=/repo NUARTZ_SITE_URL=https://user.github.io/repo bun run build:static
  *
  * Output: apps/web/out. Routes that need a server are moved aside for the
- * build and always restored: /api/preview (external link previews) and /og
- * (per-page social images). The Pagefind index is written by `generate`.
+ * build and always restored: /api/preview (external link previews), /api/mcp,
+ * /og (per-page social images), and proxy.ts (Markdown content negotiation). The Pagefind index is written by `generate`.
  */
 import fs from "node:fs/promises"
 import path from "node:path"
 
 const APP_DIR = path.join(import.meta.dir, "../apps/web")
-const SERVER_ONLY_ROUTES = ["app/api/preview", "app/og"]
+const SERVER_ONLY_ROUTES = ["app/api/preview", "app/api/mcp", "app/og", "proxy.ts"]
 const BACKUP_DIR = path.join(APP_DIR, ".server-routes-backup")
 
 async function run(cmd: string[], cwd: string, env: Record<string, string>) {

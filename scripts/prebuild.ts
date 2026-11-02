@@ -26,6 +26,7 @@ import {
   createAssetResolver,
   isHiddenContentPath,
   defaultTagHref,
+  toStandardMarkdown,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import type { Frontmatter, MarkdownFile, TocEntry } from "nuartz"
@@ -483,6 +484,37 @@ async function main() {
 
     writes.push(writeJSON(path.join(OUT_DIR, "folders", `${folderPath}.json`), folderData))
   }
+
+  // Portable Markdown per note at /md/<slug>.md, plus llms-full.txt, for LLMs and agents.
+  const siteUrl = config.site.baseUrl.replace(/\/+$/, "")
+  const markdownDir = path.join(PUBLIC_DIR, "md")
+  await fs.rm(markdownDir, { recursive: true, force: true })
+  const portable = files.map(file => {
+    const meta = metaOf(file.slug)
+    const markdown = toStandardMarkdown(file.raw, {
+      title: meta.title,
+      description: text(file.frontmatter.description) ?? text(file.frontmatter.summary),
+      resolveLink: (target, heading) => {
+        const slug = resolveNote(target, `${file.slug}.md`)
+        return slug ? `${siteUrl}${noteHref(slug, heading)}` : undefined
+      },
+      resolveAsset: target => {
+        const assetPath = findAsset(target, `${file.slug}.md`)
+        return assetPath && `${siteUrl}/content/${assetPath.split("/").map(encodeURIComponent).join("/")}`
+      },
+    })
+    writes.push(fs.mkdir(path.dirname(path.join(markdownDir, `${file.slug}.md`)), { recursive: true })
+      .then(() => fs.writeFile(path.join(markdownDir, `${file.slug}.md`), markdown)))
+    return { slug: file.slug, markdown }
+  })
+  // Folder URLs (/docs) serve their index note, so their Markdown lives at md/<folder>.md too.
+  for (const { slug, markdown } of portable) {
+    if (!slug.endsWith("/index")) continue
+    const folderFile = path.join(markdownDir, `${slug.slice(0, -"/index".length)}.md`)
+    writes.push(fs.mkdir(path.dirname(folderFile), { recursive: true }).then(() => fs.writeFile(folderFile, markdown)))
+  }
+  const llmsFull = portable.map(({ slug, markdown }) => `<!-- ${siteUrl}${noteHref(slug)} -->\n${markdown}`).join("\n---\n\n")
+  writes.push(fs.writeFile(path.join(OUT_DIR, "llms-full.txt"), llmsFull))
 
   // folder path -> title of its index.md, for the sidebar and breadcrumbs
   const folderTitles = Object.fromEntries([...folderPaths].filter(f => noteMeta.has(`${f}/index`)).map(f => [f, metaOf(`${f}/index`).title]))

@@ -3,6 +3,7 @@ export { createAssetResolver, createNoteResolver, normalizeNotePath, noteHref } 
 export { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree, isHiddenContentPath } from "./fs.js"
 export { buildSearchIndex } from "./search.js"
 export { normalizeFrontmatter, isUnpublished } from "./frontmatter.js"
+export { toStandardMarkdown, type StandardMarkdownOptions } from "./standard-markdown.js"
 export { defineConfig } from "./config.js"
 export type { NuartzConfig, ResolvedNuartzConfig } from "./config.js"
 export type { SearchEntry } from "./search.js"

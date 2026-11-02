@@ -19,6 +19,7 @@ import { PopoverPreview } from "@/components/popover-preview"
 import { CopyCode } from "@/components/copy-code"
 import { ImageZoom } from "@/components/image-zoom"
 import { GiscusComments } from "@/components/giscus"
+import { CopyMarkdownButton } from "@/components/copy-markdown-button"
 import config from "@/nuartz.config"
 import { isStaticExport, withBasePath } from "@/lib/base-path"
 import allSlugsData from "@/.generated/all-slugs.json"
@@ -103,7 +104,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical },
+    alternates: { canonical, types: { "text/markdown": `${config.site.baseUrl}/md/${slugStr.split("/").map(encodeURIComponent).join("/")}.md` } },
     openGraph: {
       title,
       description,
@@ -231,6 +232,7 @@ export default async function NotePage({
             {rt >= 1 && (
               <span className="text-sm text-muted-foreground">{rt} min read</span>
             )}
+            <div className="ml-auto"><CopyMarkdownButton slug={slugStr} /></div>
           </div>
           {config.features.tags && tags.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">

@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - `draft: "true"` and `published: "false"` written as strings hide notes like their boolean forms.
 
 ### Added
+- `toStandardMarkdown` converts a note into portable CommonMark (no frontmatter or comments, wikilinks and embeds as absolute links).
 - `RenderResult.excerpt`: plain text of the leading paragraphs, used when a note has no `description`.
 - `theme.defaultMode` config (`"system"`, `"light"`, `"dark"`).
 - Obsidian embeds: image size (`![[img.png|300]]`, `|300x200`, `![alt|300](img.png)`), video, audio and PDF embeds, YouTube and external video URLs, download links for other files, and a visible marker for missing attachments.
