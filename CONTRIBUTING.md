@@ -7,6 +7,7 @@ Thanks for helping improve Nuartz. Bug reports, documentation fixes, examples, a
 Requirements:
 
 - Bun 1.3 or later
+- Node.js 22.12 or later (Vitest 5 and Mermaid 12)
 - Git
 
 ```bash
@@ -17,7 +18,7 @@ bun run check
 bun run build
 ```
 
-Run the development site with `bun dev`. Example content lives in `apps/web/content` and the core library lives in `packages/nuartz`.
+`bun run check` runs ESLint, type checks, tests with coverage thresholds, and content validation. Run the development site with `bun dev`. Example content lives in `apps/web/content` and the core library lives in `packages/nuartz`.
 
 ## Pull requests
 

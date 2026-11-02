@@ -22,27 +22,22 @@ export default async function HomePage() {
   const homePage = config.homePage ?? "index"
 
   if (homePage === "index") {
-    try {
-      const raw = await fs.readFile(path.join(GENERATED_DIR, "pages", "index.json"), "utf-8")
-      const pageData = JSON.parse(raw) as { html: string; toc: TocEntry[] }
-      return (
-        <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
-          <div className="reading-column min-w-0 flex-1">
-            <TableOfContents toc={config.features.toc ? pageData.toc : []} mobile><GraphView currentSlug="index" /></TableOfContents>
-            <article
-              data-pagefind-body
-              className="prose max-w-none"
-              dangerouslySetInnerHTML={{ __html: pageData.html }}
-            />
-          </div>
-          <TableOfContents toc={config.features.toc ? pageData.toc : []}>
-            <GraphView currentSlug="index" />
-          </TableOfContents>
+    const pageData = await readIndexPage()
+    if (pageData) return (
+      <div className="flex min-h-0 gap-8 px-6 py-8 max-w-6xl mx-auto w-full">
+        <div className="reading-column min-w-0 flex-1">
+          <TableOfContents toc={config.features.toc ? pageData.toc : []} mobile><GraphView currentSlug="index" /></TableOfContents>
+          <article
+            data-pagefind-body
+            className="prose max-w-none"
+            dangerouslySetInnerHTML={{ __html: pageData.html }}
+          />
         </div>
-      )
-    } catch {
-      // fallthrough to recent notes if index page doesn't exist
-    }
+        <TableOfContents toc={config.features.toc ? pageData.toc : []}>
+          <GraphView currentSlug="index" />
+        </TableOfContents>
+      </div>
+    )
   }
 
   const allNotes = await getSortedNotes()
@@ -57,4 +52,14 @@ export default async function HomePage() {
       totalPages={totalPages}
     />
   )
+}
+
+async function readIndexPage(): Promise<{ html: string; toc: TocEntry[] } | null> {
+  try {
+    const raw = await fs.readFile(path.join(GENERATED_DIR, "pages", "index.json"), "utf-8")
+    return JSON.parse(raw) as { html: string; toc: TocEntry[] }
+  } catch {
+    // Fall back to recent notes when there is no index page.
+    return null
+  }
 }

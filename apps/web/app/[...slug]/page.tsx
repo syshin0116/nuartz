@@ -164,13 +164,7 @@ export default async function NotePage({
       )
     }
 
-    // Check aliases - scan all-slugs for alias match
-    // For alias redirect, we need to check if any page has this as an alias
-    // This is already handled by generateStaticParams including aliases,
-    // but we need the actual page data. Try finding the canonical slug.
-    const allPages = allSlugsData.pages as string[][]
-    // If we got here and it's in aliases, we need to find the target
-    // For now, just 404 - alias redirects should be rare and can be handled separately
+    // Alias pages without generated data are not resolved to their target yet.
     notFound()
   }
 

@@ -14,6 +14,7 @@
 
 import path from "node:path"
 import fs from "node:fs/promises"
+import type { Dirent } from "node:fs"
 import {
   getAllMarkdownFiles,
   buildFileTree,
@@ -24,7 +25,7 @@ import {
   noteHref,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
-import type { MarkdownFile, RenderResult, Frontmatter, TocEntry } from "nuartz"
+import type { Frontmatter, TocEntry } from "nuartz"
 import config from "../apps/web/nuartz.config"
 
 const CONTENT_DIR = path.resolve(config.contentDir)
@@ -88,9 +89,9 @@ async function writeJSON(filePath: string, data: unknown) {
 async function copyMediaFiles() {
   let count = 0
   async function walk(dir: string) {
-    let entries: { name: string; isDirectory(): boolean }[]
+    let entries: Dirent[]
     try {
-      entries = await fs.readdir(dir, { withFileTypes: true }) as any
+      entries = await fs.readdir(dir, { withFileTypes: true })
     } catch { return }
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name)

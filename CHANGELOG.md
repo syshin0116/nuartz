@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2026-11-02
+
+### Fixed
+- Declare `@types/mdast` as a dependency, since the published type declarations import from `mdast`. Strict installers such as pnpm no longer report missing types.
+- Emit hast `className` values as arrays to match `@types/hast` 3.0.5. Rendered HTML is unchanged.
+
+### Changed
+- Declare `engines.node` `>=20`.
+
 ## [0.4.0] - 2026-10-25
 
 ### Added
