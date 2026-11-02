@@ -17,6 +17,7 @@ import {
   buildBacklinkIndex,
   buildFileTree,
   buildSearchIndex,
+  createAssetResolver,
   createNoteResolver,
   getAllMarkdownFiles,
   noteHref,
@@ -25,6 +26,8 @@ import { renderMarkdown } from "nuartz/markdown"
 
 const files = await getAllMarkdownFiles("content")
 const resolveNote = createNoteResolver(files)
+// Attachment paths relative to "content"; serve them yourself, e.g. copied to public/content.
+const findAsset = createAssetResolver(attachmentPaths)
 const knownSlugs = new Set(files.map(file => file.slug))
 
 const rendered = await Promise.all(files.map(async file => ({
@@ -34,6 +37,11 @@ const rendered = await Promise.all(files.map(async file => ({
     knownSlugs,
     resolveLink: (target, heading, from) =>
       noteHref(resolveNote(target, from) ?? target, heading),
+    // Without this, embeds point at /api/content/<path relative to the note>.
+    resolveAsset: (target, from) => {
+      const assetPath = findAsset(target, from)
+      return assetPath && `/content/${assetPath}`
+    },
   }),
 })))
 

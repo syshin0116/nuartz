@@ -14,39 +14,36 @@
 
 </div>
 
-Nuartz parses Obsidian-flavored markdown, including wikilinks, callouts, backlinks, tags, math, and graphs. It gives you a polished site built with **Next.js 16**, **shadcn/ui**, and **Tailwind CSS v4**. Every component is swappable. It's just React.
+Nuartz turns an Obsidian vault into a Next.js 16 site built with **shadcn/ui** and **Tailwind CSS v4**. Wikilinks, embeds, callouts, backlinks, tags and the graph work as they do in Obsidian, and every page is ordinary React you can change.
 
-Heavily inspired by [Quartz](https://github.com/jackyzha0/quartz). Quartz pioneered Obsidian-to-website publishing, and Nuartz borrows many of its ideas. The main difference is the stack. Nuartz runs on Next.js and shadcn/ui, so you get the full React ecosystem, copy-paste UI components from [ui.shadcn.com](https://ui.shadcn.com), and deployment anywhere Next.js runs.
+It is heavily inspired by [Quartz](https://github.com/jackyzha0/quartz), which pioneered Obsidian-to-website publishing. The difference is the stack: Nuartz is a normal Next.js app plus a headless library, so you get the React ecosystem, components from [ui.shadcn.com](https://ui.shadcn.com), and every place Next.js deploys.
 
 ## Who is this for?
 
-- **Obsidian users** who want to publish their vault without giving up wikilinks, callouts, or graph view
-- **Next.js developers** who want a blog or digital garden inside their existing app, not a separate tool
-- **Quartz users** who love the concept but want more UI flexibility with React components and shadcn/ui
+- **Obsidian users** who want to publish a vault without losing wikilinks, callouts, embeds, or the graph
+- **Next.js developers** who want a garden or blog inside an existing app, not a separate tool
+- **Quartz users** who want to customize the UI with React instead of a theme system
 
 ## How it works
 
-Nuartz has two layers:
-
 | Layer | What it is | How to use it |
 |-------|-----------|---------------|
-| **`nuartz` (npm package)** | Headless data library for markdown, HTML, file trees, wikilinks, backlinks, and search data | `bun add nuartz` and wire it into any Next.js app |
-| **`apps/web` (starter template)** | Complete Next.js 16 app with shadcn/ui, sidebar, graph view, search, dark mode | Clone the repo and deploy |
+| **`nuartz` (npm package)** | Headless library: Obsidian Markdown to HTML, note and attachment resolution, file trees, backlinks, search data | `bun add nuartz` and call it at build time |
+| **`apps/web` (starter)** | Complete Next.js 16 site: sidebar, graph, search, previews, dark mode | Clone the repo, add notes, deploy |
 
-Most people start with the starter template. If you want to embed a garden into an existing Next.js app, use the package directly.
+Most people start with the starter. To add a garden to an existing Next.js app, use the package.
 
 ## Features
 
-- **Obsidian syntax** — Wikilinks (`[[page]]`, `[[page|alias]]`, `[[page#heading]]`), callouts, inline tags, `==highlights==`, `%%comments%%`
-- **Graph view** — Interactive D3 force-directed graph, just like Obsidian
-- **Full-text search**: `Cmd+K` powered by Pagefind with CJK support
-- **Backlinks & popover previews** — Navigate your vault like in Obsidian
-- **Dark mode** — System-aware theme switching
-- **Math & code** — KaTeX for equations, Shiki for syntax highlighting
-- **SEO-ready** — Dynamic OG images, RSS feed, sitemap, dead link detection
-- **Extras** — Table of contents, reader mode, Giscus comments, draft filtering
+- **Obsidian syntax**: wikilinks with headings and aliases, standard Markdown links to notes, note and block embeds (`![[note#^id]]`), image sizes (`![[img.png|300]]`), video, audio, PDF and YouTube embeds, foldable and custom callouts, nested tags, `==highlights==`, `%%comments%%`, Mermaid, D2, Graphviz, KaTeX
+- **Attachments like Obsidian**: `![[photo.png]]` is found by file name anywhere in the vault
+- **Graph**: 2D force graph with two-hop exploration, plus 3D, VR, and marker-based AR views
+- **Navigation**: `Cmd+K` full-text search (Pagefind), backlinks, hover previews, folder pages from `index.md`, tag pages, breadcrumbs, previous and next links, alias redirects
+- **For AI agents**: every note as Markdown at `/md/<slug>.md`, `Accept: text/markdown` negotiation, `llms.txt` and `llms-full.txt`, and a read-only MCP server at `/api/mcp`
+- **Publishing**: drafts, `_private` and dot-folders (`.obsidian`, `.trash`) never ship; dates from frontmatter or git history; generated descriptions; OG images, RSS, sitemap, JSON-LD
+- **Reading**: table of contents, reader mode, dark mode, Giscus comments, per-note `toc` and `comments` switches
 
-## Quick Start
+## Quick start
 
 ```bash
 git clone https://github.com/syshin0116/nuartz
@@ -55,41 +52,38 @@ bun install
 bun dev
 ```
 
-Put your Obsidian markdown files in `apps/web/content/` and open `http://localhost:3000`.
+Put your notes in `apps/web/content/`, set your site in `apps/web/nuartz.config.ts`, and open `http://localhost:3000`. After changing notes or config, restart `bun dev` (or run `bun run generate`).
+
+Requirements: Bun 1.3+, Node.js 22.12+.
 
 ## Deploying
 
-Nuartz supports two deployment modes. Pick the one that fits your needs:
+### Vercel (all features)
 
-### GitHub Pages (free, static)
-
-All pages are pre-built as static HTML at build time. No server needed.
-
-1. Go to your repo's **Settings > Pages**, set source to **GitHub Actions**
-2. Add `push` trigger to `.github/workflows/deploy-pages.yml` (it's manual-only by default)
-3. Push to `main` — the workflow builds and deploys automatically
-
-No `next.config.ts` changes needed. The workflow automatically enables static export during CI.
-
-What works: search, graph view, popover previews (internal links), dark mode, tags, backlinks, RSS, sitemap — everything that can be computed at build time.
-
-What doesn't: dynamic OG images (per-page social cards), external link previews, Next.js image optimization. These features need a server.
-
-### Vercel (recommended, server-side)
-
-Import the repo in Vercel with these overrides:
+Import the repo with these settings:
 
 | Setting | Value |
 |---------|-------|
 | Root Directory | `apps/web` |
 | Install Command | `cd ../.. && bun install --frozen-lockfile` |
-| Build Command | `cd ../.. && bun run build:pkg && cd apps/web && next build` |
+| Build Command | `cd ../.. && bun run build` |
 
-Everything works, including dynamic OG images and external link previews. Free tier is generous enough for most personal sites.
+`apps/web/vercel.json` already sets the two commands. Any Node.js host works the same way: `bun run build`, then `bun run --cwd apps/web start`.
 
-See the [full hosting guide](apps/web/content/docs/hosting.md) for Netlify, Docker, and details on what each mode supports.
+### GitHub Pages or any static host
 
-## Using as a Package
+```bash
+NUARTZ_BASE_PATH=/my-repo NUARTZ_SITE_URL=https://me.github.io/my-repo bun run build:static
+# output: apps/web/out
+```
+
+For GitHub Pages, set **Settings > Pages > Source** to **GitHub Actions** and run the **Deploy to GitHub Pages** workflow. It reads the base path and URL from Pages, so no config changes are needed. The workflow is manual by default; add a `push` trigger to deploy on every push.
+
+Static sites keep search, the graph, note previews, images, RSS, sitemap, and the `.md` and `llms` files. They lose what needs a server: per-page OG images (a site-wide image is used), external link previews, Markdown content negotiation, and the MCP endpoint.
+
+See the [hosting guide](apps/web/content/docs/hosting.md) for Netlify, Docker, and details.
+
+## Using as a package
 
 ```bash
 bun add nuartz
@@ -97,16 +91,19 @@ bun add nuartz
 
 ```typescript
 import {
-  buildBacklinkIndex,  // build slug -> backlinks map
-  buildFileTree,       // flat file list -> nested tree
-  buildSearchIndex,    // files -> search-ready entries
-  defineConfig,        // typed config helper
+  getAllMarkdownFiles,  // published notes (drafts and hidden paths excluded)
+  createNoteResolver,   // wikilink target -> note slug, Obsidian-style
+  createAssetResolver,  // attachment name -> file path, Obsidian-style
+  buildFileTree,        // notes -> nested tree
+  buildBacklinkIndex,   // slug -> backlinks
+  buildSearchIndex,     // notes -> search entries
+  toStandardMarkdown,   // note -> portable CommonMark for LLMs
+  defineConfig,
 } from "nuartz"
-
 import { renderMarkdown } from "nuartz/markdown"
 ```
 
-The package is a build-time data layer and does not ship React components or routes. Import `nuartz/styles.css` if you want the starter's content styles. Next.js consumers also need the diagram and D2 packages listed in `serverExternalPackages`; see the [package integration guide](packages/nuartz/README.md).
+The package is a build-time data layer; it ships no React components or routes. Import `nuartz/styles.css` for the starter's content styles. Next.js consumers also need the diagram packages listed in `serverExternalPackages`; see the [package guide](packages/nuartz/README.md).
 
 ## Publishing the package
 
@@ -114,9 +111,9 @@ The `Publish` workflow publishes version tags through npm trusted publishing. Co
 `nuartz` on npm with owner `syshin0116`, repository `nuartz`, workflow `publish.yml`,
 environment `npm`, and permission to run `npm publish`. No npm token is required.
 
-Push a tag matching `packages/nuartz/package.json`, such as `v0.3.0`. To retry an
+Push a tag matching `packages/nuartz/package.json`, such as `v0.5.0`. To retry an
 unpublished tag after fixing release configuration, run
-`gh workflow run publish.yml --field tag=v0.3.0`. The workflow checks out that exact tag.
+`gh workflow run publish.yml --field tag=v0.5.0`. The workflow checks out that exact tag.
 
 ## Stack
 
@@ -126,7 +123,8 @@ unpublished tag after fixing release configuration, run
 | UI | shadcn/ui + Radix UI |
 | Styling | Tailwind CSS v4 |
 | Markdown | unified / remark / rehype |
-| Graph | D3 force-directed |
+| Search | Pagefind |
+| Graph | D3 (2D), 3d-force-graph (3D, VR, AR) |
 | Runtime | Bun |
 
 ## Acknowledgements
