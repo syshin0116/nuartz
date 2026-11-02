@@ -26,6 +26,7 @@ export interface RenderResult {
   links: string[]       // outgoing wikilinks
   tags: string[]        // frontmatter tags followed by inline #tags
   inlineTags: string[]  // inline #tags in document order, deduplicated
+  excerpt: string       // plain text of the leading paragraphs, about 200 characters
 }
 
 export interface RenderOptions {

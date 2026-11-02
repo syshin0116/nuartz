@@ -27,12 +27,12 @@ export default async function RootLayout({
   // Serialized tree: mtime is an ISO string here, which no consumer reads.
   const tree = fileTree as unknown as FileTreeNode[]
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={config.site.locale ?? "en"} suppressHydrationWarning>
       <head />
       <body>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme={config.theme?.defaultMode ?? "system"}
           enableSystem={config.features.darkMode}
           forcedTheme={config.features.darkMode ? undefined : "light"}
           disableTransitionOnChange

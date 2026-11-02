@@ -30,15 +30,21 @@ function NavNode({ node, currentSlug, depth }: { node: FileTreeNode; currentSlug
   }
   const activeRef = useRef<HTMLAnchorElement>(null)
   useEffect(() => { if (isActive) activeRef.current?.scrollIntoView({ block: "nearest" }) }, [isActive])
+  // A folder's index.md names the folder and is shown on the folder page, so it is not listed again.
+  const indexPath = `${node.path}/index`
+  const indexNote = node.children?.find(child => child.type === "file" && child.path === indexPath)
+  const children = node.children?.filter(child => child !== indexNote)
+  const label = indexNote?.name ?? node.name
+  const folderActive = currentSlug === node.path || currentSlug === indexPath
   if (node.type === "folder") return (
     <div>
       <div className="flex items-center gap-1">
-        <button onClick={() => setOpen(value => !value)} aria-expanded={open} aria-label={`${open ? "Collapse" : "Expand"} ${node.name}`} className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
+        <button onClick={() => setOpen(value => !value)} aria-expanded={open} aria-label={`${open ? "Collapse" : "Expand"} ${label}`} className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
           <ChevronRight className={cn("size-3.5 transition-transform", open && "rotate-90")} />
         </button>
-        <Link href={`/${node.path}`} className={cn("min-w-0 flex-1 truncate py-2 font-medium", isAncestor ? "text-foreground" : "text-muted-foreground")}>{node.name}</Link>
+        <Link href={`/${node.path}`} aria-current={folderActive ? "page" : undefined} className={cn("min-w-0 flex-1 truncate py-2 font-medium", isAncestor ? "text-foreground" : "text-muted-foreground")}>{label}</Link>
       </div>
-      {open && <div className="ml-4 border-l pl-2">{node.children?.map(child => <NavNode key={child.path} node={child} currentSlug={currentSlug} depth={depth + 1} />)}</div>}
+      {open && <div className="ml-4 border-l pl-2">{children?.map(child => <NavNode key={child.path} node={child} currentSlug={currentSlug} depth={depth + 1} />)}</div>}
     </div>
   )
   return <Link ref={activeRef} href={`/${node.path}`} aria-current={isActive ? "page" : undefined} title={node.name} className={cn("block truncate rounded-md px-2 py-2 hover:bg-muted", isActive ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground")}>{node.name}</Link>

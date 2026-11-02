@@ -50,6 +50,21 @@ const rehypeExtractToc: Plugin<[], HastRoot> = () => {
   }
 }
 
+const EXCERPT_LENGTH = 200
+
+// Plain text of the note's leading paragraphs, for descriptions when frontmatter has none.
+const rehypeExcerpt: Plugin<[], HastRoot> = () => (tree, file) => {
+  let text = ""
+  visit(tree, "element", (node: Element) => {
+    if (text.length >= EXCERPT_LENGTH) return false
+    if (node.tagName !== "p") return
+    const paragraph = extractText(node).replace(/\s+/g, " ").trim()
+    if (paragraph) text += (text ? " " : "") + paragraph
+    return "skip"
+  })
+  file.data.excerpt = text.length > EXCERPT_LENGTH ? `${text.slice(0, EXCERPT_LENGTH).replace(/\s+\S*$/, "")}…` : text
+}
+
 function extractText(node: Element): string {
   let text = ""
   visit(node as unknown as HastRoot, "text", (n: { value: string }) => {
@@ -101,7 +116,7 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
   const body = parsed.content
   const frontmatter = normalizeFrontmatter(parsed.data)
   if (options.stripDrafts && isUnpublished(frontmatter)) {
-    return { html: "", frontmatter, toc: [], links: [], tags: [], inlineTags: [] }
+    return { html: "", frontmatter, toc: [], links: [], tags: [], inlineTags: [], excerpt: "" }
   }
 
   const processor = unified()
@@ -157,6 +172,7 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
     })
     .use(rehypeKatex, { strict: "ignore" })
   if (features.toc) processor.use(rehypeExtractToc)
+  processor.use(rehypeExcerpt)
   const file = await processor.use(rehypeStringify).process(body)
 
   return {
@@ -169,5 +185,6 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
       ...((file.data.tags as string[]) ?? []),
     ].filter((t, i, a) => a.indexOf(t) === i) : [],
     inlineTags: features.tags ? ((file.data.tags as string[]) ?? []) : [],
+    excerpt: (file.data.excerpt as string) ?? "",
   }
 }
