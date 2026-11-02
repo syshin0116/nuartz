@@ -6,37 +6,36 @@ description: How to build and preview your nuartz digital garden locally.
 
 ## Development server
 
-Start the dev server with hot reload:
+Start the dev server from the repository root:
 
 ```bash
-cd apps/web
 bun dev
 ```
 
-This starts a local Next.js server at `http://localhost:3000/`. Changes to content files and code are reflected immediately.
+This runs `bun run generate` and then starts Next.js at `http://localhost:3000/`. Code changes hot-reload. Content and `nuartz.config.ts` changes do not: there is no file watcher, so run `bun run generate` again (or restart `bun dev`) to see them.
 
 ## Production build
 
-To create an optimized production build:
+To create an optimized production build, run from the repository root:
 
 ```bash
-cd apps/web
-bun build
+bun run build
 ```
 
-This generates static output in `apps/web/.next/`. You can preview the production build locally:
+This builds the `nuartz` package, runs `generate`, and runs `next build`, writing to `apps/web/.next/`. Preview it locally:
 
 ```bash
-cd apps/web
-bun start
+bun run --cwd apps/web start
 ```
+
+For a static site in `apps/web/out`, use `bun run build:static` instead. See [[hosting]].
 
 ## Content directory
 
 Your markdown files go in `apps/web/content/`. The file structure maps directly to URL paths:
 
 ```
-content/
+apps/web/content/
   index.md          → /
   docs/
     getting-started.md  → /docs/getting-started
@@ -46,9 +45,9 @@ content/
 
 ## What happens during build
 
-1. Next.js discovers all `.md` files in `content/`
+1. `bun run generate` (`scripts/prebuild.ts`) reads every published `.md` file in `apps/web/content/`
 2. Each file is processed through the nuartz [[architecture|markdown pipeline]]
-3. Frontmatter, HTML, table of contents, links, and tags are extracted
-4. Pages are rendered as static HTML with React hydration
+3. HTML, table of contents, links, tags, backlinks, the graph, search indexes, and portable Markdown are written to `apps/web/.generated/` and `apps/web/public/`
+4. `next build` renders pages as static HTML from that generated data
 
 For deployment options, see [[deployment]] and [[hosting]].

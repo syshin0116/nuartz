@@ -20,11 +20,13 @@ Custom plugins are in `packages/nuartz/src/plugins/`:
 | Plugin | Type | Purpose |
 |--------|------|---------|
 | `callout.ts` | remark | Obsidian-style callout blocks (`> [!note]`) |
-| `wikilink.ts` | remark | `[[wikilink]]` syntax support |
+| `wikilink.ts` | remark | `[[wikilink]]` syntax, Markdown note links, attachment embeds |
 | `tag.ts` | remark | Inline `#tag` extraction |
 | `highlight.ts` | remark | `==highlight==` syntax |
 | `comment.ts` | remark | `%%obsidian comments%%` removal |
-| `arrows.ts` | remark | Arrow symbol replacements (`->`, `=>`, etc.) |
+| `arrows.ts` | remark | Arrow replacements (`-->`, `<--`, `<-->`) |
+| `embed.ts` | remark | `![[note]]` transclusion and `^block-id` anchors |
+| `media.ts` | (helper) | Attachment kinds, sizes, and YouTube URLs used by `wikilink.ts` |
 
 ## Writing a remark plugin
 
@@ -133,8 +135,7 @@ describe("remarkMyPlugin", () => {
 Run tests with:
 
 ```bash
-cd packages/nuartz
-bun test
+bun run test   # from the repo root: vitest in packages/nuartz
 ```
 
 ## Using existing unified plugins

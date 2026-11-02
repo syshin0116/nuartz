@@ -3,7 +3,7 @@ title: Comments
 description: Allow readers to leave comments on your pages via Giscus
 ---
 
-Nuartz ships with [Giscus](https://giscus.app/) — a comment system powered by GitHub Discussions. It requires no backend, no database, and is completely free.
+Nuartz ships with [Giscus](https://giscus.app/), a comment system powered by GitHub Discussions. It requires no backend, no database, and is completely free.
 
 ## Setup
 
@@ -31,11 +31,11 @@ NEXT_PUBLIC_GISCUS_CATEGORY=Announcements
 NEXT_PUBLIC_GISCUS_CATEGORY_ID=DIC_xxxxxxxxxx
 ```
 
-If any variable is missing, the comment section is silently hidden.
+If any variable is missing, the comment section is silently hidden. `NEXT_PUBLIC_` variables are inlined at build time, so rebuild after changing them.
 
 ### 5. Done
 
-The `<Giscus>` component in `apps/web/components/giscus.tsx` reads these env vars and renders automatically on every content page.
+`GiscusComments` in `apps/web/components/giscus.tsx` reads these env vars and renders below every note. It maps discussions by page path, follows the site's light/dark theme, and loads the Giscus script only when the comment area scrolls into view.
 
 ## Disabling per page
 

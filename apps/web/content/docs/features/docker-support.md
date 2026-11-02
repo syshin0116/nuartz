@@ -12,26 +12,39 @@ You can containerize Nuartz using Docker to run it locally without installing No
 Create a `Dockerfile` at the **repo root**:
 
 ```dockerfile
-FROM oven/bun:1 AS builder
+FROM node:22-slim AS builder
+# Native dependencies (better-sqlite3) install with Node available.
+RUN npm install -g bun@1.3.10
 WORKDIR /app
 COPY . .
 RUN bun install --frozen-lockfile
-RUN bun run build:pkg
-RUN bun run --cwd apps/web build
+# build:pkg + generate + next build
+RUN bun run build
 
-FROM node:20-alpine AS runner
+FROM node:22-slim AS runner
 WORKDIR /app
-COPY --from=builder /app/apps/web/.next/standalone ./
-COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
-COPY --from=builder /app/apps/web/public ./apps/web/public
-
+COPY --from=builder /app ./
+WORKDIR /app/apps/web
+ENV NODE_ENV=production PORT=3000
 EXPOSE 3000
-ENV PORT=3000
-CMD ["node", "apps/web/server.js"]
+CMD ["node", "/app/node_modules/next/dist/bin/next", "start"]
+```
+
+Add a `.dockerignore` so local builds and dependencies are not copied in:
+
+```
+node_modules
+**/node_modules
+**/.next
+apps/web/.generated
+apps/web/out
 ```
 
 > [!note]
-> The `standalone` output requires `output: "standalone"` in `apps/web/next.config.ts`. Add it if it's not already there.
+> `bun run build` includes `bun run generate`, which renders the notes and writes the data the app reads. A plain `next build` without it fails. The runtime image needs Node.js 22.12 or later.
+
+> [!note] Dates without git history
+> `generate` reads first and last commit dates from git. `COPY . .` usually leaves out `.git`, so notes without `date` / `modified` frontmatter fall back to file modification times.
 
 ## Building and running
 
@@ -51,23 +64,14 @@ services:
     build: .
     ports:
       - "3000:3000"
-    environment:
-      - NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 ```shell
 docker compose up
 ```
 
-## Mounting content for development
+Canonical URLs, the sitemap, and RSS are written at build time from `site.baseUrl` in `apps/web/nuartz.config.ts`, so set it to the container's public URL before building the image.
 
-If you want live content editing without rebuilding the image, mount your content directory:
+## Content changes
 
-```shell
-docker run --rm -p 3000:3000 \
-  -v $(pwd)/apps/web/content:/app/apps/web/content \
-  nuartz
-```
-
-> [!warning] Production note
-> Mounting content at runtime only works for static-read scenarios. API routes that scan the filesystem read from the mounted path, so changes will reflect on next request.
+Notes are rendered when the image is built. Mounting `apps/web/content` into a running container has no effect; rebuild the image after editing content.

@@ -10,13 +10,11 @@ homePage: "recent"   // show recent notes list (this page)
 homePage: "index"    // show content/index.md instead (default)
 ```
 
-When `homePage: "recent"`, Nuartz shows a list of all notes sorted by `date` in frontmatter (most recent first).
+When `homePage: "recent"`, Nuartz shows all notes except the home `index.md`, newest first, 10 per page (`/`, `/page/2`, ...). `/notes` lists every note on one page with tag filtering and title sorting, whichever `homePage` you choose.
 
 ## How it works
 
-The home page at `apps/web/app/page.tsx` calls `getAllMarkdownFiles()`, sorts by `frontmatter.date`, and renders a linked list of notes with their title, date, description, and tags.
-
-There is no separate configurable `RecentNotes` component — the home page itself serves as the recent notes listing.
+`bun run generate` writes `apps/web/.generated/notes-list.json`, sorted by date. The home page (`apps/web/app/page.tsx`) reads it with `getSortedNotes()` from `apps/web/lib/notes.ts`, takes the first page with `paginateNotes()`, and renders it with `components/notes-list.tsx`: title, date, `summary` (or `description`, or an excerpt), and tags. Later pages are `app/page/[page]/page.tsx`.
 
 ## Adding a date to your notes
 
@@ -30,15 +28,8 @@ tags:
 ---
 ```
 
-Notes with a `date` field are sorted chronologically. Notes without a date appear at the bottom.
+The date is `date` (or `created`) from frontmatter, else the file's first git commit. Notes with no date at all appear at the bottom.
 
 ## Customizing the listing
 
-To change how the home page listing looks, edit `apps/web/app/page.tsx` directly. For example, to show only the 10 most recent notes:
-
-```ts
-const notes = files
-  .filter((f) => f.slug !== "index")
-  .sort(/* by date */)
-  .slice(0, 10)  // limit to 10
-```
+To change how the listing looks, edit `apps/web/components/notes-list.tsx`. To change the page size, edit `NOTES_PER_PAGE` in `apps/web/lib/notes.ts`.

@@ -9,7 +9,7 @@ tags:
 description: How to write content for nuartz using Obsidian-flavored Markdown.
 ---
 
-All content in nuartz goes in the `content/` directory. The home page lives at `content/index.md`. Any Markdown file in this directory will be processed and rendered by nuartz.
+All content in nuartz goes in the `apps/web/content/` directory. The home page lives at `apps/web/content/index.md`. Any Markdown file in this directory is rendered by nuartz, except [[docs/features/private-pages|unpublished]] notes and paths under `_` or `.` folders.
 
 > [!tip] Recommended Editor
 > Use [Obsidian](https://obsidian.md/) to edit your notes. It gives you a live preview, graph view, and the same syntax that nuartz supports.
@@ -36,9 +36,11 @@ aliases:
 | `title` | Page title. Falls back to the filename if omitted. |
 | `date` | Publish date in `YYYY-MM-DD` format. |
 | `tags` | List of tags for categorization. |
-| `description` | Used for link previews and meta tags. |
+| `description` | Used for meta tags, RSS, and listings. |
 | `draft` | Set to `true` to hide the page from the published site. |
-| `aliases` | Alternate names that wikilinks can resolve to. |
+| `aliases` | Alternate names that wikilinks resolve to; they also work as redirect URLs. |
+
+See [[docs/frontmatter|Frontmatter]] for every field.
 
 ## Wikilinks
 
@@ -104,10 +106,11 @@ Create diagrams using fenced code blocks with the `mermaid` language. See [[docs
 
 ## Images
 
-Place images in `content/` (or a subfolder) and embed them:
+Place images anywhere in `apps/web/content/` and embed them. As in Obsidian, `![[my-image.png]]` finds the file by exact path, path relative to the note, or unique file name:
 
 ```markdown
 ![[my-image.png]]
+![[my-image.png|300]]
 ```
 
 Standard Markdown image syntax also works:
@@ -115,6 +118,8 @@ Standard Markdown image syntax also works:
 ```markdown
 ![Alt text](./images/photo.png)
 ```
+
+Video, audio, PDF, and other attachments are covered in [[docs/features/obsidian-compatibility|Obsidian Compatibility]].
 
 > [!tip] What's Next?
 > - [[docs/configuration|Configure your garden]]
