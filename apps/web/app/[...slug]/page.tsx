@@ -200,7 +200,7 @@ export default async function NotePage({
     const title = frontmatter.title ?? slug[slug.length - 1]
     return (
       <div className={pageData.kind === "canvas" ? "w-full px-6 py-8" : "max-w-6xl mx-auto w-full px-6 py-8"}>
-        {slug.length > 1 && <div className="mb-6"><Breadcrumb slug={slug} /></div>}
+        {slug.length > 1 && <div className="mb-6"><Breadcrumb slug={slug} titles={{ ...folderTitles, [slugStr]: title }} /></div>}
         <header className="mb-6 flex flex-wrap items-baseline gap-3">
           <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
           <span className="text-sm text-muted-foreground">{pageData.kind === "canvas" ? "Canvas" : "Base"}</span>
