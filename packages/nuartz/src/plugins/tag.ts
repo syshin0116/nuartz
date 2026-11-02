@@ -105,7 +105,7 @@ export const remarkTag: Plugin<[TagOptions?], Root> = (options = {}) => {
         nodes.push({
           type: "link",
           url: resolveTag(tag),
-          data: { hProperties: { className: "tag", "data-tag": tag } },
+          data: { hProperties: { className: ["tag"], "data-tag": tag } },
           children: [{ type: "text", value: `#${tag}` }],
         })
         lastIndex = position + 1 + tag.length

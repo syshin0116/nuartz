@@ -141,7 +141,7 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
     .use(rehypeAutolinkHeadings, {
       behavior: "append",
       test: node => !node.children.some(child => child.type === "element" && child.tagName === "a" && (child.properties.className as string[] | undefined)?.includes("heading-anchor")),
-      properties: { className: "heading-anchor", ariaLabel: "Copy link to section" },
+      properties: { className: ["heading-anchor"], ariaLabel: "Copy link to section" },
       content: {
         type: "element", tagName: "svg",
         properties: { width: "14", height: "14", viewBox: "0 0 24 24", fill: "none",
