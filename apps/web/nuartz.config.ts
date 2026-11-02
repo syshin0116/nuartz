@@ -8,6 +8,8 @@ export default defineConfig({
     title: "Nuartz",
     description: "Publish your Obsidian vault as a Next.js website",
     baseUrl: "https://nuartz.vercel.app",
+    // Search Console token for nuartz.vercel.app. Replace or remove for your site.
+    verification: { google: "j5FT4jTGt4vceZ-Tgn0gf5q1VHp1VNTtBcbYC1VUBFE" },
   },
   homePage: "index",
   features: {

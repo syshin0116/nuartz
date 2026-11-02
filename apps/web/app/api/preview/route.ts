@@ -1,90 +1,46 @@
 import { NextRequest, NextResponse } from "next/server"
-import fs from "node:fs/promises"
-import path from "node:path"
-import matter from "gray-matter"
+import previewIndex from "@/public/preview-index.json"
+import { fetchPublicText } from "@/lib/public-url"
 
-
-const CONTENT_DIR = path.join(process.cwd(), "content")
+const previews: Record<string, { title: string; excerpt: string }> = previewIndex
 
 export async function GET(request: NextRequest) {
   const slug = request.nextUrl.searchParams.get("slug")
   const url = request.nextUrl.searchParams.get("url")
 
-  if (url) {
-    return handleExternalPreview(url)
-  }
-
-  if (!slug) {
-    return NextResponse.json({ error: "Missing slug or url" }, { status: 400 })
-  }
-
+  if (url) return handleExternalPreview(url)
+  if (!slug) return NextResponse.json({ error: "Missing slug or url" }, { status: 400 })
   return handleInternalPreview(slug)
 }
 
-async function handleInternalPreview(slug: string) {
-  const filePath = path.join(CONTENT_DIR, slug) + ".md"
-
-  try {
-    const raw = await fs.readFile(filePath, "utf-8")
-    const { data, content } = matter(raw)
-    const title = data.title ?? slug.split("/").pop() ?? slug
-
-    const excerpt = content
-      .replace(/^---[\s\S]*?---\n?/, "")
-      .replace(/!\[\[.*?\]\]/g, "")
-      .replace(/\[\[([^\]|#]+?)(?:#[^\]|]*?)?(?:\|([^\]]+?))?\]\]/g, (_, _t, alias) => alias ?? _t)
-      .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-      .replace(/[#*_~`>]/g, "")
-      .replace(/\n+/g, " ")
-      .trim()
-      .slice(0, 350)
-
-    return NextResponse.json({ title, excerpt, type: "internal" })
-  } catch {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
+// Only published notes are in the index, so drafts and files outside the
+// content directory can never be read through this route.
+function handleInternalPreview(slug: string) {
+  const key = decodeURIComponent(slug.split("#")[0]).replace(/^\/+|\/+$/g, "") || "index"
+  const preview = previews[key]
+  if (!preview) return NextResponse.json({ error: "Not found" }, { status: 404 })
+  return NextResponse.json({ ...preview, type: "internal" })
 }
 
 async function handleExternalPreview(url: string) {
+  let html: string | null
   try {
-    new URL(url) // validate
+    html = await fetchPublicText(url)
   } catch {
-    return NextResponse.json({ error: "Invalid URL" }, { status: 400 })
+    html = null
   }
+  if (html === null) return NextResponse.json({ error: "Fetch failed" }, { status: 502 })
 
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; nuartz-preview/1.0)" },
-      signal: AbortSignal.timeout(5000),
-    })
-    if (!res.ok) return NextResponse.json({ error: "Fetch failed" }, { status: 502 })
+  const meta = (property: string) =>
+    html.match(new RegExp(`<meta[^>]+(?:property|name)="${property}"[^>]+content="([^"]+)"`, "i"))?.[1] ??
+    html.match(new RegExp(`<meta[^>]+content="([^"]+)"[^>]+(?:property|name)="${property}"`, "i"))?.[1]
 
-    const html = await res.text()
+  const title = meta("og:title") ?? html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() ?? url
+  const description = meta("og:description") ?? meta("description") ?? ""
+  const image = meta("og:image") ?? null
 
-    const title =
-      html.match(/<meta[^>]+property="og:title"[^>]+content="([^"]+)"/i)?.[1] ??
-      html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:title"/i)?.[1] ??
-      html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1]?.trim() ??
-      url
-
-    const description =
-      html.match(/<meta[^>]+property="og:description"[^>]+content="([^"]+)"/i)?.[1] ??
-      html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:description"/i)?.[1] ??
-      html.match(/<meta[^>]+name="description"[^>]+content="([^"]+)"/i)?.[1] ??
-      ""
-
-    const image =
-      html.match(/<meta[^>]+property="og:image"[^>]+content="([^"]+)"/i)?.[1] ??
-      html.match(/<meta[^>]+content="([^"]+)"[^>]+property="og:image"/i)?.[1] ??
-      null
-
-    return NextResponse.json({
-      title: title.slice(0, 120),
-      excerpt: description.slice(0, 350),
-      image,
-      type: "external",
-    })
-  } catch {
-    return NextResponse.json({ error: "Fetch failed" }, { status: 502 })
-  }
+  return NextResponse.json(
+    { title: title.slice(0, 120), excerpt: description.slice(0, 350), image, type: "external" },
+    { headers: { "Cache-Control": "public, max-age=3600" } },
+  )
 }

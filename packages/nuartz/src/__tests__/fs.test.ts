@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import fs from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree } from "../fs"
+import { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree, isHiddenContentPath } from "../fs"
 import type { MarkdownFile } from "../fs"
 
 describe("getAllMarkdownFiles", () => {
@@ -74,6 +74,16 @@ Body content`
     expect(files[0].mtime).toBeInstanceOf(Date)
   })
 
+  it("never publishes notes inside dot-folders such as .trash or .obsidian", async () => {
+    await fs.mkdir(path.join(tmpDir, ".trash"), { recursive: true })
+    await fs.mkdir(path.join(tmpDir, "notes", "_private"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, ".trash", "deleted.md"), "# Deleted")
+    await fs.writeFile(path.join(tmpDir, "notes", "_private", "secret.md"), "# Secret")
+    await fs.writeFile(path.join(tmpDir, "notes", "public.md"), "# Public")
+
+    expect((await getAllMarkdownFiles(tmpDir)).map(f => f.slug)).toEqual(["notes/public"])
+  })
+
   it("returns empty array for non-existent directory", async () => {
     const files = await getAllMarkdownFiles(path.join(tmpDir, "nonexistent"))
     expect(files).toEqual([])
@@ -109,6 +119,18 @@ World`
   it("returns null for non-existent slug", async () => {
     const file = await getMarkdownBySlug(tmpDir, "does-not-exist")
     expect(file).toBeNull()
+  })
+
+  it("refuses slugs that escape the content directory or point at hidden files", async () => {
+    const content = path.join(tmpDir, "content")
+    await fs.mkdir(path.join(content, ".trash"), { recursive: true })
+    await fs.writeFile(path.join(tmpDir, "outside.md"), "# Outside")
+    await fs.writeFile(path.join(content, ".trash", "old.md"), "# Old")
+    await fs.writeFile(path.join(content, "_draft.md"), "# Draft")
+
+    expect(await getMarkdownBySlug(content, "../outside")).toBeNull()
+    expect(await getMarkdownBySlug(content, ".trash/old")).toBeNull()
+    expect(await getMarkdownBySlug(content, "_draft")).toBeNull()
   })
 
   it("works with nested slugs", async () => {
@@ -253,5 +275,14 @@ describe("buildFileTree sorting", () => {
       note("alpha"),
     ])
     expect(tree[0]).toMatchObject({ path: "zeta", order: 2 })
+  })
+})
+
+describe("isHiddenContentPath", () => {
+  it.each([".obsidian/app.json", "notes/.trash/a.md", "_drafts/a.png", "a/_b.md", "a\\.git\\x"])("hides %s", p => {
+    expect(isHiddenContentPath(p)).toBe(true)
+  })
+  it.each(["notes/a.md", "img/photo.png", "my_notes/a.md", "a.b/c.md"])("keeps %s", p => {
+    expect(isHiddenContentPath(p)).toBe(false)
   })
 })

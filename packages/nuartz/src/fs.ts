@@ -11,6 +11,15 @@ export interface MarkdownFile {
   mtime?: Date        // File modification time
 }
 
+/**
+ * True for content paths that must never be published: anything inside a
+ * dot-folder (.obsidian, .trash, .git) or starting with "_".
+ * `relativePath` is relative to the content directory, with "/" or "\\" separators.
+ */
+export function isHiddenContentPath(relativePath: string): boolean {
+  return relativePath.split(/[\\/]/).some(segment => segment.startsWith(".") || segment.startsWith("_"))
+}
+
 /** Extract date from frontmatter or filename (e.g. 2025-10-13-title.md) */
 function extractDate(file: MarkdownFile): number {
   if (file.frontmatter.date) {
@@ -44,9 +53,10 @@ export async function getAllMarkdownFiles(
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name)
+      if (isHiddenContentPath(entry.name)) continue
       if (entry.isDirectory()) {
         await walk(fullPath)
-      } else if (entry.name.endsWith(".md") && !entry.name.startsWith("_")) {
+      } else if (entry.name.endsWith(".md")) {
         const raw = await fs.readFile(fullPath, "utf-8")
         const { data } = matter(raw)
 
@@ -82,13 +92,16 @@ export async function getAllMarkdownFiles(
 
 /**
  * Reads a single markdown file by slug.
- * Returns null if the file doesn't exist.
+ * Returns null if the file doesn't exist, is hidden, or lies outside `contentDir`.
  */
 export async function getMarkdownBySlug(
   contentDir: string,
   slug: string
 ): Promise<MarkdownFile | null> {
-  const filePath = path.join(contentDir, slug + ".md")
+  const root = path.resolve(contentDir)
+  const filePath = path.resolve(root, slug + ".md")
+  const relative = path.relative(root, filePath)
+  if (relative.startsWith("..") || path.isAbsolute(relative) || isHiddenContentPath(relative)) return null
   try {
     const raw = await fs.readFile(filePath, "utf-8")
     const { data } = matter(raw)

@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Security
+- `getAllMarkdownFiles` skips dot-folders such as `.trash` and `.obsidian`, so notes deleted in Obsidian are no longer published.
+- `getMarkdownBySlug` returns `null` for slugs that leave the content directory or point at hidden paths.
+
+### Added
+- `isHiddenContentPath` for applying the same visibility rule to assets.
+- `site.verification` config for search engine ownership tokens.
+
 ## [0.4.1] - 2026-11-02
 
 ### Fixed

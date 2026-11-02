@@ -23,6 +23,7 @@ import {
   createNoteResolver,
   normalizeNotePath,
   noteHref,
+  isHiddenContentPath,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import type { Frontmatter, TocEntry } from "nuartz"
@@ -95,6 +96,7 @@ async function copyMediaFiles() {
     } catch { return }
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name)
+      if (isHiddenContentPath(entry.name)) continue
       if (entry.isDirectory()) {
         await walk(fullPath)
       } else if (!entry.name.endsWith(".md")) {
