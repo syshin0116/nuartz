@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - `draft: "true"` and `published: "false"` written as strings hide notes like their boolean forms.
 
 ### Added
+- `resolveAsset` render option for attachment URLs (default unchanged: `/api/content/<path>`).
 - `normalizeFrontmatter` and `isUnpublished`, used by `getAllMarkdownFiles`, `getMarkdownBySlug`, and `renderMarkdown`.
 - `isHiddenContentPath` for applying the same visibility rule to assets.
 - `site.verification` config for search engine ownership tokens.

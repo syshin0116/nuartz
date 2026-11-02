@@ -24,6 +24,7 @@ import {
   normalizeNotePath,
   noteHref,
   isHiddenContentPath,
+  defaultTagHref,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import type { Frontmatter, TocEntry } from "nuartz"
@@ -32,6 +33,8 @@ import config from "../apps/web/nuartz.config"
 const CONTENT_DIR = path.resolve(config.contentDir)
 const OUT_DIR = path.join(import.meta.dir, "../apps/web/.generated")
 const PUBLIC_DIR = path.join(import.meta.dir, "../apps/web/public")
+// Sub-path the site is served from, e.g. "/my-repo" on GitHub Pages. Must match next.config.ts.
+const BASE_PATH = (process.env.NUARTZ_BASE_PATH ?? "").replace(/\/+$/, "")
 
 interface PageData {
   html: string
@@ -127,16 +130,23 @@ async function main() {
   const filesBySlug = new Map(files.map(file => [file.slug, file]))
   const resolveNote = createNoteResolver(files)
   const knownSlugs = new Set(filesBySlug.keys())
+  // These URLs end up inside note HTML, which next/link never sees, so they carry BASE_PATH.
   const resolveLink = (target: string, heading?: string, from?: string) =>
-    noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading)
+    noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading, `${BASE_PATH}/`)
+  const resolveAsset = (assetPath: string) => `${BASE_PATH}/content/${assetPath.split("/").map(encodeURIComponent).join("/")}`
+  const resolveTag = (tag: string) => `${BASE_PATH}${defaultTagHref(tag)}`
 
   // 3. Render all pages in parallel
   console.log("prebuild: rendering all pages...")
   const rendered = await Promise.all(
     files.map(async (file) => {
       const result = await renderMarkdown(file.raw, {
+        ...config.markdown,
         features: config.features,
         resolveLink,
+        resolveAsset,
+        resolveTag,
+        baseUrl: `${BASE_PATH}/`,
         knownSlugs,
         filePath: file.slug + ".md",
         resolveEmbed: (target, from) => {

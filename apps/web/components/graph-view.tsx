@@ -1,5 +1,6 @@
 "use client"
 
+import { withBasePath } from "@/lib/base-path"
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { GraphSpatial, type GraphMode } from "@/components/graph-spatial"
@@ -11,7 +12,7 @@ import type { PositionedNode } from "@/lib/graph-layout"
 
 let graphRequest: Promise<GraphData> | undefined
 function loadGraph() {
-  return graphRequest ??= fetch("/graph.json").then(response => {
+  return graphRequest ??= fetch(withBasePath("/graph.json")).then(response => {
     if (!response.ok) throw new Error("Graph unavailable")
     return response.json() as Promise<GraphData>
   }).catch(error => { graphRequest = undefined; throw error })

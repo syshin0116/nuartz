@@ -20,6 +20,7 @@ import { CopyCode } from "@/components/copy-code"
 import { ImageZoom } from "@/components/image-zoom"
 import { GiscusComments } from "@/components/giscus"
 import config from "@/nuartz.config"
+import { isStaticExport, withBasePath } from "@/lib/base-path"
 import allSlugsData from "@/.generated/all-slugs.json"
 
 const GENERATED_DIR = path.join(process.cwd(), ".generated")
@@ -93,6 +94,8 @@ export async function generateMetadata({
   const title = pageData.frontmatter.title ?? slug[slug.length - 1]
   const description = pageData.frontmatter.description ?? ""
   const ogParams = new URLSearchParams({ title, ...(description && { description }) })
+  // Static exports have no /og route; pages then inherit the site-wide opengraph-image.
+  const images = isStaticExport ? undefined : [withBasePath(`/og?${ogParams.toString()}`)]
   const canonical = `${config.site.baseUrl}/${slugStr}`
   return {
     title,
@@ -102,13 +105,13 @@ export async function generateMetadata({
       title,
       description,
       url: canonical,
-      images: [`/og?${ogParams.toString()}`],
+      images,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/og?${ogParams.toString()}`],
+      images,
     },
   }
 }
