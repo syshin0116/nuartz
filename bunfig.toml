@@ -1,0 +1,3 @@
+[install]
+# Some transitive packages (e.g. super-three) rely on hoisted peers.
+linker = "hoisted"

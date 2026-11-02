@@ -71,7 +71,7 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
             type: "image",
             url: isImage ? `/api/content/${resolvedTarget}` : href,
             alt: displayText,
-            data: { hProperties: { className: isImage ? "embed-image" : "embed-note", "data-embed": target } },
+            data: { hProperties: { className: [isImage ? "embed-image" : "embed-note"], "data-embed": target } },
           })
         } else {
           outgoingLinks.push(target)
@@ -83,7 +83,7 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
             url: href,
             data: {
               hProperties: {
-                className: isKnown ? "wikilink" : "wikilink broken",
+                className: isKnown ? ["wikilink"] : ["wikilink", "broken"],
                 "data-target": target,
                 ...(heading ? { "data-heading": heading } : {}),
               },

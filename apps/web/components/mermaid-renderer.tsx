@@ -17,6 +17,9 @@ export function MermaidRenderer() {
         startOnLoad: false,
         theme: document.documentElement.classList.contains("dark") ? "dark" : "default",
         securityLevel: "strict",
+        // Mermaid 12 switched defaults to ELK + "neo"; keep the established look.
+        layout: "dagre",
+        look: "classic",
       })
       for (const block of Array.from(blocks)) {
         const pre = block.parentElement

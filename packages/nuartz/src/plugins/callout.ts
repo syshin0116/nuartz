@@ -57,7 +57,7 @@ export const remarkCallout: Plugin<[], Root> = () => {
         type: "paragraph",
         data: {
           hName: "div",
-          hProperties: { className: "callout-title" },
+          hProperties: { className: ["callout-title"] },
         },
         children: [{ type: "text", value: title }],
       }
@@ -68,7 +68,7 @@ export const remarkCallout: Plugin<[], Root> = () => {
         ...node.data,
         hName: "div",
         hProperties: {
-          className: `callout callout-${type}`,
+          className: ["callout", `callout-${type}`],
           "data-callout": type,
           "data-callout-fold": fold || null,
         },
