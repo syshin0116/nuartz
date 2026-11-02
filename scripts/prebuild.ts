@@ -261,7 +261,14 @@ async function main() {
 
   const filesBySlug = new Map(files.map(file => [file.slug, file]))
   const resolveNote = createNoteResolver([...files, ...contentPages.map(page => ({ slug: page.slug, frontmatter: {}, path: page.path }))])
-  const knownSlugs = new Set([...filesBySlug.keys(), ...pagesBySlug.keys()])
+  // Every path a link may point at, so [[folder]] and [[tags/x]] are not styled as broken.
+  // Tags are scanned roughly from source; a miss only affects styling.
+  const folderSlugs = new Set(files.flatMap(file => file.slug.split("/").slice(0, -1).map((_, i, parts) => parts.slice(0, i + 1).join("/"))))
+  const tagSlugs = new Set(files.flatMap(file => [
+    ...(file.frontmatter.tags ?? []),
+    ...[...file.raw.matchAll(/(?:^|\s)#(\p{L}[\p{L}\p{M}\p{N}_/-]*)/gu)].map(match => match[1]),
+  ]).flatMap(tag => tag.split("/").map((_, i, parts) => `tags/${parts.slice(0, i + 1).join("/")}`)))
+  const knownSlugs = new Set([...filesBySlug.keys(), ...pagesBySlug.keys(), ...folderSlugs, ...tagSlugs, "tags", "notes"])
   // These URLs end up inside note HTML, which next/link never sees, so they carry BASE_PATH.
   const resolveLink = (target: string, heading?: string, from?: string) =>
     noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading, `${BASE_PATH}/`)
@@ -288,12 +295,14 @@ async function main() {
     ...result.views.map(view => `${result.views.length > 1 ? `<p class="base-view-name">${escapeHtml(view.name)}</p>` : ""}${renderBaseViewHtml(view, { href: baseHref })}`),
   ].join("")
 
+  // config.markdown overrides the starter's resolvers; base URL, file path and
+  // known slugs stay under the starter's control so routing keeps working.
   const renderOptions = (filePath: string, withBases: boolean): RenderOptions => ({
-    ...config.markdown,
-    features: config.features,
     resolveLink,
     resolveAsset,
     resolveTag,
+    ...config.markdown,
+    features: { ...config.features, ...config.markdown?.features },
     baseUrl: `${BASE_PATH}/`,
     knownSlugs,
     filePath,

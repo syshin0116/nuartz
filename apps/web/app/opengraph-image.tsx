@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og"
+import config from "@/nuartz.config"
 
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
@@ -19,10 +20,10 @@ export default async function OGImage() {
           color: "#fafafa",
         }}
       >
-        <div style={{ fontSize: 72, fontWeight: 700 }}>Nuartz</div>
-        <div style={{ fontSize: 24, color: "#a1a1aa", marginTop: "16px" }}>
-          Digital garden
-        </div>
+        <div style={{ fontSize: 72, fontWeight: 700 }}>{config.site.title}</div>
+        {config.site.description && (
+          <div style={{ fontSize: 24, color: "#a1a1aa", marginTop: "16px" }}>{config.site.description}</div>
+        )}
       </div>
     ),
     { ...size }
