@@ -11,6 +11,8 @@ export interface NuartzConfig {
     /** Production URL, e.g. "https://example.com". Defaults to "http://localhost:3000". */
     baseUrl?: string
     locale?: string
+    /** Search engine ownership tokens rendered as `<meta>` tags, e.g. `{ google: "..." }`. */
+    verification?: { google?: string; yandex?: string }
   }
 
   /** Markdown rendering options */
