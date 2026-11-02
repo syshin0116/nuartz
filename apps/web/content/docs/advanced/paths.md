@@ -33,20 +33,16 @@ The Next.js catch-all route `app/[...slug]/page.tsx` maps URL segments directly 
 
 ## Wikilink Resolution
 
-When you write `[[some note]]`, the wikilink plugin resolves it by:
+When you write `[[some note]]`, the starter resolves it with `createNoteResolver()` from `packages/nuartz/src/links.ts`:
 
-1. Normalizing the target: lowercase, spaces → hyphens
-2. Checking `knownSlugs` for an exact match
-3. Checking `knownSlugs` for a suffix match (e.g. `notes/foo` matches `[[foo]]`)
-
-```ts
-const normalized = linkTarget.toLowerCase().replace(/\s+/g, "-")
-const match = files.find(
-  f => f.slug === normalized || f.slug.endsWith("/" + normalized)
-)
-```
+1. Normalize the target with `normalizeNotePath()`: lowercase, spaces → hyphens, trailing `.md` removed
+2. Look for an exact slug match (`[[notes/foo]]`)
+3. Look for a path relative to the linking note (`[[../foo]]`); targets starting with `.` use only this step
+4. Look for a file name or alias that exactly one note has (`[[foo]]` → `notes/foo`). Names shared by two notes do not resolve.
 
 If no match is found and `knownSlugs` is provided, the link renders with a `broken` CSS class so you can style dead links differently.
+
+Alias and `permalink` URLs (`/old-name`) redirect to the note. See [[docs/frontmatter|Frontmatter]].
 
 ## File Tree
 
@@ -60,12 +56,12 @@ const tree = buildFileTree(files)
 //   ]
 ```
 
-Folders appear before files at each level, sorted alphabetically.
+At each level, nodes with a frontmatter `order` come first (a folder uses the lowest `order` among its notes), then folders before files, then by name.
 
 ## Skipped Files
 
 Files are excluded from the content index if they:
 
-- Have a name starting with `_` (e.g. `_template.md`)
+- Have a path segment starting with `_` or `.` (e.g. `_template.md`, `_private/plan.md`, `.trash/old.md`)
 - Have `draft: true` in frontmatter
 - Have `published: false` in frontmatter

@@ -53,10 +53,10 @@ git commit -m "Add new notes"
 git push
 ```
 
-If you have [[deployment]] set up with Vercel, pushing to `main` will automatically deploy your site.
+If you have [[deployment]] set up with Vercel, pushing to `main` will automatically deploy your site. The GitHub Pages workflow runs only when triggered from the **Actions** tab unless you add a `push` trigger; see [[hosting]].
 
 ## Repository structure tips
 
 - Keep personal content in `apps/web/content/` - this is the only directory you need to modify for most use cases
-- Configuration lives in `apps/web/` (layout, styles, components)
+- Configuration lives in `apps/web/nuartz.config.ts`; layout, styles, and components are also in `apps/web/`
 - The core library in `packages/nuartz/` rarely needs changes unless you're adding [[creating-plugins|custom plugins]]

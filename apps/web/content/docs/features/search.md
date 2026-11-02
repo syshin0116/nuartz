@@ -7,11 +7,11 @@ tags:
 description: Client-side full-text search powered by Pagefind, triggered by Cmd+K.
 ---
 
-nuartz includes client-side full-text search powered by [Pagefind](https://pagefind.app/). The search index is built after the production site is compiled and is served with the static assets. No search server is required.
+nuartz includes client-side full-text search powered by [Pagefind](https://pagefind.app/). `bun run generate` builds the index from the rendered notes and writes it to `apps/web/public/pagefind/`, so it works the same with `bun dev`, Vercel, and static exports. No search server is required.
 
 ## Opening search
 
-Press `Cmd+K` on macOS or `Ctrl+K` on Windows/Linux to open the search modal. You can also click the search icon in the header.
+Press `Cmd+K` on macOS or `Ctrl+K` on Windows/Linux to open the search modal. You can also click **Search notes** in the header. Set `features.search: false` in the [[docs/configuration|configuration]] to remove search and skip the index.
 
 ## Keyboard navigation
 
@@ -20,7 +20,6 @@ Once the modal is open:
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` | Move between results |
-| `Tab` / `Shift+Tab` | Move forward / backward through results |
 | `Enter` | Navigate to the highlighted result |
 | `Esc` | Close search |
 
@@ -33,21 +32,15 @@ Prefix your query with `#` to search by tag. For example, typing `#feature` retu
 
 ## How the index is built
 
-nuartz indexes every page at build time with Markdown syntax stripped. This means raw URLs and formatting characters are not searchable — only the visible text is. Separate sub-indexes are built for:
+`generate` gives Pagefind each note's rendered HTML with its title as a heading, so only visible text is searchable (not raw URLs or Markdown syntax), and title matches rank highly. The index language is `site.locale` (default `en`). Pagefind segments Chinese, Japanese, and Korean text.
 
-- **Title** (highest weight)
-- **Content**
-- **Tags**
-
-Title matches are ranked above content matches, so searching for a note's exact title will surface it first.
-
-nuartz correctly tokenises Latin, Chinese, Korean, and Japanese characters.
+Tag search (`#`) and a fallback when Pagefind cannot load use a second index of note titles, paths, text, and tags, served from `/api/search`.
 
 > [!note]
-> The search index is regenerated on every build. In development mode (`bun dev`) it rebuilds automatically when content changes.
+> The index reflects the content at the last `generate`. With `bun dev`, run `bun run generate` again (or restart `bun dev`) after editing notes.
 
 ## Related
 
-- [[docs/features/tags|Tags]] — browse content by tag
-- [[docs/features/backlinks|Backlinks]] — find notes that reference the current page
-- [[docs/configuration|Configuration]] — site-wide settings
+- [[docs/features/tags|Tags]] - browse content by tag
+- [[docs/features/backlinks|Backlinks]] - find notes that reference the current page
+- [[docs/configuration|Configuration]] - site-wide settings

@@ -23,7 +23,7 @@ The root layout (`apps/web/app/layout.tsx`) defines the page shell:
 ├──────────┴──────────────────────────────────┤
 ```
 
-- **Header** (`components/layout/header.tsx`) — top bar with site title, mobile hamburger menu, and theme toggle
+- **Header** (`components/layout/header.tsx`): top bar with site title, search button, `nav` links, reader mode and theme toggles, and the mobile menu
 - **NavSidebar** (`components/layout/nav-sidebar.tsx`) — left sidebar with file tree navigation, hidden on mobile
 - **Main content** — rendered markdown with table of contents and graph view in the right column
 

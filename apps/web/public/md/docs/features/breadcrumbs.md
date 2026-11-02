@@ -2,7 +2,7 @@
 
 > Navigation breadcrumbs showing the folder hierarchy for the current page.
 
-nuartz generates breadcrumb navigation at the top of each page, showing the path from the root of your content to the current note.
+nuartz shows breadcrumb navigation at the top of each note inside a folder, and on folder pages, showing the path from the root of your content to the current page.
 
 Breadcrumbs help readers orient themselves within nested folder structures and quickly jump to parent folders.
 
@@ -14,8 +14,8 @@ The breadcrumb trail is derived from the file path of the current page. For exam
 Home > Guides > Setup > Install
 ```
 
-Each segment links to the corresponding folder listing page. Folder display names are pulled from the `title` field in the folder's `index.md` frontmatter when available.
+The house icon links home, and each folder segment links to its folder page. A folder's label is the `title` of its `index.md` when it has one; otherwise the folder name with hyphens shown as spaces. The last segment is the note's `title`.
 
 ## Customization
 
-Breadcrumbs are rendered automatically as part of the page layout. To customize the root label or separator, edit the breadcrumb component in your layout configuration.
+Breadcrumbs are rendered by `apps/web/components/breadcrumb.tsx`. Edit it to change the root icon or separator.

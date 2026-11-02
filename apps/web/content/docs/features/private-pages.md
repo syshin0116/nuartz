@@ -4,7 +4,7 @@ date: 2026-03-01
 tags:
   - feature
   - publishing
-description: "Set draft: true in frontmatter to exclude a page from listings and builds."
+description: "Set draft: true in frontmatter, or use a _ or . folder, to keep a page off the site."
 ---
 
 Sometimes you want to keep a note in your content directory without publishing it. nuartz gives you a simple frontmatter-based mechanism for this.
@@ -21,27 +21,33 @@ draft: true
 ---
 ```
 
-A draft page is:
+`published: false` does the same. String values (`draft: "true"`, `published: "false"`) also work.
 
-- **Excluded** from the tag index, folder listings, and backlinks.
-- **Excluded** from the search index.
-- **Not rendered** in production builds (`bun run build`).
-- **Still accessible by direct URL** in development mode (`bun dev`) so you can preview it while writing.
+An unpublished page is skipped when content is discovered, in every mode including `bun dev`. It is:
 
-> [!warning] Development only
-> Draft pages are only accessible in dev mode. They are completely absent from production builds — navigating to their URL on the deployed site returns a 404.
+- **Not rendered**: its URL returns a 404.
+- **Excluded** from the sidebar, folder and tag listings, backlinks, graph, search, popover previews, RSS, sitemap, `llms.txt`, and the `/md/` Markdown files.
+- **Not embeddable**: `![[draft-note]]` from a published note stays a plain link.
 
 > [!warning] Public repositories
 > If your repository is public on GitHub, the Markdown source of draft pages is still visible in the repo. Do not store sensitive information in draft pages if your repo is public.
 
-## Excluding entire folders
+## Hidden folders and files
 
-To exclude a whole folder, prefix all files in it with `_` — any file starting with `_` is automatically skipped by `getAllMarkdownFiles()`.
+Any path with a segment starting with `.` or `_` is never published, for notes and attachments alike:
 
-Alternatively, add `draft: true` to each file's frontmatter, or organise them in a folder that you simply don't add any content index for.
+```
+content/.obsidian/...         → never published
+content/.trash/old-note.md    → never published
+content/_private/notes.md     → never published
+content/_template.md          → never published
+content/notes/_scratch.png    → never copied to /content/
+```
+
+Move a folder under `_private/` (or rename it to start with `_`) to keep it out of the site without editing each file.
 
 ## Related
 
-- [[docs/frontmatter|Frontmatter]] — all supported frontmatter fields
-- [[docs/features/tags|Tags]] — tag and folder index pages
-- [[docs/deployment|Deployment]] — build and deploy to production
+- [[docs/frontmatter|Frontmatter]] - all supported frontmatter fields
+- [[docs/features/tags|Tags]] - tag and folder index pages
+- [[docs/deployment|Deployment]] - build and deploy to production

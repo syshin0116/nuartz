@@ -6,7 +6,7 @@ tags:
 
 nuartz uses [rehype-pretty-code](https://rehype-pretty-code.netlify.app/) (powered by [Shiki](https://shiki.style/)) for syntax highlighting. This gives you accurate, VS Code-quality highlighting with zero runtime JavaScript.
 
-See [[features/syntax-highlighting]] for usage examples.
+See [[docs/features/syntax-highlighting]] for usage examples.
 
 ## Themes
 
@@ -62,5 +62,5 @@ export default {}
 
 ## Source
 
-- [`packages/nuartz/src/markdown.ts`](https://github.com/your-user/nuartz/blob/main/packages/nuartz/src/markdown.ts)
+- [`packages/nuartz/src/markdown.ts`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/markdown.ts)
 - [rehype-pretty-code docs](https://rehype-pretty-code.netlify.app/)

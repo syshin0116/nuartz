@@ -7,7 +7,7 @@ Nuartz generates an RSS feed so readers can subscribe to your site using any RSS
 
 ## How it works
 
-The feed is served as a dynamic route at `/rss.xml`. It includes the title, description, date, and link for the 20 most recent published pages.
+The feed is a statically generated route at `/rss.xml`. It includes the title, description, date, and link for the 20 most recent published notes. The channel language is `site.locale` (default `en`).
 
 After deploying, your RSS feed is available at:
 
@@ -19,13 +19,9 @@ The implementation lives in `apps/web/app/rss.xml/route.ts`.
 
 ## Requirements
 
-Set `NEXT_PUBLIC_SITE_URL` in your environment so that item URLs resolve correctly:
+Item URLs are built from `site.baseUrl` in `apps/web/nuartz.config.ts` (or the `NUARTZ_SITE_URL` environment variable, which the starter config reads), so set it to your public URL.
 
-```bash
-NEXT_PUBLIC_SITE_URL=https://your-site.vercel.app
-```
-
-Pages should include `date` in their frontmatter to appear in the feed with proper ordering. Pages with `draft: true` are excluded automatically.
+Notes are ordered by `date` (or `created`) in frontmatter, falling back to the file's first git commit. The item description is the note's `description`, else `summary`, else an excerpt of its first paragraphs. [[docs/features/private-pages|Unpublished notes]] are never included.
 
 ## Linking the feed
 

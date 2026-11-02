@@ -36,6 +36,7 @@ Most people start with the starter. To add a garden to an existing Next.js app, 
 ## Features
 
 - **Obsidian syntax**: wikilinks with headings and aliases, standard Markdown links to notes, note and block embeds (`![[note#^id]]`), image sizes (`![[img.png|300]]`), video, audio, PDF and YouTube embeds, foldable and custom callouts, nested tags, `==highlights==`, `%%comments%%`, Mermaid, D2, Graphviz, KaTeX
+- **Canvas and Bases**: `.canvas` files become pannable, zoomable pages; `.base` files and ```` ```base ```` blocks render table, card, and list views over your notes
 - **Attachments like Obsidian**: `![[photo.png]]` is found by file name anywhere in the vault
 - **Graph**: 2D force graph with two-hop exploration, plus 3D, VR, and marker-based AR views
 - **Navigation**: `Cmd+K` full-text search (Pagefind), backlinks, hover previews, folder pages from `index.md`, tag pages, breadcrumbs, previous and next links, alias redirects

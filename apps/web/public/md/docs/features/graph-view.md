@@ -9,7 +9,8 @@ nuartz includes an interactive graph view that visualizes the connections betwee
 The graph is generated from the link structure of your content:
 
 - Each note becomes a **node** in the graph
-- Each [wikilink](https://nuartz.vercel.app/docs/features/wikilinks) creates an **edge** between two nodes
+- Each [wikilink](https://nuartz.vercel.app/docs/features/wikilinks), note embed, or Markdown link to a note creates an **edge** between two nodes
+- Each tag becomes a node linked to its notes
 - Node size is proportional to the number of connections
 
 ## Local vs Global

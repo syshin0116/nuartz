@@ -1,6 +1,6 @@
 # Callouts
 
-> Obsidian-style callout blocks in nuartz — all supported types with live examples.
+> Obsidian-style callout blocks in nuartz - all supported types with live examples.
 
 nuartz supports the same callout syntax as Obsidian. Use them to draw attention to important information in your notes.
 
@@ -11,7 +11,27 @@ nuartz supports the same callout syntax as Obsidian. Use them to draw attention 
 > Callout content here. Supports **Markdown** and [[docs/features/wikilinks|wikilinks]].
 ```
 
-If you omit the title, the callout type name is used as the default title.
+If you omit the title, the type name is used, capitalized, with hyphens shown as spaces. Any type name is accepted: types without their own style (below) use the default **note** colours and icon, and the type is exposed as `data-callout="type"` for your own CSS.
+
+## Foldable callouts
+
+Add `-` after the type to start collapsed, or `+` to start expanded. Foldable callouts render as `<details>`/`<summary>`, so they toggle without JavaScript.
+
+```markdown
+> [!faq]- Click to expand
+> Hidden until opened.
+```
+
+> [!faq]- Click to expand
+> Hidden until opened.
+
+## Metadata
+
+Text after a `|` inside the brackets is exposed as `data-callout-metadata` for custom styling, as in Obsidian:
+
+```markdown
+> [!note|wide] Title
+```
 
 ## Showcase
 
@@ -61,7 +81,9 @@ If you omit the title, the callout type name is used as the default title.
 > [!todo]
 > - [x] Implement callout parsing
 > - [x] Add styling for all types
-> - [ ] Add collapsible callouts
+> - [x] Add collapsible callouts
+
+Styled types and aliases: `note`; `abstract`, `summary`, `tldr`; `info`; `todo`; `tip`, `hint`; `important`; `success`, `check`, `done`; `question`, `help`, `faq`; `warning`, `caution`, `attention`; `failure`, `fail`, `missing`; `danger`, `error`; `bug`; `example`; `quote`, `cite`.
 
 ## Nesting
 
@@ -75,7 +97,7 @@ Callouts can be nested inside each other:
 ## Using Callouts Effectively
 
 > [!tip] Best Practices
-> - Use callouts sparingly — too many reduces their impact
+> - Use callouts sparingly, since too many reduce their impact
 > - Pick the right type to match the intent of your message
 > - Keep callout content concise
 > - See [Authoring Content](https://nuartz.vercel.app/docs/authoring-content) for more writing tips

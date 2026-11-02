@@ -7,31 +7,44 @@ Nuartz processes Markdown through a **remark → rehype** pipeline. Each stage i
 ```
 Raw Markdown
     │
-    ▼ remark plugins
-┌─────────────────────────────────┐
-│  remarkGfm          (tables, strikethrough, task lists)  │
-│  remarkMath         (LaTeX math blocks)                  │
-│  remarkBreaks       (soft line breaks → <br>)            │
-│  remarkCallout      (> [!note] callout syntax)           │
-│  remarkWikilink     (wikilinks → HTML links)             │
-│  remarkObsidianComment (%% hidden comments %%)           │
-│  remarkHighlight    (==highlights== → <mark>)            │
-│  remarkTag          (#inline-tags)                       │
-└─────────────────────────────────┘
+    ▼ gray-matter (frontmatter → normalizeFrontmatter)
     │
-    ▼ remark → hast (HTML AST)
+    ▼ remark plugins, in order
+┌──────────────────────────────────────────────────────────┐
+│  remarkParse + remarkFrontmatter                         │
+│  remarkObsidianComment  (%% hidden comments %%)          │
+│  remarkGfm              (tables, strikethrough, tasks)   │
+│  remarkMath             (LaTeX math syntax)              │
+│  remarkEmbed            (![[note]] transclusion)       * │
+│  remarkBlockIds         (^block-id anchors)            * │
+│  remarkWikilink         (wikilinks, Markdown note links, │
+│                          attachments and media)        * │
+│  remarkBreaks           (soft line breaks → <br>)        │
+│  remarkCallout          (> [!note] callouts)           * │
+│  remarkTag              (#inline-tags)                 * │
+│  remarkHighlight        (==highlights== → <mark>)        │
+│  remarkArrows           (--> → arrows)                   │
+└──────────────────────────────────────────────────────────┘
     │
-    ▼ rehype plugins
-┌─────────────────────────────────┐
-│  rehypePrettyCode   (syntax highlighting via Shiki)      │
-│  rehypeKatex        (LaTeX rendering)                    │
-│  rehypeSlug         (heading IDs for anchor links)       │
-│  rehypeAutolinkHeadings (§ anchor links on headings)     │
-│  rehypeExtractToc   (table of contents extraction)       │
-└─────────────────────────────────┘
+    ▼ remark-rehype → rehype-raw (HTML AST, raw HTML kept)
     │
-    ▼
-HTML string + metadata (links, tags, toc)
+    ▼ rehype plugins, in order
+┌──────────────────────────────────────────────────────────┐
+│  rehypeGraphviz         (```dot diagrams → inline SVG)   │
+│  rehypeD2               (```d2 diagrams → inline SVG)    │
+│  rehypePrettyCode       (syntax highlighting via Shiki)  │
+│  rehypeSlug             (heading IDs)                    │
+│  rehypeAutolinkHeadings (link icon on headings)          │
+│  rehypeKatex            (LaTeX rendering)                │
+│  rehypeExtractToc       (table of contents)            * │
+│  rehypeExcerpt          (plain-text excerpt)             │
+└──────────────────────────────────────────────────────────┘
+    │
+    ▼ rehype-stringify
+HTML string + metadata (frontmatter, toc, links, tags, excerpt)
+
+* skipped when the matching `features` flag is false
+  (wikilinks, callouts, tags, toc)
 ```
 
 ## Entry Point
@@ -46,22 +59,23 @@ const result = await renderMarkdown(rawMarkdownString, {
 })
 // result.html      - rendered HTML
 // result.toc       - table of contents entries
-// result.links     - outgoing wikilinks
+// result.links     - outgoing note links (wikilinks, embeds, Markdown links to notes)
 // result.tags      - all tags (frontmatter + inline)
+// result.excerpt   - plain text of the leading paragraphs
 ```
 
 ## Plugin Reference
 
 | Plugin | Docs |
 |--------|------|
-| Wikilinks & Obsidian syntax | plugins/obsidian |
-| Syntax highlighting | plugins/syntax-highlighting |
-| Table of contents | plugins/table-of-contents |
-| Frontmatter | plugins/frontmatter |
-| LaTeX | features/latex |
-| Mermaid diagrams | features/mermaid |
-| Callouts | features/callouts |
+| Wikilinks & Obsidian syntax | [docs/plugins/obsidian](https://nuartz.vercel.app/docs/plugins/obsidian) |
+| Syntax highlighting | [docs/plugins/syntax-highlighting](https://nuartz.vercel.app/docs/plugins/syntax-highlighting) |
+| Table of contents | [docs/plugins/table-of-contents](https://nuartz.vercel.app/docs/plugins/table-of-contents) |
+| Frontmatter | [docs/plugins/frontmatter](https://nuartz.vercel.app/docs/plugins/frontmatter) |
+| LaTeX | [docs/features/latex](https://nuartz.vercel.app/docs/features/latex) |
+| Mermaid diagrams | [docs/features/mermaid](https://nuartz.vercel.app/docs/features/mermaid) |
+| Callouts | [docs/features/callouts](https://nuartz.vercel.app/docs/features/callouts) |
 
 ## Creating Custom Plugins
 
-See advanced/creating-plugins for a guide on writing your own remark/rehype plugins and integrating them into nuartz.
+See [docs/advanced/creating-plugins](https://nuartz.vercel.app/docs/advanced/creating-plugins) for a guide on writing your own remark/rehype plugins and integrating them into nuartz.

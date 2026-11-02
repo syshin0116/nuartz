@@ -7,12 +7,12 @@ Reader mode provides a clean, focused reading experience by hiding sidebars and 
 
 ## Usage
 
-Click the reader mode toggle to activate it. When enabled:
+Click the book icon in the header (or in the mobile menu) to toggle it. When enabled:
 
-- Sidebars are hidden to maximize content width
-- Hovering near the edges reveals sidebars temporarily
-- The mode persists during navigation but resets on page reload
+- The left sidebar, the right sidebar (table of contents and graph), and the mobile **On this page** panel are hidden
+- The content column is centered and limited to about 72 characters wide
+- The setting is saved in `localStorage` (`reader-mode`), so it persists across navigation, reloads, and other open tabs
 
 ## Customization
 
-Reader mode can be removed from the layout if not needed. The toggle button and its behavior can be styled via CSS using the `[reader-mode="on"]` attribute selector on the root element.
+The toggle adds the `reader-mode` class to the `<html>` element. Its styles are the `html.reader-mode` rules in `apps/web/app/globals.css`; edit them to change what is hidden. The toggle itself is `apps/web/components/reader-mode-toggle.tsx`.

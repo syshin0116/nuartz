@@ -10,45 +10,63 @@ nuartz parses YAML frontmatter using [gray-matter](https://github.com/jonschlink
 
 ```yaml
 ---
-title: My Note                    # Page title (shown in browser tab, sidebar, graph)
-description: A short summary      # Used for SEO meta description
-date: 2024-01-15                  # Publication date (used for sorting)
-tags:                             # List of tags
-  - feature
-  - guide
-draft: true                       # If true, excluded from the site
-published: false                  # Alias for draft (false = excluded)
-toc: false                        # Disable table of contents for this page
+title: My Note                    # Page title (browser tab, header, sidebar, graph)
+description: A short summary      # Meta description; cards prefer `summary`
+summary: One line for cards       # Listing cards; meta falls back to it
+date: 2024-01-15                  # Or `created`; used for sorting
+modified: 2024-02-01              # Or `updated` / `lastmod`
+tags: [feature, guide]            # Or `tag`; list, single value, or "a, b"
+aliases: [old-name]               # Or `alias`; also redirect URLs
+permalink: short-url              # Extra redirect URL
+draft: true                       # true = excluded from the site
+published: false                  # false = excluded from the site
+order: 1                          # Sidebar and prev/next order
+cssclasses: [wide]                # Or `cssclass`; classes on <article>
+toc: false                        # Or `enableToc: false`
+comments: false                   # Hide comments on this page
 ---
 ```
 
+See [[docs/frontmatter|Frontmatter]] for what each field does.
+
+## Normalization
+
+`normalizeFrontmatter()` in `packages/nuartz/src/frontmatter.ts` runs on every file read by `getAllMarkdownFiles()`, `getMarkdownBySlug()`, and `renderMarkdown()`:
+
+- `tags`/`tag`, `aliases`/`alias`, and `cssclasses`/`cssclass` become string arrays. A comma-separated string is split, tags lose a leading `#`, and duplicates are removed.
+- `draft` and `published` become booleans, accepting the strings `"true"` and `"false"`.
+
+`isUnpublished(frontmatter)` returns `true` for `draft: true` or `published: false`.
+
 ## Type Definition
 
-The full `Frontmatter` type lives in `packages/nuartz/src/types.ts`:
+The `Frontmatter` type lives in `packages/nuartz/src/types.ts`:
 
 ```ts
 export interface Frontmatter {
   title?: string
-  description?: string
-  date?: string
+  date?: string | Date
   tags?: string[]
+  description?: string
+  summary?: string
   draft?: boolean
   published?: boolean
-  toc?: boolean
+  aliases?: string[]
+  cssclasses?: string[]
+  order?: number
   [key: string]: unknown   // any extra fields are preserved
 }
 ```
 
-You can extend this interface if you need custom fields.
+Fields without a typed key (`created`, `modified`, `permalink`, `toc`, `comments`, ...) are read through the index signature.
 
 ## Draft Filtering
 
-Files with `draft: true` or `published: false` are excluded by `getAllMarkdownFiles()` — they will not appear in the sidebar, graph, or search index.
-
-Files prefixed with `_` are also excluded:
+Files with `draft: true` or `published: false` are excluded by `getAllMarkdownFiles()`, so they do not appear in the sidebar, graph, or search index. Paths with a segment starting with `_` or `.` are also excluded:
 
 ```
 content/_template.md    → excluded
+content/.trash/old.md   → excluded
 content/index.md        → included
 ```
 
@@ -66,5 +84,6 @@ files.forEach(f => {
 
 ## Source
 
-- [`packages/nuartz/src/types.ts`](https://github.com/your-user/nuartz/blob/main/packages/nuartz/src/types.ts)
-- [`packages/nuartz/src/fs.ts`](https://github.com/your-user/nuartz/blob/main/packages/nuartz/src/fs.ts)
+- [`packages/nuartz/src/types.ts`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/types.ts)
+- [`packages/nuartz/src/frontmatter.ts`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/frontmatter.ts)
+- [`packages/nuartz/src/fs.ts`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/fs.ts)

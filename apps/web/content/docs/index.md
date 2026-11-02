@@ -34,6 +34,7 @@ Drop your Markdown files into `apps/web/content/` and start writing.
 - [[features/reader-mode|Reader mode]] for distraction-free reading
 - [[features/comments|Comments]] via Giscus
 - [[features/private-pages|Draft / private pages]] filtering
+- [[features/ai-agents|AI agent access]]: Markdown per note, `llms.txt`, and an MCP server
 
 For a full list, visit the [[features/index|features page]].
 

@@ -31,7 +31,7 @@ Start the dev server:
 bun dev
 ```
 
-Run tests:
+Run the full check (package build, `generate`, lint, typecheck, tests with coverage, and content validation), as CI does:
 
 ```bash
 bun run check
@@ -47,7 +47,7 @@ bun run check
 
 ## Content contributions
 
-To add or improve documentation, edit files in `apps/web/content/`. All content files need frontmatter with at least `title` and `description`. See [[frontmatter]] for details.
+To add or improve documentation, edit files in `apps/web/content/`. Give each content file frontmatter with at least `title` and `description`; `bun run check` warns about a missing `title`. See [[docs/frontmatter|Frontmatter]] for details.
 
 ## Plugin contributions
 

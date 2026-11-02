@@ -26,8 +26,11 @@ export default defineConfig({
   site: {
     title: "My Garden",
     description: "My personal notes",
-    baseUrl: "https://example.com",
+    baseUrl: process.env.NUARTZ_SITE_URL ?? "https://example.com",
+    locale: "en",
+    verification: { google: "..." },
   },
+  theme: { defaultMode: "system" },   // "system" | "light" | "dark"
   features: {
     wikilinks: true,
     callouts: true,
@@ -45,15 +48,24 @@ export default defineConfig({
 })
 ```
 
+> [!note] Changes need `generate`
+> `bun run generate` reads the config and content. There is no file watcher: after changing `nuartz.config.ts` or notes, run `bun run generate` again or restart `bun dev`.
+
 ## Options
 
 ### `contentDir`
 
-Absolute path to the Markdown content directory. The starter prebuild reads this value directly; it has no implicit default.
+Absolute path to the Markdown content directory. `generate` reads this value directly; it has no implicit default.
 
-### `features`
+### `site`
 
-All features default to `true`. `wikilinks`, `callouts`, `tags`, and `toc` control Markdown transforms. `backlinks`, `search`, and `darkMode` control the corresponding generated data and starter UI.
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | Site title, shown in the header and used in RSS, `llms.txt`, and meta tags. |
+| `description` | `string` | Site description for SEO, RSS, and `llms.txt`. |
+| `baseUrl` | `string` | Full public URL, including any sub-path (e.g. `https://user.github.io/repo`). Used for canonical URLs, sitemap, RSS, OG tags, `llms.txt`, and the MCP server. Default `http://localhost:3000`. The starter reads `NUARTZ_SITE_URL` first. |
+| `locale` | `string` | Language code for `<html lang>`, the RSS `<language>`, and the Pagefind search index. Default `en`. |
+| `verification` | `{ google?: string; yandex?: string }` | Search engine ownership tokens, rendered as `<meta>` verification tags. |
 
 ### `homePage`
 
@@ -62,38 +74,33 @@ Controls what is shown at `/`:
 | Value | Behaviour |
 |-------|-----------|
 | `"index"` (default) | Renders `content/index.md` as a normal page. Falls back to recent notes if the file doesn't exist. |
-| `"recent"` | Shows a listing of all notes sorted by `date` frontmatter (most recent first). |
+| `"recent"` | Shows [[docs/features/recent-notes\|recent notes]], newest first, 10 per page. |
 
-```typescript
-homePage: "index"   // show content/index.md
-homePage: "recent"  // show recent notes list
-```
+### `theme`
 
-### `site`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `title` | `string` | Site title, shown in the header and used in RSS/meta tags. |
-| `description` | `string` | Site description for SEO and link previews. |
-| `baseUrl` | `string` | Canonical URL of your deployed site (used for RSS, sitemap, OG tags). |
+`defaultMode` sets the colour scheme before the reader picks one: `"system"` (default), `"light"`, or `"dark"`. See [[docs/features/dark-mode|Dark Mode]].
 
 ### `features`
 
-Toggle individual features on or off:
+Toggle individual features on or off. All default to `true`.
 
-| Feature | Default | Description |
-|---------|---------|-------------|
-| `wikilinks` | `true` | [[docs/features/wikilinks\|Wikilink]] syntax support (`[[note]]`). |
-| `callouts` | `true` | [[docs/features/callouts\|Obsidian-style callouts]] (`> [!type]`). |
-| `tags` | `true` | Tag pages and inline `#tag` support. |
-| `backlinks` | `true` | Show which notes link to the current page. |
-| `toc` | `true` | Auto-generated table of contents from headings. |
-| `search` | `true` | Full-text search with Cmd+K / Ctrl+K. |
-| `darkMode` | `true` | Dark/light theme toggle. |
+| Feature | Description |
+|---------|-------------|
+| `wikilinks` | [[docs/features/wikilinks\|Wikilink]] syntax (`[[note]]`), embeds, and Markdown links to notes. |
+| `callouts` | [[docs/features/callouts\|Obsidian-style callouts]] (`> [!type]`). |
+| `tags` | Inline `#tag` support, tag badges, and the `/tags` pages. |
+| `backlinks` | The **Linked from** panel on each note. |
+| `toc` | Table of contents from headings. |
+| `search` | Cmd+K / Ctrl+K search and its indexes. |
+| `darkMode` | Dark/light theme toggle. When `false`, the site is always light. |
+
+### `markdown`
+
+[`RenderOptions`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/types.ts) passed to `renderMarkdown()` by `generate`. The starter sets link, asset, tag, and embed resolution, `baseUrl`, `knownSlugs`, `filePath`, and `features` itself, overriding the same keys here, so this option mostly matters when you call `renderMarkdown()` from your own code.
 
 ### `nav`
 
-Configure the navigation bar:
+Configure the header links:
 
 ```typescript
 nav: {
@@ -106,7 +113,4 @@ nav: {
 
 - `label`: Display text for the link.
 - `href`: URL (relative for internal, absolute for external).
-- `external`: Set `true` to open in a new tab with an external link icon.
-
-> [!note] Hot Reload
-> Changes to `nuartz.config.ts` are picked up automatically during development - no restart needed.
+- `external`: Set `true` to open the link in a new tab (`target="_blank"`, `rel="noopener noreferrer"`).

@@ -23,11 +23,11 @@ Most people start with the starter template and customise from there. If you hav
 
 Nuartz supports two deployment modes:
 
-**GitHub Pages (static)** — all pages are pre-built as HTML. Free hosting, no server. Search, graph view, popover previews, dark mode — all work. The prebuild script generates static JSON files so features that would normally need API routes work without a server.
+**GitHub Pages (static)**: all pages are pre-built as HTML. Free hosting, no server. Search, graph view, popover previews, and dark mode all work, because `bun run generate` writes static JSON and search files that the client reads directly.
 
-**Vercel / Netlify (server)** — full feature set. Dynamic OG images (each page gets its own social preview card), external link previews on hover, and Next.js image optimization. The free tier on Vercel is generous enough for most personal sites.
+**Vercel / Netlify (server)**: full feature set. Dynamic OG images (each page gets its own social preview card), external link previews on hover, Markdown content negotiation, and the [MCP server](https://nuartz.vercel.app/docs/features/ai-agents). The free tier on Vercel is generous enough for most personal sites.
 
-Both modes share the same codebase. You don't need to change your code to switch — just toggle `output: "export"` in `next.config.ts`. See [Hosting](https://nuartz.vercel.app/docs/hosting) for details.
+Both modes share the same codebase. You don't need to change your code to switch: run `bun run build:static` instead of `bun run build`. See [Hosting](https://nuartz.vercel.app/docs/hosting) for details.
 
 ## Who is this for?
 

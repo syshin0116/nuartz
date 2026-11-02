@@ -9,9 +9,12 @@ All layout and UI components live in `apps/web/components/`. They are organized 
 ```
 apps/web/components/
 ├── layout/
+│   ├── header.tsx           # Top bar
 │   ├── nav-sidebar.tsx      # Left navigation tree
-│   ├── right-sidebar.tsx    # Right sidebar (TOC, graph, backlinks)
-│   └── breadcrumbs.tsx      # Breadcrumb navigation
+│   └── mobile-nav.tsx       # Mobile menu
+├── ui/                      # shadcn/ui primitives
+├── toc.tsx                  # Table of contents (right sidebar / mobile panel)
+├── breadcrumb.tsx           # Breadcrumb navigation
 ├── graph-view.tsx           # D3 force-directed graph
 ├── backlinks.tsx            # Backlinks list
 ├── popover-preview.tsx      # Hover preview for wikilinks
@@ -41,13 +44,15 @@ Then import and use it in a page or layout.
 
 ## Adding to the Page Layout
 
-The main page layout is in `apps/web/app/[...slug]/page.tsx`. The right sidebar content is composed in:
+The note page is `apps/web/app/[...slug]/page.tsx`. The right sidebar is the `<TableOfContents>` element at the end of the page; its children (currently `<GraphView>`) render under the table of contents:
 
 ```tsx title="apps/web/app/[...slug]/page.tsx"
 import { NoteCount } from "@/components/note-count"
 
-// Inside the sidebar section:
-<NoteCount count={files.length} />
+<TableOfContents toc={pageToc}>
+  <GraphView currentSlug={slugStr} />
+  <NoteCount count={allSlugsData.pages.length} />
+</TableOfContents>
 ```
 
 ## Client vs Server Components
@@ -93,14 +98,14 @@ nuartz uses **Tailwind CSS v4** with oklch-based CSS variables defined in `apps/
 
 ## Reading Markdown Data
 
-Server components can read content from the filesystem using nuartz's core functions:
+The starter's pages read the JSON that `bun run generate` writes to `apps/web/.generated/` (for example `notes-list.json` via `getSortedNotes()` in `lib/notes.ts`). In your own app, server components can read content directly with nuartz's core functions:
 
 ```tsx
 import { getAllMarkdownFiles } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import path from "node:path"
 
-const CONTENT_DIR = path.join(process.cwd(), "content")
+const CONTENT_DIR = path.join(process.cwd(), "content") // unpublished and hidden files are already skipped
 
 export async function RecentNotes() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)

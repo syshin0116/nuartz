@@ -13,6 +13,8 @@ nuartz supports tags in [[docs/frontmatter|frontmatter]] and inline in Markdown.
 
 ### Frontmatter tags
 
+A YAML list, a single value, or a comma-separated string (`tags: feature, navigation`) all work. The key `tag` is accepted too, and a leading `#` is dropped.
+
 ```yaml
 ---
 title: My Note
@@ -43,15 +45,11 @@ nuartz generates two kinds of tag pages automatically:
 | `/tags` | Global index listing every tag and its note count |
 | `/tags/[tag]` | All notes that have the given tag |
 
-You can link to a tag page with a wikilink:
-
-```markdown
-[[tags/feature]]
-```
+Inline tags already link to their tag page. A wikilink such as `[[tags/feature]]` also points there, but gets the dimmed `broken` style because a tag page is not a note.
 
 ## Hierarchical tags
 
-Tags can use a `/` separator to create hierarchies, for example `plugin/transformer`. nuartz generates a separate page for each level of the hierarchy.
+Tags can use a `/` separator to create hierarchies, for example `plugin/transformer`. The note is listed under `plugin/transformer` and also under `/tags/plugin`.
 
 ## Folder index pages
 
@@ -65,9 +63,9 @@ content/
       wikilinks.md
 ```
 
-Then `/docs` and `/docs/features` are both browsable index pages listing all notes in that folder.
+Then `/docs` and `/docs/features` are both browsable index pages listing all notes in that folder and its subfolders.
 
-You can customise a folder index by creating an `index.md` file inside the folder:
+You can customise a folder page by creating an `index.md` file inside the folder. Its title becomes the heading, and its content appears above the listing:
 
 ```yaml
 ---
@@ -77,10 +75,10 @@ description: All nuartz documentation pages.
 ```
 
 > [!tip]
-> Folder index pages are useful for building structured wikis. Link to a folder with a trailing slash: `[[docs/features/]]`.
+> Folder index pages are useful for building structured wikis. See [[docs/features/folder-and-tag-listings|Folder and Tag Listings]] for details.
 
 ## Related
 
-- [[docs/features/search|Search]] — search by tag with the `#` prefix
-- [[docs/features/backlinks|Backlinks]] — find all pages that reference the current one
-- [[docs/frontmatter|Frontmatter]] — all supported frontmatter fields
+- [[docs/features/search|Search]] - search by tag with the `#` prefix
+- [[docs/features/backlinks|Backlinks]] - find all pages that reference the current one
+- [[docs/frontmatter|Frontmatter]] - all supported frontmatter fields
