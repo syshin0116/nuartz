@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { GraphSpatial, type GraphMode } from "@/components/graph-spatial"
 import { ArrowUpRight, ChevronDown, ChevronRight, Expand, FileText, Focus, Hash, LoaderCircle, Minus, Network, Plus, RefreshCw, Search } from "lucide-react"
@@ -28,24 +28,22 @@ function GraphCanvas({ data, currentSlug, selected, onSelect, expanded = false }
   const [attempt, setAttempt] = useState(0)
   const svgRef = useRef<SVGSVGElement>(null)
   const controls = useRef<{ zoom: (factor: number) => void; fit: () => void; labels: () => void } | null>(null)
-  const selectedRef = useRef(selected)
-  selectedRef.current = selected
-
-  const paintSelection = () => {
-    const neighbors = graphNeighbors(data, selectedRef.current)
-    if (selectedRef.current) neighbors.add(selectedRef.current)
-    const focusId = data.nodes.some(node => node.id === selectedRef.current) ? selectedRef.current : data.nodes[0]?.id
+  const currentSelection = useEffectEvent(() => selected)
+  const paintSelection = useEffectEvent(() => {
+    const neighbors = graphNeighbors(data, selected)
+    if (selected) neighbors.add(selected)
+    const focusId = data.nodes.some(node => node.id === selected) ? selected : data.nodes[0]?.id
     svgRef.current?.querySelectorAll<SVGGElement>("[data-node]").forEach(node => {
-      node.dataset.selected = String(node.dataset.node === selectedRef.current)
-      node.dataset.dimmed = String(Boolean(selectedRef.current) && !neighbors.has(node.dataset.node ?? ""))
+      node.dataset.selected = String(node.dataset.node === selected)
+      node.dataset.dimmed = String(Boolean(selected) && !neighbors.has(node.dataset.node ?? ""))
       node.setAttribute("aria-pressed", node.dataset.selected)
       node.setAttribute("tabindex", node.dataset.node === focusId ? "0" : "-1")
     })
     controls.current?.labels()
     svgRef.current?.querySelectorAll<SVGLineElement>("[data-source]").forEach(line => {
-      line.dataset.active = String(line.dataset.source === selectedRef.current || line.dataset.target === selectedRef.current)
+      line.dataset.active = String(line.dataset.source === selected || line.dataset.target === selected)
     })
-  }
+  })
 
   useEffect(() => {
     const element = svgRef.current
@@ -159,7 +157,7 @@ function GraphCanvas({ data, currentSlug, selected, onSelect, expanded = false }
         const boxes: { x: number; y: number; width: number }[] = []
         for (const id of visibleLabels) elements.get(id)?.setAttribute("data-labelled", "false")
         visibleLabels = []
-        for (const id of new Set([selectedRef.current, currentSlug, ...(expanded ? labelled : [])])) {
+        for (const id of new Set([currentSelection(), currentSlug, ...(expanded ? labelled : [])])) {
           const item = id ? byId.get(id) : undefined
           if (!item) continue
           const box = { x: item.x! * scale, y: item.y! * scale, width: Math.min(item.title.length, 24) * (expanded ? 7 : 6.5) + 12 }
@@ -209,7 +207,7 @@ function GraphCanvas({ data, currentSlug, selected, onSelect, expanded = false }
     return () => { cancelled = true; visibility.disconnect(); worker?.terminate(); dispose?.() }
   }, [data, currentSlug, expanded, onSelect, attempt])
 
-  useEffect(paintSelection, [selected])
+  useEffect(() => { paintSelection() }, [selected])
 
   return (
     <div className={`graph-surface relative overflow-hidden ${expanded ? "min-w-0" : "rounded-xl border"}`} aria-busy={status === "loading"} data-status={status}>
@@ -242,11 +240,15 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
 
   useEffect(() => {
     let cancelled = false
-    setError(false)
     loadGraph().then(value => { if (!cancelled) setData(value) }).catch(() => { if (!cancelled) setError(true) })
     return () => { cancelled = true }
   }, [attempt])
-  useEffect(() => { setSelected(currentSlug); setShowAll(false) }, [currentSlug])
+  const [shownSlug, setShownSlug] = useState(currentSlug)
+  if (shownSlug !== currentSlug) {
+    setShownSlug(currentSlug)
+    setSelected(currentSlug)
+    setShowAll(false)
+  }
 
   const local = useMemo(() => data ? getGraphNeighborhood(data, currentSlug) : null, [data, currentSlug])
   const graph = useMemo(() => data ? getGraphNeighborhood(data, showAll ? undefined : currentSlug, showTags) : null, [data, currentSlug, showAll, showTags])
@@ -266,7 +268,7 @@ export function GraphView({ currentSlug }: { currentSlug?: string }) {
       </summary>
       {open && (
         <>
-          {error ? <div className="rounded-lg border p-4 text-sm"><p>Could not load the graph.</p><Button variant="ghost" size="sm" onClick={() => setAttempt(value => value + 1)}><RefreshCw className="mr-2 size-3" />Retry</Button></div>
+          {error ? <div className="rounded-lg border p-4 text-sm"><p>Could not load the graph.</p><Button variant="ghost" size="sm" onClick={() => { setError(false); setAttempt(value => value + 1) }}><RefreshCw className="mr-2 size-3" />Retry</Button></div>
             : !local ? <p role="status" className="py-8 text-center text-xs text-muted-foreground">Loading connections…</p>
             : !local.nodes.length ? <p className="py-4 text-xs text-muted-foreground">No notes yet.</p>
             : <>

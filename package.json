@@ -15,7 +15,7 @@
     "test": "bun run --cwd packages/nuartz test",
     "validate": "bun run build:pkg && bun scripts/validate-content.ts",
     "check": "bun run build:pkg && bun run prebuild && bun run lint && bun run typecheck && bun run test:coverage && bun scripts/validate-content.ts",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "test:coverage": "bun run --cwd packages/nuartz test:coverage"
   },
   "devDependencies": {

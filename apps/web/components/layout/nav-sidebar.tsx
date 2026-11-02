@@ -23,8 +23,12 @@ function NavNode({ node, currentSlug, depth }: { node: FileTreeNode; currentSlug
   const isActive = node.type === "file" && currentSlug === node.path
   const isAncestor = node.type === "folder" && (currentSlug === node.path || currentSlug.startsWith(node.path + "/"))
   const [open, setOpen] = useState(isAncestor || depth === 0)
+  const [wasAncestor, setWasAncestor] = useState(isAncestor)
+  if (wasAncestor !== isAncestor) {
+    setWasAncestor(isAncestor)
+    if (isAncestor) setOpen(true)
+  }
   const activeRef = useRef<HTMLAnchorElement>(null)
-  useEffect(() => { if (isAncestor) setOpen(true) }, [isAncestor])
   useEffect(() => { if (isActive) activeRef.current?.scrollIntoView({ block: "nearest" }) }, [isActive])
   if (node.type === "folder") return (
     <div>

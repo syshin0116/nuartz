@@ -34,12 +34,17 @@ export function CommandPalette() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const [results, setResults] = useState<Result[]>([])
   const [limit, setLimit] = useState(20)
-  const [total, setTotal] = useState(0)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState(false)
   const [attempt, setAttempt] = useState(0)
+  const [settled, setSettled] = useState<{ request: string; results: Result[]; total: number; error: boolean }>({ request: "", results: [], total: 0, error: false })
+  const q = query.trim()
+  // Identifies the search the current inputs ask for; results from older requests are ignored.
+  const request = open && q ? JSON.stringify([q, limit, attempt]) : ""
+  const isSettled = settled.request === request
+  const busy = Boolean(request) && !isSettled
+  const results = request && isSettled ? settled.results : []
+  const total = request && isSettled ? settled.total : 0
+  const error = Boolean(request) && isSettled && settled.error
 
   useEffect(() => {
     const keyboard = (event: KeyboardEvent) => {
@@ -54,14 +59,10 @@ export function CommandPalette() {
   useEffect(() => {
     if (!open) return
     void loadPagefind()
-    if (!query.trim()) { setResults([]); setTotal(0); setBusy(false); setError(false); return }
+    if (!request) return
     let cancelled = false
-    setBusy(true)
-    setError(false)
-    setResults([])
     const timer = setTimeout(async () => {
       try {
-        const q = query.trim()
         const pf = await loadPagefind()
         let found: Result[], count: number
         if (q.startsWith("#")) {
@@ -82,12 +83,11 @@ export function CommandPalette() {
           count = matches.length
           found = matches.slice(0, limit).map(entry => ({ ...entry, type: "note" }))
         }
-        if (!cancelled) { setResults(found); setTotal(count) }
-      } catch { if (!cancelled) { setResults([]); setError(true) } }
-      finally { if (!cancelled) setBusy(false) }
+        if (!cancelled) setSettled({ request, results: found, total: count, error: false })
+      } catch { if (!cancelled) setSettled({ request, results: [], total: 0, error: true }) }
     }, 150)
     return () => { cancelled = true; clearTimeout(timer) }
-  }, [open, query, limit, attempt])
+  }, [open, request, q, limit])
 
   return <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false} title="Search notes" description="Search by title, path, content, or tag.">
     <CommandInput placeholder="Search notes or type # for tags…" value={query} onValueChange={value => { setQuery(value); setLimit(20) }} />
