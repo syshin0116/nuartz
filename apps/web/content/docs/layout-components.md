@@ -36,7 +36,6 @@ The root layout (`apps/web/app/layout.tsx`) defines the page shell:
 | Header | `components/layout/header.tsx` | Top navigation bar |
 | NavSidebar | `components/layout/nav-sidebar.tsx` | File tree sidebar |
 | MobileNav | `components/layout/mobile-nav.tsx` | Mobile slide-out navigation |
-| LayoutShell | `components/layout/layout-shell.tsx` | Page content wrapper |
 
 ### Content components
 
@@ -46,7 +45,6 @@ The root layout (`apps/web/app/layout.tsx`) defines the page shell:
 | GraphView | `components/graph-view.tsx` | Interactive note graph |
 | Backlinks | `components/backlinks.tsx` | Pages linking to current page |
 | Breadcrumb | `components/breadcrumb.tsx` | Path breadcrumbs |
-| FileExplorer | `components/file-explorer.tsx` | Folder tree browser |
 | CommandPalette | `components/command-palette.tsx` | `Cmd+K` search |
 | HeadingAnchors | `components/heading-anchors.tsx` | Clickable heading links |
 | MermaidRenderer | `components/mermaid-renderer.tsx` | Mermaid diagram rendering |
