@@ -24,14 +24,18 @@ import {
   normalizeNotePath,
   noteHref,
   isHiddenContentPath,
+  defaultTagHref,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 import type { Frontmatter, TocEntry } from "nuartz"
 import config from "../apps/web/nuartz.config"
+import * as pagefind from "pagefind"
 
 const CONTENT_DIR = path.resolve(config.contentDir)
 const OUT_DIR = path.join(import.meta.dir, "../apps/web/.generated")
 const PUBLIC_DIR = path.join(import.meta.dir, "../apps/web/public")
+// Sub-path the site is served from, e.g. "/my-repo" on GitHub Pages. Must match next.config.ts.
+const BASE_PATH = (process.env.NUARTZ_BASE_PATH ?? "").replace(/\/+$/, "")
 
 interface PageData {
   html: string
@@ -112,6 +116,24 @@ async function copyMediaFiles() {
   console.log(`prebuild: copied ${count} media files`)
 }
 
+/**
+ * Builds the Pagefind index from rendered notes instead of Next's output, whose
+ * HTML location differs between `next build`, Vercel, and static export.
+ */
+async function writeSearchIndex(pages: { slug: string; title: string; html: string }[]) {
+  const { index, errors } = await pagefind.createIndex({ forceLanguage: config.site.locale ?? "en" })
+  if (!index) throw new AggregateError(errors, "Pagefind index failed")
+  for (const page of pages) {
+    const url = page.slug === "index" ? "/" : `/${page.slug.split("/").map(encodeURIComponent).join("/")}`
+    const escapedTitle = page.title.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    await index.addHTMLFile({ url, content: `<html><body><main data-pagefind-body><h1>${escapedTitle}</h1>${page.html}</main></body></html>` })
+  }
+  const outputPath = path.join(PUBLIC_DIR, "pagefind")
+  await fs.rm(outputPath, { recursive: true, force: true })
+  await index.writeFiles({ outputPath })
+  await pagefind.close()
+}
+
 async function main() {
   const start = performance.now()
   console.log("prebuild: starting...")
@@ -127,16 +149,23 @@ async function main() {
   const filesBySlug = new Map(files.map(file => [file.slug, file]))
   const resolveNote = createNoteResolver(files)
   const knownSlugs = new Set(filesBySlug.keys())
+  // These URLs end up inside note HTML, which next/link never sees, so they carry BASE_PATH.
   const resolveLink = (target: string, heading?: string, from?: string) =>
-    noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading)
+    noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading, `${BASE_PATH}/`)
+  const resolveAsset = (assetPath: string) => `${BASE_PATH}/content/${assetPath.split("/").map(encodeURIComponent).join("/")}`
+  const resolveTag = (tag: string) => `${BASE_PATH}${defaultTagHref(tag)}`
 
   // 3. Render all pages in parallel
   console.log("prebuild: rendering all pages...")
   const rendered = await Promise.all(
     files.map(async (file) => {
       const result = await renderMarkdown(file.raw, {
+        ...config.markdown,
         features: config.features,
         resolveLink,
+        resolveAsset,
+        resolveTag,
+        baseUrl: `${BASE_PATH}/`,
         knownSlugs,
         filePath: file.slug + ".md",
         resolveEmbed: (target, from) => {
@@ -401,6 +430,14 @@ async function main() {
 
   // Copy media files (images, etc.) from content/ to public/content/
   await copyMediaFiles()
+  if (config.features.search) {
+    await writeSearchIndex(rendered.map(({ file, result }) => ({
+      slug: file.slug,
+      title: String(result.frontmatter.title ?? file.slug.split("/").pop()),
+      html: result.html,
+    })))
+    console.log("prebuild: wrote Pagefind index")
+  }
 
   const viewerDir = path.join(PUBLIC_DIR, "graph-viewer")
   const viewerSource = path.join(import.meta.dir, "../apps/web/graph-viewer")

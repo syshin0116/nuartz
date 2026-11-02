@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { isStaticExport, stripBasePath, withBasePath } from "@/lib/base-path"
 
 export function PopoverPreview() {
   useEffect(() => {
@@ -11,7 +12,7 @@ export function PopoverPreview() {
     let longPressTimer: ReturnType<typeof setTimeout> | null = null
 
     // Try loading static preview index (for static export)
-    fetch("/preview-index.json")
+    fetch(withBasePath("/preview-index.json"))
       .then(r => { if (!r.ok) throw new Error(); return r.json() })
       .then(data => { previewIndex = data })
       .catch(() => { /* no static index, will use API */ })
@@ -37,6 +38,8 @@ export function PopoverPreview() {
       const isWikilink = a.classList.contains("wikilink")
 
       if (!isWikilink && !isExternal) return
+      // External previews need the server-side /api/preview route.
+      if (isExternal && isStaticExport) return
 
       hide()
 
@@ -45,15 +48,15 @@ export function PopoverPreview() {
         try {
           let data: { title: string; excerpt: string; image?: string; type?: string }
 
-          const slug = href.startsWith("/") ? href.slice(1) : href
+          const slug = stripBasePath(href).replace(/^\//, "")
 
           // Use static preview index for internal links when available
           if (!isExternal && previewIndex && previewIndex[slug]) {
             data = { ...previewIndex[slug], type: "internal" }
           } else {
             const apiUrl = isExternal
-              ? `/api/preview?url=${encodeURIComponent(href)}`
-              : `/api/preview?slug=${encodeURIComponent(slug)}`
+              ? withBasePath(`/api/preview?url=${encodeURIComponent(href)}`)
+              : withBasePath(`/api/preview?slug=${encodeURIComponent(slug)}`)
 
             const res = await fetch(apiUrl, { signal: controller.signal })
             if (!res.ok) return

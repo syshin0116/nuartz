@@ -27,23 +27,15 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Build nuartz package
-        run: bun run --cwd packages/nuartz build
-
-      - name: Enable static export
-        run: |
-          sed -i 's|// output: "export"|output: "export"|' apps/web/next.config.ts
-
-      - name: Run prebuild static script
-        run: bun run apps/web/scripts/prebuild-static.ts
-
       - name: Configure Pages
+        id: pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
-      - name: Build Next.js
-        run: bun run --cwd apps/web build
+      - name: Build static site
+        run: bun run build:static
         env:
-          NEXT_PUBLIC_SITE_URL: ""
+          NUARTZ_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NUARTZ_SITE_URL: ${{ steps.pages.outputs.base_url }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

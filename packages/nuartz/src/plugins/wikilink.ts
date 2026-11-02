@@ -22,10 +22,12 @@ export interface WikilinkOptions {
   knownSlugs?: Set<string>
   /** Directory of the current file relative to content root (e.g. 'AI'). Used to resolve relative image paths. */
   fileDir?: string
+  /** URL for an embedded attachment path relative to the content root. Default: `/api/content/<path>` */
+  resolveAsset?: (path: string) => string
 }
 
 export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) => {
-  const { baseUrl = "/", resolve, knownSlugs, fileDir } = options
+  const { baseUrl = "/", resolve, knownSlugs, fileDir, resolveAsset = (assetPath: string) => `/api/content/${assetPath}` } = options
 
   const defaultResolve = (target: string, heading?: string): string => {
     if (!target && heading) return noteHref("index", heading).slice(1)
@@ -69,7 +71,7 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
 
           nodes.push({
             type: "image",
-            url: isImage ? `/api/content/${resolvedTarget}` : href,
+            url: isImage ? resolveAsset(resolvedTarget) : href,
             alt: displayText,
             data: { hProperties: { className: [isImage ? "embed-image" : "embed-note"], "data-embed": target } },
           })

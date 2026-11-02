@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { FileText, Hash, Loader2, Search } from "lucide-react"
 import { CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { searchNotes, type SearchEntry } from "@/lib/search"
+import { stripBasePath, withBasePath } from "@/lib/base-path"
 
 interface Result { slug: string; title: string; excerpt: string; type: "note" | "tag" }
 interface Pagefind {
@@ -14,13 +15,13 @@ interface Pagefind {
 let pagefind: Promise<Pagefind | null> | undefined
 let searchIndex: Promise<SearchEntry[]> | undefined
 function loadIndex() {
-  return searchIndex ??= fetch("/api/search").then(response => {
+  return searchIndex ??= fetch(withBasePath("/api/search")).then(response => {
     if (!response.ok) throw new Error("Search unavailable")
     return response.json() as Promise<SearchEntry[]>
   }).catch(error => { searchIndex = undefined; throw error })
 }
 function loadPagefind() {
-  return pagefind ??= (Function('return import("/pagefind/pagefind.js")')() as Promise<Pagefind>)
+  return pagefind ??= (Function("url", "return import(url)")(withBasePath("/pagefind/pagefind.js")) as Promise<Pagefind>)
     .then(async module => { await module.init(); return module }).catch(() => null)
 }
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -75,7 +76,7 @@ export function CommandPalette() {
           const response = await pf.search(q)
           count = response.results.length
           found = (await Promise.all(response.results.slice(0, limit).map(result => result.data()))).map(data => {
-            const slug = new URL(data.url, location.origin).pathname.replace(/^\//, "").replace(/(?:\/index)?\.html$/, "").replace(/\/$/, "")
+            const slug = stripBasePath(new URL(data.url, location.origin).pathname).replace(/^\//, "").replace(/(?:\/index)?\.html$/, "").replace(/\/$/, "")
             return { slug, title: data.meta?.title ?? decodeURIComponent(slug), excerpt: new DOMParser().parseFromString(data.excerpt ?? "", "text/html").body.textContent ?? "", type: "note" as const }
           })
         } else {

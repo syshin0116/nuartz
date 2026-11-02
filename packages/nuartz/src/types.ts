@@ -35,6 +35,8 @@ export interface RenderOptions {
   resolveLink?: (target: string, heading?: string, filePath?: string) => string
   /** Load a published note for transclusion. Return undefined for missing or private notes. */
   resolveEmbed?: (target: string, filePath?: string) => { content: string; filePath: string } | undefined
+  /** URL for an embedded attachment, given its path relative to the content root (default: `/api/content/<path>`) */
+  resolveAsset?: (path: string) => string
   /** URL for an inline #tag (default: `/tags/` followed by each `/` segment URL-encoded) */
   resolveTag?: (tag: string) => string
   /** Known slugs for dead-link detection */

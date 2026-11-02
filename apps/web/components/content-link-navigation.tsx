@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { stripBasePath } from "@/lib/base-path"
 
 /**
  * Note bodies are injected as HTML, so their links are plain <a> tags that
@@ -15,11 +16,13 @@ export function ContentLinkNavigation() {
       const anchor = (event.target as Element | null)?.closest?.<HTMLAnchorElement>(".prose a[href]")
       if (!anchor || anchor.target && anchor.target !== "_self" || anchor.hasAttribute("download")) return
       const url = new URL(anchor.href, location.href)
-      if (url.origin !== location.origin || url.pathname.startsWith("/api/") || /\.[a-z0-9]+$/i.test(url.pathname)) return
+      const pathname = stripBasePath(url.pathname)
+      if (url.origin !== location.origin || pathname.startsWith("/api/") || /\.[a-z0-9]+$/i.test(pathname)) return
       // Same-page anchors keep the browser's native scrolling.
       if (url.pathname === location.pathname && url.search === location.search && url.hash) return
       event.preventDefault()
-      router.push(url.pathname + url.search + url.hash)
+      // router.push adds basePath itself.
+      router.push(pathname + url.search + url.hash)
     }
     document.addEventListener("click", onClick)
     return () => document.removeEventListener("click", onClick)
