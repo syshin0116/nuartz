@@ -5,7 +5,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/syshin0116/nuartz.git"
+    "url": "git+https://github.com/syshin0116/nuartz.git",
+    "directory": "packages/nuartz"
   },
   "keywords": [
     "markdown",
