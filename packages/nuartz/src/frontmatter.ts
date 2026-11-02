@@ -20,6 +20,7 @@ const isFalse = (value: unknown) => value === false || value === "false"
  * Canonicalises the frontmatter keys nuartz reads:
  * `tags`/`tag` and `aliases`/`alias` become deduplicated string arrays
  * (tags lose a leading `#`), and `draft`/`published` accept "true"/"false".
+ * Any other `published` value, such as a publish date, is kept as is.
  */
 export function normalizeFrontmatter(data: Record<string, unknown>): Frontmatter {
   const result: Record<string, unknown> = { ...data }
@@ -30,7 +31,7 @@ export function normalizeFrontmatter(data: Record<string, unknown>): Frontmatter
   const cssclasses = toList(firstDefined(data, ["cssclasses", "cssclass"]))
   if (cssclasses) result.cssclasses = cssclasses
   if (data.draft !== undefined) result.draft = isTrue(data.draft)
-  if (data.published !== undefined) result.published = !isFalse(data.published)
+  if (isTrue(data.published) || isFalse(data.published)) result.published = isTrue(data.published)
   return result as Frontmatter
 }
 

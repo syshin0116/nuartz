@@ -5,7 +5,8 @@ export interface Frontmatter {
   description?: string
   summary?: string
   draft?: boolean
-  published?: boolean
+  /** `false` hides the note. Other values, such as a publish date, are kept. */
+  published?: boolean | string | Date
   aliases?: string[]
   cssclasses?: string[]
   order?: number
