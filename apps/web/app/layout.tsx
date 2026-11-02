@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { CommandPaletteDynamic } from "@/components/command-palette-dynamic"
 import config from "@/nuartz.config"
 import fileTree from "@/.generated/file-tree.json"
+import type { FileTreeNode } from "nuartz"
 
 export const metadata: Metadata = {
   metadataBase: new URL(config.site.baseUrl),
@@ -24,7 +25,8 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  const tree = fileTree as any
+  // Serialized tree: mtime is an ISO string here, which no consumer reads.
+  const tree = fileTree as unknown as FileTreeNode[]
   return (
     <html lang="en" suppressHydrationWarning>
       <head />

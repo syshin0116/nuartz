@@ -26,7 +26,7 @@ export const remarkHighlight: Plugin<[], Root> = () => {
       if (lastIndex < node.value.length) {
         nodes.push({ type: "text", value: node.value.slice(lastIndex) })
       }
-      parent.children.splice(index, 1, ...(nodes as any))
+      parent.children.splice(index, 1, ...nodes)
     })
   }
 }
