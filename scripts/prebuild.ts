@@ -236,19 +236,28 @@ async function main() {
     }
   }
 
-  const aliasParams: string[][] = []
+  // alias path -> target slug. Aliases never shadow a real page or folder, and
+  // an alias claimed by two notes is dropped rather than guessed.
+  const taken = new Set([...files.map(f => f.slug), ...folderPaths])
+  const aliasTargets = new Map<string, string | null>()
   for (const file of files) {
-    const aliases: string[] = (file.frontmatter.aliases as string[]) ?? []
-    for (const alias of aliases) {
-      const cleaned = alias.startsWith("/") ? alias.slice(1) : alias
-      if (cleaned) aliasParams.push(cleaned.split("/"))
+    const permalink = typeof file.frontmatter.permalink === "string" ? [file.frontmatter.permalink] : []
+    for (const alias of [...(file.frontmatter.aliases ?? []), ...permalink]) {
+      const aliasPath = normalizeNotePath(alias).replace(/\/+$/, "")
+      if (!aliasPath || aliasPath === file.slug || taken.has(aliasPath)) continue
+      const existing = aliasTargets.get(aliasPath)
+      if (existing !== undefined && existing !== file.slug) {
+        console.warn(`prebuild: alias "${alias}" is used by more than one note; skipping it`)
+        aliasTargets.set(aliasPath, null)
+      } else if (existing === undefined) aliasTargets.set(aliasPath, file.slug)
     }
   }
+  const aliases = Object.fromEntries([...aliasTargets].filter((entry): entry is [string, string] => entry[1] !== null))
 
   const slugsData = {
     pages: allSlugs,
     folders: [...folderPaths].map((p) => p.split("/")),
-    aliases: aliasParams,
+    aliases,
   }
   writes.push(writeJSON(path.join(OUT_DIR, "all-slugs.json"), slugsData))
 
