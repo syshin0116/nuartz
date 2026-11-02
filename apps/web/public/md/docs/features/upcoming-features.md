@@ -9,7 +9,6 @@ These are features we're considering or actively working on for nuartz. This lis
 - **Strict link validation**: Optional CI failure when broken `[[wikilinks]]` are detected
 - **Sidenotes** — Margin notes as an alternative to footnotes
 - **Exact-match search** — Use double quotes in search for exact phrase matching
-- **Canvas support** — Rendering Obsidian Canvas (`.canvas`) files
 - **Obsidian URI support** — `obsidian://` protocol links for opening notes in Obsidian
 
 ## Want to help?

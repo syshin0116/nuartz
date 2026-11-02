@@ -1,0 +1,40 @@
+filters:
+  and:
+    - file.inFolder("docs/features")
+    - file.name != "index.md"
+formulas:
+  tag_count: file.tags.length
+  year: if(date, date.year)
+properties:
+  note.description:
+    displayName: Description
+  formula.tag_count:
+    displayName: Tags
+views:
+  - type: table
+    name: All features
+    order:
+      - file.name
+      - description
+      - formula.tag_count
+    sort:
+      - property: file.name
+        direction: ASC
+  - type: cards
+    name: Tagged
+    filters: file.hasTag("features")
+    order:
+      - file.name
+      - file.tags
+    sort:
+      - property: formula.tag_count
+        direction: DESC
+    limit: 6
+  - type: list
+    name: By year
+    order:
+      - file.name
+      - description
+    groupBy:
+      property: formula.year
+      direction: DESC

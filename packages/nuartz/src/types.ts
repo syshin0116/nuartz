@@ -36,6 +36,8 @@ export interface RenderOptions {
   resolveLink?: (target: string, heading?: string, filePath?: string) => string
   /** Load a published note for transclusion. Return undefined for missing or private notes. */
   resolveEmbed?: (target: string, filePath?: string) => { content: string; filePath: string } | undefined
+  /** HTML for a ```base code block (Obsidian Bases), given its YAML and the current file path. Return undefined to keep it as code. */
+  renderBase?: (source: string, filePath?: string) => string | undefined
   /**
    * URL for an attachment (`![[file.png]]`, `![](file.png)`, `[x](file.pdf)`) as written in the note at `filePath`,
    * or undefined when it does not exist. Default: `/api/content/<path>` resolved against the note's folder.

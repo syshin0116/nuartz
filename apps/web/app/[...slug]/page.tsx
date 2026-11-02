@@ -1,7 +1,7 @@
 export const revalidate = false
 
 import { notFound, permanentRedirect } from "next/navigation"
-import { normalizeNotePath, noteHref, type TocEntry } from "nuartz"
+import { normalizeNotePath, noteHref, type BaseResult, type TocEntry } from "nuartz"
 import fs from "node:fs/promises"
 import path from "node:path"
 import type { Metadata } from "next"
@@ -20,6 +20,9 @@ import { CopyCode } from "@/components/copy-code"
 import { ImageZoom } from "@/components/image-zoom"
 import { GiscusComments } from "@/components/giscus"
 import { CopyMarkdownButton } from "@/components/copy-markdown-button"
+import { CanvasView } from "@/components/canvas-view"
+import { BaseView } from "@/components/base-view"
+import type { CanvasPageData } from "@/lib/canvas"
 import config from "@/nuartz.config"
 import { isStaticExport, withBasePath } from "@/lib/base-path"
 import allSlugsData from "@/.generated/all-slugs.json"
@@ -46,6 +49,9 @@ interface PageFrontmatter {
 }
 
 interface PageData {
+  kind?: "canvas" | "base"
+  canvas?: CanvasPageData
+  base?: BaseResult
   html: string
   frontmatter: PageFrontmatter
   toc: TocEntry[]
@@ -189,6 +195,22 @@ export default async function NotePage({
   // Per-note switches: `toc: false` (or Quartz's `enableToc: false`) and `comments: false`.
   const pageToc = config.features.toc && frontmatter.toc !== false && frontmatter.enableToc !== false ? toc : []
   const cssClasses = Array.isArray(frontmatter.cssclasses) ? frontmatter.cssclasses.filter((c): c is string => typeof c === "string") : []
+
+  if (pageData.kind) {
+    const title = frontmatter.title ?? slug[slug.length - 1]
+    return (
+      <div className={pageData.kind === "canvas" ? "w-full px-6 py-8" : "max-w-6xl mx-auto w-full px-6 py-8"}>
+        {slug.length > 1 && <div className="mb-6"><Breadcrumb slug={slug} /></div>}
+        <header className="mb-6 flex flex-wrap items-baseline gap-3">
+          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          <span className="text-sm text-muted-foreground">{pageData.kind === "canvas" ? "Canvas" : "Base"}</span>
+          {modifiedDate && <span className="text-sm text-muted-foreground">Updated {modifiedDate}</span>}
+        </header>
+        {pageData.canvas && <CanvasView canvas={pageData.canvas} title={title} />}
+        {pageData.base && <BaseView base={pageData.base} />}
+      </div>
+    )
+  }
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",

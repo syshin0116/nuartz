@@ -27,10 +27,19 @@ import {
   isHiddenContentPath,
   defaultTagHref,
   toStandardMarkdown,
+  getContentFiles,
+  assignPageSlugs,
+  parseCanvas,
+  canvasBounds,
+  canvasEdgeGeometry,
+  parseBase,
+  evaluateBase,
+  renderBaseViewHtml,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
-import type { Frontmatter, MarkdownFile, TocEntry } from "nuartz"
+import type { BaseFile, BaseResult, Frontmatter, MarkdownFile, RenderOptions, TocEntry } from "nuartz"
 import config from "../apps/web/nuartz.config"
+import type { CanvasPageData, RenderedCanvasNode } from "../apps/web/lib/canvas"
 import * as pagefind from "pagefind"
 
 const CONTENT_DIR = path.resolve(config.contentDir)
@@ -40,6 +49,9 @@ const PUBLIC_DIR = path.join(import.meta.dir, "../apps/web/public")
 const BASE_PATH = (process.env.NUARTZ_BASE_PATH ?? "").replace(/\/+$/, "")
 
 interface PageData {
+  kind?: "canvas" | "base"
+  canvas?: CanvasPageData
+  base?: BaseResult
   html: string
   frontmatter: Frontmatter
   toc: TocEntry[]
@@ -82,6 +94,35 @@ interface GraphLink {
   target: string
 }
 
+/** A `.canvas` or `.base` file published as its own page. */
+interface ContentPage {
+  kind: "canvas" | "base"
+  path: string
+  slug: string
+  title: string
+  raw: string
+  mtime?: Date
+}
+
+const IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|svg|avif|bmp)$/i
+const escapeHtml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+
+function excerptOf(raw: string): string {
+  return raw
+    .replace(/^---[\s\S]*?---\n?/, "")
+    .replace(/!\[\[.*?\]\]/g, "")
+    .replace(
+      /\[\[([^\]|#]+?)(?:#[^\]|]*?)?(?:\|([^\]]+?))?\]\]/g,
+      (_: string, _t: string, alias: string) => alias ?? _t
+    )
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[#*_~`>]/g, "")
+    .replace(/\n+/g, " ")
+    .trim()
+    .slice(0, 350)
+}
+
+const textOf = (html: string) => html.replace(/<[^>]+>/g, " ").replace(/&[a-z]+;|&#\d+;/g, " ").replace(/\s+/g, " ").trim()
 // CJK text has no spaces between words, so it is counted by character.
 const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu
 
@@ -201,9 +242,26 @@ async function main() {
   const files = await getAllMarkdownFiles(CONTENT_DIR)
   console.log(`prebuild: found ${files.length} markdown files`)
 
+  // 2. Canvas and Bases files become pages. A note keeps its URL when both
+  // share a name; the other file moves to `<name>-canvas` / `<name>-base`.
+  const pageFiles = await getContentFiles(CONTENT_DIR, [".canvas", ".base"])
+  const pageSlugs = assignPageSlugs(pageFiles.map(file => file.path), files.map(file => file.slug))
+  const contentPages: ContentPage[] = pageFiles.map(file => {
+    const slug = pageSlugs.get(file.path)!
+    const extension = path.posix.extname(file.path)
+    if (slug !== file.path.slice(0, -extension.length)) console.warn(`prebuild: ${file.path} is published at /${slug} because its default URL is taken`)
+    return {
+      kind: extension.toLowerCase() === ".canvas" ? "canvas" : "base",
+      path: file.path, slug, raw: file.raw, mtime: file.mtime,
+      title: path.posix.basename(file.path, extension),
+    }
+  })
+  const pagesBySlug = new Map(contentPages.map(page => [page.slug, page]))
+  console.log(`prebuild: found ${contentPages.length} canvas and base files`)
+
   const filesBySlug = new Map(files.map(file => [file.slug, file]))
-  const resolveNote = createNoteResolver(files)
-  const knownSlugs = new Set(filesBySlug.keys())
+  const resolveNote = createNoteResolver([...files, ...contentPages.map(page => ({ slug: page.slug, frontmatter: {}, path: page.path }))])
+  const knownSlugs = new Set([...filesBySlug.keys(), ...pagesBySlug.keys()])
   // These URLs end up inside note HTML, which next/link never sees, so they carry BASE_PATH.
   const resolveLink = (target: string, heading?: string, from?: string) =>
     noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading, `${BASE_PATH}/`)
@@ -215,27 +273,63 @@ async function main() {
   }
   const resolveTag = (tag: string) => `${BASE_PATH}${defaultTagHref(tag)}`
 
+  // Bases are evaluated after the first render pass (they need each note's
+  // tags and links); notes that use a base are rendered again afterwards.
+  let baseFiles: BaseFile[] = []
+  const baseFilesByPath = new Map<string, BaseFile>()
+  const baseHref = (slug: string) => noteHref(slug, undefined, `${BASE_PATH}/`)
+  const evaluateBaseSource = (source: string, label: string, thisPath?: string) => {
+    const result = evaluateBase(parseBase(source), baseFiles, { resolveNote: target => resolveNote(target), thisFile: thisPath ? baseFilesByPath.get(thisPath) : undefined })
+    for (const notice of new Set([...result.notices, ...result.views.flatMap(view => view.notices)])) console.warn(`prebuild: ${label}: ${notice}`)
+    return result
+  }
+  const baseHtml = (result: BaseResult) => [
+    ...result.notices.map(notice => `<p class="base-notice">${escapeHtml(notice)}</p>`),
+    ...result.views.map(view => `${result.views.length > 1 ? `<p class="base-view-name">${escapeHtml(view.name)}</p>` : ""}${renderBaseViewHtml(view, { href: baseHref })}`),
+  ].join("")
+
+  const renderOptions = (filePath: string, withBases: boolean): RenderOptions => ({
+    ...config.markdown,
+    features: config.features,
+    resolveLink,
+    resolveAsset,
+    resolveTag,
+    baseUrl: `${BASE_PATH}/`,
+    knownSlugs,
+    filePath,
+    resolveEmbed: (target, from) => {
+      const slug = resolveNote(target, from) ?? ""
+      const page = pagesBySlug.get(slug)
+      if (page?.kind === "base" && withBases) {
+        return { content: `<div class="base-embed">${baseHtml(evaluateBaseSource(page.raw, `${from} embeds ${page.path}`, from))}</div>`, filePath: page.path }
+      }
+      const source = filesBySlug.get(slug)
+      return source ? { content: source.raw, filePath: source.slug + ".md" } : undefined
+    },
+    renderBase: withBases ? (source, from) => `<div class="base-embed">${baseHtml(evaluateBaseSource(source, `base block in ${from}`, from))}</div>` : undefined,
+  })
+  const renderNote = async (file: MarkdownFile, withBases: boolean) => ({ file, result: await renderMarkdown(file.raw, renderOptions(file.slug + ".md", withBases)) })
+
   // 3. Render all pages in parallel
   console.log("prebuild: rendering all pages...")
-  const rendered = await Promise.all(
-    files.map(async (file) => {
-      const result = await renderMarkdown(file.raw, {
-        ...config.markdown,
-        features: config.features,
-        resolveLink,
-        resolveAsset,
-        resolveTag,
-        baseUrl: `${BASE_PATH}/`,
-        knownSlugs,
-        filePath: file.slug + ".md",
-        resolveEmbed: (target, from) => {
-          const source = filesBySlug.get(resolveNote(target, from) ?? "")
-          return source ? { content: source.raw, filePath: source.slug + ".md" } : undefined
-        },
-      })
-      return { file, result }
-    })
-  )
+  const rendered = await Promise.all(files.map(file => renderNote(file, false)))
+
+  const stats = await Promise.all(files.map(file => fs.stat(file.filePath).catch(() => undefined)))
+  baseFiles = rendered.map(({ file, result }, index) => {
+    const frontmatterLinks = [...JSON.stringify(file.frontmatter).matchAll(/\[\[([^\]|#]+)/g)].map(match => match[1])
+    const links = [...new Set([...result.links, ...frontmatterLinks].map(target => resolveNote(target, file.slug)).filter((slug): slug is string => Boolean(slug) && slug !== file.slug))]
+    return {
+      path: `${file.slug}.md`, slug: file.slug, properties: file.frontmatter, tags: result.tags, links,
+      mtime: file.mtime, ctime: stats[index]?.birthtime, size: stats[index]?.size,
+    }
+  })
+  for (const baseFile of baseFiles) baseFilesByPath.set(baseFile.path, baseFile)
+
+  // Embeds of notes that themselves embed a base are not detected and keep the first-pass output.
+  const usesBase = /^\s*(`{3,}|~{3,})\s*base\b|!\[\[[^\]]*\.base\s*(?:[#|][^\]]*)?\]\]/im
+  await Promise.all(rendered.map(async (entry, index) => {
+    if (usesBase.test(entry.file.raw)) rendered[index] = await renderNote(entry.file, true)
+  }))
   const resultsBySlug = new Map(rendered.map(({ file, result }) => [file.slug, result]))
 
   // Titles, dates and descriptions shared by every listing below.
@@ -254,6 +348,74 @@ async function main() {
     }]
   }))
   const metaOf = (slug: string) => noteMeta.get(slug)!
+  // Canvas and base page data
+  const contentPageData = new Map<string, { html: string; links: string[]; excerpt: string; canvas?: CanvasPageData; base?: BaseResult }>()
+  for (const page of contentPages) {
+    if (page.kind === "base") {
+      const base = evaluateBaseSource(page.raw, page.path, undefined)
+      const views = base.views.map(view => `<h2>${escapeHtml(view.name)}</h2>${renderBaseViewHtml(view, { href: baseHref })}`).join("")
+      const count = base.views[0]?.count ?? 0
+      contentPageData.set(page.slug, { html: views, links: [], excerpt: `Base with ${base.views.length} ${base.views.length === 1 ? "view" : "views"}, ${count} ${count === 1 ? "note" : "notes"}`, base })
+      continue
+    }
+    const { canvas, warnings } = parseCanvas(page.raw)
+    for (const warning of warnings) console.warn(`prebuild: ${page.path}: ${warning}`)
+    const links = new Set<string>()
+    const searchParts: string[] = []
+    const nodes = await Promise.all(canvas.nodes.map(async (node): Promise<RenderedCanvasNode> => {
+      const base = { id: node.id, type: node.type, x: node.x, y: node.y, width: node.width, height: node.height, color: node.color }
+      if (node.type === "text") {
+        const result = await renderMarkdown(node.text, renderOptions(page.path, true))
+        for (const target of result.links) {
+          const slug = resolveNote(target, page.path)
+          if (slug) links.add(slug)
+        }
+        searchParts.push(result.html)
+        return { ...base, html: result.html }
+      }
+      if (node.type === "link") {
+        searchParts.push(`<p>${escapeHtml(node.url)}</p>`)
+        const safe = /^https?:\/\//i.test(node.url)
+        let label = node.url
+        try { label = new URL(node.url).hostname } catch { /* keep the raw url */ }
+        return safe ? { ...base, href: node.url, label } : { ...base, type: "file", missing: true, label: node.url }
+      }
+      if (node.type === "group") {
+        if (node.label) searchParts.push(`<p>${escapeHtml(node.label)}</p>`)
+        const background = node.background && !isHiddenContentPath(node.background) && !node.background.includes("..") ? resolveAsset(node.background.replace(/^\/+/, "")) : undefined
+        return { ...base, label: node.label, image: background, backgroundStyle: node.backgroundStyle }
+      }
+      const filePath = node.file.replace(/^\/+/, "")
+      const label = path.posix.basename(filePath).replace(/\.md$/i, "")
+      searchParts.push(`<p>${escapeHtml(label)}</p>`)
+      if (/\.(md|canvas|base)$/i.test(filePath) || !path.posix.extname(filePath)) {
+        const slug = resolveNote(filePath.replace(/\.md$/i, ""))
+        const note = slug ? filesBySlug.get(slug) : undefined
+        const target = slug ? pagesBySlug.get(slug) : undefined
+        if (!slug || (!note && !target)) return { ...base, missing: true, label: filePath }
+        links.add(slug)
+        return { ...base, slug, label: note ? String(note.frontmatter.title ?? label) : target!.title, excerpt: note ? excerptOf(note.raw).slice(0, 240) : undefined }
+      }
+      const absolute = path.resolve(CONTENT_DIR, filePath)
+      const relative = path.relative(CONTENT_DIR, absolute)
+      const exists = !relative.startsWith("..") && !isHiddenContentPath(relative) && await fs.access(absolute).then(() => true, () => false)
+      if (!exists) return { ...base, missing: true, label: filePath }
+      return IMAGE_EXTENSION.test(filePath) ? { ...base, image: resolveAsset(relative.replace(/\\/g, "/")), label } : { ...base, href: resolveAsset(relative.replace(/\\/g, "/")), label }
+    }))
+    const rects = new Map(canvas.nodes.map(node => [node.id, node]))
+    const edges = canvas.edges.map(edge => {
+      const geometry = canvasEdgeGeometry(rects.get(edge.fromNode)!, rects.get(edge.toNode)!, edge.fromSide, edge.toSide)
+      if (edge.label) searchParts.push(`<p>${escapeHtml(edge.label)}</p>`)
+      return {
+        id: edge.id, path: geometry.path, middle: geometry.middle, color: edge.color, label: edge.label,
+        startArrow: edge.fromEnd === "arrow" ? geometry.startArrow : undefined,
+        endArrow: edge.toEnd === "arrow" ? geometry.endArrow : undefined,
+      }
+    })
+    links.delete(page.slug)
+    const html = searchParts.join("")
+    contentPageData.set(page.slug, { html, links: [...links], excerpt: textOf(html).slice(0, 350), canvas: { nodes, edges, bounds: canvasBounds(canvas.nodes) } })
+  }
 
   // 4. Build backlink index (reverse link map)
   console.log("prebuild: building backlink index...")
@@ -279,12 +441,16 @@ async function main() {
   const writes: Promise<void>[] = []
 
   // file-tree.json
-  const fileTree = buildFileTree(files)
+  const pageEntries: MarkdownFile[] = contentPages.map(page => ({ slug: page.slug, filePath: path.join(CONTENT_DIR, page.path), frontmatter: { title: page.title }, raw: "", mtime: page.mtime }))
+  const fileTree = buildFileTree([...files, ...pageEntries])
   writes.push(writeJSON(path.join(OUT_DIR, "file-tree.json"), fileTree))
 
   // search.json
   const searchIndex = config.features.search ? buildSearchIndex(files) : []
   for (const entry of searchIndex) entry.tags = resultsBySlug.get(entry.slug)?.tags ?? entry.tags
+  if (config.features.search) {
+    for (const page of contentPages) searchIndex.push({ slug: page.slug, title: page.title, content: textOf(contentPageData.get(page.slug)!.html), tags: [] })
+  }
   writes.push(writeJSON(path.join(OUT_DIR, "search.json"), searchIndex))
 
   // graph.json
@@ -294,6 +460,7 @@ async function main() {
     tags: result.tags,
     type: "note" as const,
   }))
+  for (const page of contentPages) noteNodes.push({ id: page.slug, title: page.title, tags: [], type: "note" })
 
   const linkSet = new Set<string>()
   const graphLinks: GraphLink[] = []
@@ -310,6 +477,9 @@ async function main() {
       const target = resolveNote(linkTarget, file.slug)
       if (target && target !== file.slug) addLink(file.slug, target)
     }
+  }
+  for (const page of contentPages) {
+    for (const target of contentPageData.get(page.slug)!.links) addLink(page.slug, target)
   }
 
   const tagSet = new Set<string>()
@@ -334,7 +504,7 @@ async function main() {
   writes.push(writeJSON(path.join(PUBLIC_DIR, "graph.json"), graphData))
 
   // all-slugs.json
-  const allSlugs: string[][] = files.map((f) => f.slug.split("/"))
+  const allSlugs: string[][] = [...files, ...contentPages].map((f) => f.slug.split("/"))
   const folderPaths = new Set<string>()
   for (const slug of allSlugs) {
     for (let i = 1; i < slug.length; i++) {
@@ -344,7 +514,7 @@ async function main() {
 
   // alias path -> target slug. Aliases never shadow a real page or folder, and
   // an alias claimed by two notes is dropped rather than guessed.
-  const taken = new Set([...files.map(f => f.slug), ...folderPaths])
+  const taken = new Set([...knownSlugs, ...folderPaths])
   const aliasTargets = new Map<string, string | null>()
   for (const file of files) {
     const permalink = typeof file.frontmatter.permalink === "string" ? [file.frontmatter.permalink] : []
@@ -386,6 +556,7 @@ async function main() {
 
   // sitemap-data.json - minimal data for sitemap generation
   const sitemapData = files.map((f) => ({ slug: f.slug, mtime: metaOf(f.slug).modified?.toISOString() ?? null }))
+  for (const page of contentPages) sitemapData.push({ slug: page.slug, mtime: page.mtime?.toISOString() ?? null })
   writes.push(writeJSON(path.join(OUT_DIR, "sitemap-data.json"), sitemapData))
 
   // notes-list.json - sorted list of all notes with metadata (for homepage, RSS, llms.txt)
@@ -411,20 +582,9 @@ async function main() {
   const previewIndex: Record<string, { title: string; excerpt: string }> = {}
   for (const file of files) {
     const title = (file.frontmatter.title as string) ?? file.slug.split("/").pop() ?? file.slug
-    const excerpt = file.raw
-      .replace(/^---[\s\S]*?---\n?/, "")
-      .replace(/!\[\[.*?\]\]/g, "")
-      .replace(
-        /\[\[([^\]|#]+?)(?:#[^\]|]*?)?(?:\|([^\]]+?))?\]\]/g,
-        (_: string, _t: string, alias: string) => alias ?? _t
-      )
-      .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-      .replace(/[#*_~`>]/g, "")
-      .replace(/\n+/g, " ")
-      .trim()
-      .slice(0, 350)
-    previewIndex[file.slug] = { title, excerpt }
+    previewIndex[file.slug] = { title, excerpt: excerptOf(file.raw) }
   }
+  for (const page of contentPages) previewIndex[page.slug] = { title: page.title, excerpt: contentPageData.get(page.slug)!.excerpt }
   writes.push(writeJSON(path.join(PUBLIC_DIR, "preview-index.json"), previewIndex))
 
   // Per-page JSON files
@@ -465,6 +625,26 @@ async function main() {
     writes.push(writeJSON(path.join(OUT_DIR, "pages", `${slugStr}.json`), pageData))
   }
 
+  for (const page of contentPages) {
+    const data = contentPageData.get(page.slug)!
+    const contentPage: PageData = {
+      kind: page.kind,
+      ...(page.kind === "canvas" ? { canvas: data.canvas } : { base: data.base }),
+      html: "",
+      frontmatter: { title: page.title },
+      toc: [],
+      tags: [],
+      links: data.links,
+      backlinks: [],
+      prevNext: { prev: null, next: null },
+      readingTime: 0,
+      mtime: page.mtime?.toISOString() ?? null,
+      date: null,
+      modifiedDate: page.mtime?.toLocaleDateString("en-CA") ?? null,
+    }
+    writes.push(writeJSON(path.join(OUT_DIR, "pages", `${page.slug}.json`), contentPage))
+  }
+
   // Folder listing JSON files
   for (const folderPath of folderPaths) {
     const prefix = folderPath + "/"
@@ -480,6 +660,9 @@ async function main() {
         const meta = metaOf(f.slug)
         return { slug: f.slug, title: meta.title, description: meta.summary, date: isoDay(meta.created), tags: resultsBySlug.get(f.slug)?.tags ?? [] }
       }),
+    }
+    for (const page of contentPages) {
+      if (page.slug.startsWith(prefix)) folderData.files.push({ slug: page.slug, title: page.title, description: null, date: null, tags: [] })
     }
 
     writes.push(writeJSON(path.join(OUT_DIR, "folders", `${folderPath}.json`), folderData))
@@ -525,11 +708,14 @@ async function main() {
   // Copy media files (images, etc.) from content/ to public/content/
   await copyAssetFiles(assets)
   if (config.features.search) {
-    await writeSearchIndex(rendered.map(({ file, result }) => ({
-      slug: file.slug,
-      title: String(result.frontmatter.title ?? file.slug.split("/").pop()),
-      html: result.html,
-    })))
+    await writeSearchIndex([
+      ...rendered.map(({ file, result }) => ({
+        slug: file.slug,
+        title: String(result.frontmatter.title ?? file.slug.split("/").pop()),
+        html: result.html,
+      })),
+      ...contentPages.map(page => ({ slug: page.slug, title: page.title, html: contentPageData.get(page.slug)!.html })),
+    ])
     console.log("prebuild: wrote Pagefind index")
   }
 
@@ -549,7 +735,7 @@ async function main() {
   ])
 
   const elapsed = ((performance.now() - start) / 1000).toFixed(2)
-  console.log(`prebuild: done in ${elapsed}s - ${files.length} pages, ${graphLinks.length} links, ${backlinkIndex.size} pages with backlinks`)
+  console.log(`prebuild: done in ${elapsed}s - ${files.length + contentPages.length} pages, ${graphLinks.length} links, ${backlinkIndex.size} pages with backlinks`)
 }
 
 main().catch((err) => {

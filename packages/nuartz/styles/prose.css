@@ -252,3 +252,31 @@ a.tag {
 a.tag:hover {
   opacity: 0.8;
 }
+
+/* ── Bases (renderBaseViewHtml) ──────────────────── */
+.prose .base-table { overflow-x: auto; }
+.prose .base-cards {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+.prose .base-card {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.prose .base-card dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.125rem 0.75rem;
+  font-size: 0.8rem;
+}
+.prose .base-card dd { margin: 0; }
+.prose .base-group,
+.prose .base-view-name,
+.prose .base-list-meta,
+.prose .base-notice,
+.prose .base-empty {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}

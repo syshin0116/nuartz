@@ -1,0 +1,19 @@
+{
+  "nodes": [
+    { "id": "group-pipeline", "type": "group", "x": -60, "y": -80, "width": 1000, "height": 340, "label": "Build pipeline", "color": "6" },
+    { "id": "vault", "type": "text", "x": 0, "y": 0, "width": 240, "height": 180, "text": "## Obsidian vault\n\nNotes, **canvases**, and bases live in `content/`.\n\nSee [[obsidian-compatibility]]." },
+    { "id": "prebuild", "type": "text", "x": 340, "y": 0, "width": 240, "height": 180, "color": "4", "text": "## Prebuild\n\n`bun run generate` renders every note and canvas to JSON." },
+    { "id": "site", "type": "text", "x": 680, "y": 0, "width": 200, "height": 180, "text": "## Site\n\nNext.js serves the pages, or exports them as static HTML." },
+    { "id": "docs", "type": "file", "x": 0, "y": 360, "width": 280, "height": 140, "file": "docs/features/canvas.md" },
+    { "id": "base", "type": "file", "x": 340, "y": 360, "width": 240, "height": 80, "file": "docs/features/bases-demo.base" },
+    { "id": "diagram", "type": "file", "x": 640, "y": 360, "width": 240, "height": 120, "file": "docs/features/canvas-demo.svg" },
+    { "id": "spec", "type": "link", "x": 340, "y": 500, "width": 240, "height": 80, "url": "https://jsoncanvas.org/spec/1.0/", "color": "#3b82f6" }
+  ],
+  "edges": [
+    { "id": "e1", "fromNode": "vault", "fromSide": "right", "toNode": "prebuild", "toSide": "left", "label": "read" },
+    { "id": "e2", "fromNode": "prebuild", "fromSide": "right", "toNode": "site", "toSide": "left", "label": "JSON", "color": "4" },
+    { "id": "e3", "fromNode": "docs", "toNode": "vault" },
+    { "id": "e4", "fromNode": "base", "fromSide": "top", "toNode": "prebuild", "toSide": "bottom", "color": "2", "label": "evaluated at build time" },
+    { "id": "e5", "fromNode": "spec", "fromSide": "right", "toNode": "diagram", "toSide": "bottom", "fromEnd": "arrow", "toEnd": "arrow" }
+  ]
+}

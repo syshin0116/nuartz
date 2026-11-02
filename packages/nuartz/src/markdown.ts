@@ -26,6 +26,7 @@ import { remarkHighlight } from "./plugins/highlight.js"
 import { remarkObsidianComment } from "./plugins/comment.js"
 import { remarkArrows } from "./plugins/arrows.js"
 import { embedContent, remarkEmbed, remarkBlockIds } from "./plugins/embed.js"
+import { remarkBaseBlock } from "./plugins/base.js"
 import { noteHref, normalizeNotePath } from "./links.js"
 import { isUnpublished, normalizeFrontmatter } from "./frontmatter.js"
 import type { RenderResult, RenderOptions, TocEntry } from "./types.js"
@@ -126,6 +127,8 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
     .use(remarkGfm)
     .use(remarkMath)
 
+  const { renderBase } = options
+  if (renderBase) processor.use(remarkBaseBlock, { render: source => renderBase(source, filePath) })
   if (features.wikilinks) {
     processor
       .use(remarkEmbed, { render: async (target, heading) => {

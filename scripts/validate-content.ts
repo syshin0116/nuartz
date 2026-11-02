@@ -4,7 +4,7 @@
  * Usage: bun scripts/validate-content.ts [content-dir]
  */
 import path from "node:path"
-import { getAllMarkdownFiles } from "nuartz"
+import { getAllMarkdownFiles, getContentFiles } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 
 const CONTENT_DIR = path.resolve(process.argv[2] ?? "apps/web/content")
@@ -25,7 +25,9 @@ async function main() {
     process.exit(0)
   }
 
-  const slugSet = new Set(files.map(f => f.slug))
+  // Canvas and base files are linked by file name with extension, e.g. [[overview.canvas]].
+  const pagePaths = (await getContentFiles(CONTENT_DIR, [".canvas", ".base"])).map(f => f.path.toLowerCase().replace(/\s+/g, "-"))
+  const slugSet = new Set([...files.map(f => f.slug), ...pagePaths])
 
   const results: {
     slug: string
