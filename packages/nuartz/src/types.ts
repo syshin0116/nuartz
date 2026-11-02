@@ -43,7 +43,7 @@ export interface RenderOptions {
    * or undefined when it does not exist. Default: `/api/content/<path>` resolved against the note's folder.
    */
   resolveAsset?: (target: string, filePath?: string) => string | undefined
-  /** URL for an inline #tag (default: `/tags/` followed by each `/` segment URL-encoded) */
+  /** URL for an inline #tag (default: `/tags/` followed by the whole tag URL-encoded, so `a/b` becomes `a%2Fb`) */
   resolveTag?: (tag: string) => string
   /** Known slugs for dead-link detection */
   knownSlugs?: Set<string>

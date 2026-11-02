@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - `getMarkdownBySlug` returns `null` for slugs that leave the content directory or point at hidden paths.
 
 ### Fixed
+- The `resolveTag` doc comment now matches `defaultTagHref`, which encodes the whole tag.
 - `![[file.png]]` finds attachments anywhere in the vault by file name, as Obsidian does (exact path, then relative to the note, then unique name), instead of assuming the note's own folder.
 - Frontmatter `tags` and `aliases` written as a comma-separated string (`tags: a, b`) or with the singular keys `tag` / `alias` are read as lists; leading `#` is stripped. Previously the string was split into characters.
 - `draft: "true"` and `published: "false"` written as strings hide notes like their boolean forms.

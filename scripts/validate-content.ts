@@ -1,13 +1,16 @@
 #!/usr/bin/env bun
 /**
  * nuartz content validator
- * Usage: bun scripts/validate-content.ts [content-dir]
+ * Usage: bun scripts/validate-content.ts [--strict] [content-dir]
+ * --strict reports broken links as errors (exit code 1) instead of warnings.
  */
 import path from "node:path"
-import { getAllMarkdownFiles, getContentFiles } from "nuartz"
+import { assignPageSlugs, createNoteResolver, getAllMarkdownFiles, getContentFiles } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
 
-const CONTENT_DIR = path.resolve(process.argv[2] ?? "apps/web/content")
+const args = process.argv.slice(2)
+const STRICT = args.includes("--strict")
+const CONTENT_DIR = path.resolve(args.find(arg => !arg.startsWith("--")) ?? "apps/web/content")
 
 async function main() {
   console.log(`\nValidating content in: ${CONTENT_DIR}\n`)
@@ -25,9 +28,14 @@ async function main() {
     process.exit(0)
   }
 
-  // Canvas and base files are linked by file name with extension, e.g. [[overview.canvas]].
-  const pagePaths = (await getContentFiles(CONTENT_DIR, [".canvas", ".base"])).map(f => f.path.toLowerCase().replace(/\s+/g, "-"))
-  const slugSet = new Set([...files.map(f => f.slug), ...pagePaths])
+  // Resolve links exactly as the site does (scripts/prebuild.ts): notes, then
+  // canvas and base pages linked with their extension, e.g. [[overview.canvas]].
+  const pageFiles = await getContentFiles(CONTENT_DIR, [".canvas", ".base"])
+  const pageSlugs = assignPageSlugs(pageFiles.map(f => f.path), files.map(f => f.slug))
+  const resolveNote = createNoteResolver([...files, ...pageFiles.map(f => ({ slug: pageSlugs.get(f.path)!, frontmatter: {}, path: f.path }))])
+  const folders = new Set(files.flatMap(f => f.slug.split("/").slice(0, -1).map((_, i, parts) => parts.slice(0, i + 1).join("/").toLowerCase())))
+  const isKnown = (link: string, from: string) => Boolean(resolveNote(link, from))
+    || folders.has(link.toLowerCase().replace(/\/+$/, "")) || /^tags(\/|$)/i.test(link)
 
   const results: {
     slug: string
@@ -53,13 +61,7 @@ async function main() {
     }
 
     for (const link of result.links) {
-      const normalized = link.toLowerCase().replace(/\s+/g, "-")
-      const found = [...slugSet].some(
-        s => s === normalized || s.endsWith("/" + normalized)
-      )
-      if (!found) {
-        warnings.push(`Broken wikilink: [[${link}]]`)
-      }
+      if (!isKnown(link, `${file.slug}.md`)) (STRICT ? errors : warnings).push(`Broken link: ${link}`)
     }
 
     results.push({ slug: file.slug, errors, warnings })

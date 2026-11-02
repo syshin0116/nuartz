@@ -98,7 +98,7 @@ nuartz reads the same frontmatter fields as Obsidian (`title`, `tags`, `aliases`
 
 > [!tip] Moving an existing vault
 > 1. Copy your vault into `apps/web/content/`. `.obsidian/` and `.trash/` are ignored.
-> 2. Run `bun dev`. Broken wikilinks are dimmed with a dashed underline, and `bun run validate` lists them.
+> 2. Run `bun dev`. Broken links are dimmed with a dashed underline. `bun run validate` lists them, and `bun run check` fails on them.
 > 3. Pages with `draft: true` or `published: false` are not published, also in dev mode.
 
 > [!warning] Unsupported features

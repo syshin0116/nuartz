@@ -35,7 +35,7 @@ export function PopoverPreview() {
       if (!href) return
 
       const isExternal = href.startsWith("http://") || href.startsWith("https://")
-      const isWikilink = a.classList.contains("wikilink")
+      const isWikilink = a.classList.contains("wikilink") || a.classList.contains("internal")
 
       if (!isWikilink && !isExternal) return
       // External previews need the server-side /api/preview route.
@@ -132,7 +132,7 @@ export function PopoverPreview() {
       const href = a.getAttribute("href")
       if (!href) return
       const isExternal = href.startsWith("http://") || href.startsWith("https://")
-      const isWikilink = a.classList.contains("wikilink")
+      const isWikilink = a.classList.contains("wikilink") || a.classList.contains("internal")
       if (!isWikilink && !isExternal) return
 
       const touch = e.touches[0]

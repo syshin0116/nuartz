@@ -96,7 +96,7 @@ Toggle individual features on or off. All default to `true`.
 
 ### `markdown`
 
-[`RenderOptions`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/types.ts) passed to `renderMarkdown()` by `generate`. The starter sets link, asset, tag, and embed resolution, `baseUrl`, `knownSlugs`, `filePath`, and `features` itself, overriding the same keys here, so this option mostly matters when you call `renderMarkdown()` from your own code.
+[`RenderOptions`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/types.ts) passed to `renderMarkdown()` by `generate`. Values here override the starter's `resolveLink`, `resolveAsset`, and `resolveTag`, and `markdown.features` overrides `features`. The starter keeps control of `baseUrl`, `knownSlugs`, `filePath`, `resolveEmbed`, and `renderBase` so routing, embeds, and Bases keep working.
 
 ### `nav`
 
