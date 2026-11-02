@@ -63,6 +63,17 @@ Body content`
     expect(files[0].frontmatter.tags).toEqual(["test"])
   })
 
+  it("skips drafts and unpublished notes but keeps explicitly published ones", async () => {
+    await fs.writeFile(path.join(tmpDir, "draft.md"), "---\ndraft: true\n---\nDraft")
+    await fs.writeFile(path.join(tmpDir, "unpublished.md"), "---\npublished: false\n---\nHidden")
+    await fs.writeFile(path.join(tmpDir, "kept.md"), "---\ndraft: false\npublished: true\n---\nKept")
+    await fs.writeFile(path.join(tmpDir, "notes.txt"), "not markdown")
+
+    const files = await getAllMarkdownFiles(tmpDir)
+    expect(files.map(f => f.slug)).toEqual(["kept"])
+    expect(files[0].mtime).toBeInstanceOf(Date)
+  })
+
   it("returns empty array for non-existent directory", async () => {
     const files = await getAllMarkdownFiles(path.join(tmpDir, "nonexistent"))
     expect(files).toEqual([])
@@ -183,5 +194,64 @@ describe("buildFileTree", () => {
   it("returns empty array for empty input", () => {
     const tree = buildFileTree([])
     expect(tree).toEqual([])
+  })
+})
+
+describe("buildFileTree sorting", () => {
+  const note = (slug: string, frontmatter: MarkdownFile["frontmatter"] = {}, mtime?: Date): MarkdownFile =>
+    ({ slug, filePath: "", raw: "", frontmatter, mtime })
+
+  it("sorts by frontmatter date, then filename date, newest first", () => {
+    const tree = buildFileTree([
+      note("undated"),
+      note("2024-01-15-from-filename"),
+      note("from-frontmatter", { date: "2025-06-01" }),
+      note("2023-03-01-frontmatter-wins", { date: "2026-01-01" }),
+    ], { sortBy: "date" })
+
+    expect(tree.map(n => n.path)).toEqual(["2023-03-01-frontmatter-wins", "from-frontmatter", "2024-01-15-from-filename", "undated"])
+    expect(tree.find(n => n.path === "undated")?.date).toBe(0)
+  })
+
+  it("falls back to the filename when the frontmatter date is invalid", () => {
+    const [node] = buildFileTree([note("2024-02-02-post", { date: "not a date" })], { sortBy: "date" })
+    expect(node.date).toBe(new Date("2024-02-02").getTime())
+  })
+
+  it("lifts the newest child date to its folder and keeps folders first", () => {
+    const tree = buildFileTree([
+      note("recent", { date: "2026-05-01" }),
+      note("journal/old", { date: "2020-01-01" }),
+      note("journal/new", { date: "2025-01-01" }),
+    ], { sortBy: "date" })
+
+    expect(tree.map(n => n.path)).toEqual(["journal", "recent"])
+    expect(tree[0].date).toBe(new Date("2025-01-01").getTime())
+    expect(tree[0].children?.map(n => n.path)).toEqual(["journal/new", "journal/old"])
+  })
+
+  it("sorts by modification time and lifts the newest mtime to its folder", () => {
+    const older = new Date("2024-01-01T00:00:00Z")
+    const newer = new Date("2025-01-01T00:00:00Z")
+    const tree = buildFileTree([
+      note("a-stale", {}, older),
+      note("b-fresh", {}, newer),
+      note("c-no-mtime"),
+      note("folder/inner-old", {}, older),
+      note("folder/inner-new", {}, newer),
+    ], { sortBy: "modified" })
+
+    expect(tree.map(n => n.path)).toEqual(["folder", "b-fresh", "a-stale", "c-no-mtime"])
+    expect(tree[0].mtime).toEqual(newer)
+    expect(tree[0].children?.map(n => n.path)).toEqual(["folder/inner-new", "folder/inner-old"])
+  })
+
+  it("gives a folder the smallest order of its children", () => {
+    const tree = buildFileTree([
+      note("zeta/one", { order: 5 }),
+      note("zeta/two", { order: 2 }),
+      note("alpha"),
+    ])
+    expect(tree[0]).toMatchObject({ path: "zeta", order: 2 })
   })
 })

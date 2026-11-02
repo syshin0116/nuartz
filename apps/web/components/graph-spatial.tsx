@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useEffectEvent, useRef, useState } from "react"
 import { Focus, Glasses, LoaderCircle, ScanLine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { GraphData } from "@/lib/graph"
@@ -19,32 +19,34 @@ export function GraphSpatial({ mode, data, selected, onSelect, onExit }: {
   const [ready, setReady] = useState(false)
   const [error, setError] = useState("")
   const [attempt, setAttempt] = useState(0)
-  const current = useRef({ data, selected, onSelect, onExit })
-  current.current = { data, selected, onSelect, onExit }
+  const handleViewerMessage = useEffectEvent((message: { type?: string; id?: string; message?: unknown }) => {
+    if (message.type === "graph-select" && data.nodes.some(node => node.id === message.id)) onSelect(message.id!)
+    else if (message.type === "graph-exit") onExit()
+  })
+  const sendGraphData = useEffectEvent(() => {
+    frame.current?.contentWindow?.postMessage({ type: "graph-data", data, selected }, location.origin)
+  })
 
+  // Remounted per mode (key) and reset by Retry, so ready/error start clean here.
   useEffect(() => {
     if (!started) return
-    setReady(false)
-    setError("")
     const timer = setTimeout(() => setError("This view could not start. Retry or return to 2D."), 30000)
     const receive = (event: MessageEvent) => {
       if (event.origin !== location.origin || event.source !== frame.current?.contentWindow || !event.data) return
       if (event.data.type === "graph-ready") {
         clearTimeout(timer)
         setReady(true)
-      } else if (event.data.type === "graph-select" && current.current.data.nodes.some(node => node.id === event.data.id)) {
-        current.current.onSelect(event.data.id)
       } else if (event.data.type === "graph-error") {
         clearTimeout(timer)
         setError(typeof event.data.message === "string" ? event.data.message : "Could not start this view.")
-      } else if (event.data.type === "graph-exit") current.current.onExit()
+      } else handleViewerMessage(event.data)
     }
     window.addEventListener("message", receive)
     return () => { clearTimeout(timer); window.removeEventListener("message", receive) }
   }, [started, attempt])
 
   useEffect(() => {
-    if (ready) frame.current?.contentWindow?.postMessage({ type: "graph-data", data, selected: current.current.selected }, location.origin)
+    if (ready) sendGraphData()
   }, [data, ready])
   useEffect(() => {
     if (ready) frame.current?.contentWindow?.postMessage({ type: "graph-selection", id: selected }, location.origin)

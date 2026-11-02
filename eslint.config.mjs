@@ -10,12 +10,6 @@ export default defineConfig([
   ...nextTypescript,
   {
     settings: { next: { rootDir: "apps/web" } },
-    rules: {
-      // React Compiler rules; the graph and search components still sync
-      // state and "latest value" refs in effects. Tighten once refactored.
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/refs": "warn",
-    },
   },
   globalIgnores([
     "**/.next/**",
