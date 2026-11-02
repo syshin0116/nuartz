@@ -1,5 +1,5 @@
-import { expect, test } from "vitest"
-import { createNoteResolver, noteHref, normalizeNotePath } from "../links"
+import { describe, expect, it, test } from "vitest"
+import { createAssetResolver, createNoteResolver, noteHref, normalizeNotePath } from "../links"
 import { renderMarkdown } from "../markdown"
 import { buildBacklinkIndex } from "../backlinks"
 
@@ -49,4 +49,21 @@ test("links, embeds and backlinks share canonical paths and preserve section con
   expect(defaultLink.html).toContain('href="/vault/%ED%95%9C%EA%B8%80/note#a--b"')
   expect(defaultLink.html).toContain('href="#local"')
   expect(defaultLink.html).not.toContain("broken")
+})
+
+describe("createAssetResolver", () => {
+  const find = createAssetResolver(["attachments/Photo.png", "notes/img/local.png", "a/dup.png", "b/dup.png"])
+
+  it("matches the exact path, then a path relative to the note, then a unique file name", () => {
+    expect(find("attachments/Photo.png")).toBe("attachments/Photo.png")
+    expect(find("img/local.png", "notes/page.md")).toBe("notes/img/local.png")
+    expect(find("photo.png", "elsewhere/page.md")).toBe("attachments/Photo.png")
+  })
+
+  it("refuses ambiguous names and unknown files", () => {
+    expect(find("dup.png")).toBeUndefined()
+    expect(find("a/dup.png")).toBe("a/dup.png")
+    expect(find("missing.png")).toBeUndefined()
+    expect(find("")).toBeUndefined()
+  })
 })

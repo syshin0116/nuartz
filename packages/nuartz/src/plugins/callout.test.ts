@@ -35,14 +35,24 @@ describe("remarkCallout", () => {
     expect(html).toContain(`data-callout="${type}"`)
   })
 
-  it("handles fold '+' (expanded)", async () => {
+  it("renders '+' callouts as open <details> with a <summary> title", async () => {
     const html = await process("> [!note]+ Expandable\n> Content")
-    expect(html).toContain('data-callout-fold="+"')
+    expect(html).toMatch(/^<details class="callout callout-note"[^>]*data-callout-fold="\+"[^>]* open>/)
+    expect(html).toContain('<summary class="callout-title">Expandable</summary>')
   })
 
-  it("handles fold '-' (collapsed)", async () => {
+  it("renders '-' callouts as closed <details>", async () => {
     const html = await process("> [!tip]- Collapsed\n> Content")
-    expect(html).toContain('data-callout-fold="-"')
+    expect(html).toMatch(/^<details class="callout callout-tip"[^>]*data-callout-fold="-"/)
+    expect(html).not.toMatch(/<details[^>]* open/)
+    expect(html).toContain('<summary class="callout-title">Collapsed</summary>')
+  })
+
+  it("keeps the [!type|metadata] metadata as a data attribute", async () => {
+    const html = await process("> [!note|wide] Title\n> Content")
+    expect(html).toContain('data-callout="note"')
+    expect(html).toContain('data-callout-metadata="wide"')
+    expect(html).toContain('<div class="callout-title">Title</div>')
   })
 
   it("uses capitalized type as default title when no title given", async () => {
@@ -61,10 +71,15 @@ describe("remarkCallout", () => {
     expect(html).toContain("<blockquote>")
   })
 
-  it("does not transform an unsupported callout type", async () => {
-    const html = await process("> [!unsupported]\n> Content")
+  it("accepts custom callout types and titles them from the type", async () => {
+    const html = await process("> [!my-custom]\n> Content")
+    expect(html).toContain('class="callout callout-my-custom"')
+    expect(html).toContain('<div class="callout-title">My custom</div>')
+  })
+
+  it("leaves blockquotes whose first line is not a callout marker alone", async () => {
+    const html = await process("> text before [!note]\n> more")
     expect(html).not.toContain("callout")
-    expect(html).toContain("<blockquote>")
   })
 
   it("is case-insensitive for callout type", async () => {

@@ -9,11 +9,17 @@ All notable changes to this project will be documented in this file.
 - `getMarkdownBySlug` returns `null` for slugs that leave the content directory or point at hidden paths.
 
 ### Fixed
+- `![[file.png]]` finds attachments anywhere in the vault by file name, as Obsidian does (exact path, then relative to the note, then unique name), instead of assuming the note's own folder.
 - Frontmatter `tags` and `aliases` written as a comma-separated string (`tags: a, b`) or with the singular keys `tag` / `alias` are read as lists; leading `#` is stripped. Previously the string was split into characters.
 - `draft: "true"` and `published: "false"` written as strings hide notes like their boolean forms.
 
 ### Added
-- `resolveAsset` render option for attachment URLs (default unchanged: `/api/content/<path>`).
+- Obsidian embeds: image size (`![[img.png|300]]`, `|300x200`, `![alt|300](img.png)`), video, audio and PDF embeds, YouTube and external video URLs, download links for other files, and a visible marker for missing attachments.
+- Standard Markdown links to notes (`[x](note.md)`, `[x](note#heading)`) resolve like wikilinks and count as backlinks; relative Markdown images and file links resolve as attachments.
+- Foldable callouts (`[!type]-` closed, `[!type]+` open) render as `<details>`/`<summary>`; any callout type is accepted, and `[!type|metadata]` is exposed as `data-callout-metadata`.
+- Block references: `^id` on a list item names the item; `![[note#^id]]` finds blocks nested in lists.
+- `createAssetResolver` for Obsidian-style attachment lookup.
+- `resolveAsset(target, filePath)` render option for attachment URLs (default unchanged: `/api/content/<path>` relative to the note's folder).
 - `normalizeFrontmatter` and `isUnpublished`, used by `getAllMarkdownFiles`, `getMarkdownBySlug`, and `renderMarkdown`.
 - `isHiddenContentPath` for applying the same visibility rule to assets.
 - `site.verification` config for search engine ownership tokens.

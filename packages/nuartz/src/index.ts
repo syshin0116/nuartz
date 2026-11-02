@@ -1,5 +1,5 @@
 export { buildBacklinkIndex, getBacklinks } from "./backlinks.js"
-export { createNoteResolver, normalizeNotePath, noteHref } from "./links.js"
+export { createAssetResolver, createNoteResolver, normalizeNotePath, noteHref } from "./links.js"
 export { getAllMarkdownFiles, getMarkdownBySlug, buildFileTree, isHiddenContentPath } from "./fs.js"
 export { buildSearchIndex } from "./search.js"
 export { normalizeFrontmatter, isUnpublished } from "./frontmatter.js"

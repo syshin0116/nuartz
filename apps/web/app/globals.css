@@ -370,6 +370,25 @@ html.reader-mode main > div {
   }
 }
 
+/* Foldable callouts ([!type]- / [!type]+) render as <details>/<summary>. */
+summary.callout-title {
+  cursor: pointer;
+  list-style: none;
+  &::-webkit-details-marker { display: none; }
+  &::after {
+    content: "";
+    margin-left: auto;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 150ms ease;
+  }
+}
+details.callout[open] > summary.callout-title::after { transform: rotate(45deg); }
+details.callout:not([open]) > summary.callout-title { padding-bottom: 0.625rem; }
+
 /* ── Callout type colors & icons ── */
 .callout[data-callout="abstract"],
 .callout[data-callout="summary"],

@@ -23,6 +23,7 @@ import {
   createNoteResolver,
   normalizeNotePath,
   noteHref,
+  createAssetResolver,
   isHiddenContentPath,
   defaultTagHref,
 } from "nuartz"
@@ -91,8 +92,9 @@ async function writeJSON(filePath: string, data: unknown) {
   await fs.writeFile(filePath, JSON.stringify(data))
 }
 
-async function copyMediaFiles() {
-  let count = 0
+/** Attachment paths (posix, relative to the content dir), excluding notes and hidden paths. */
+async function listAssetFiles(): Promise<string[]> {
+  const assets: string[] = []
   async function walk(dir: string) {
     let entries: Dirent[]
     try {
@@ -101,19 +103,24 @@ async function copyMediaFiles() {
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name)
       if (isHiddenContentPath(entry.name)) continue
-      if (entry.isDirectory()) {
-        await walk(fullPath)
-      } else if (!entry.name.endsWith(".md")) {
-        const relative = path.relative(CONTENT_DIR, fullPath)
-        const dest = path.join(PUBLIC_DIR, "content", relative)
-        await fs.mkdir(path.dirname(dest), { recursive: true })
-        await fs.copyFile(fullPath, dest)
-        count++
-      }
+      if (entry.isDirectory()) await walk(fullPath)
+      else if (!entry.name.endsWith(".md")) assets.push(path.relative(CONTENT_DIR, fullPath).split(path.sep).join("/"))
     }
   }
   await walk(CONTENT_DIR)
-  console.log(`prebuild: copied ${count} media files`)
+  return assets
+}
+
+async function copyAssetFiles(assets: string[]) {
+  // Start clean so deleted or newly hidden attachments are not left behind.
+  const target = path.join(PUBLIC_DIR, "content")
+  await fs.rm(target, { recursive: true, force: true })
+  for (const asset of assets) {
+    const dest = path.join(target, asset)
+    await fs.mkdir(path.dirname(dest), { recursive: true })
+    await fs.copyFile(path.join(CONTENT_DIR, asset), dest)
+  }
+  console.log(`prebuild: copied ${assets.length} media files`)
 }
 
 /**
@@ -152,7 +159,12 @@ async function main() {
   // These URLs end up inside note HTML, which next/link never sees, so they carry BASE_PATH.
   const resolveLink = (target: string, heading?: string, from?: string) =>
     noteHref(resolveNote(target, from) ?? normalizeNotePath(target), heading, `${BASE_PATH}/`)
-  const resolveAsset = (assetPath: string) => `${BASE_PATH}/content/${assetPath.split("/").map(encodeURIComponent).join("/")}`
+  const assets = await listAssetFiles()
+  const findAsset = createAssetResolver(assets)
+  const resolveAsset = (target: string, from?: string) => {
+    const assetPath = findAsset(target, from)
+    return assetPath && `${BASE_PATH}/content/${assetPath.split("/").map(encodeURIComponent).join("/")}`
+  }
   const resolveTag = (tag: string) => `${BASE_PATH}${defaultTagHref(tag)}`
 
   // 3. Render all pages in parallel
@@ -429,7 +441,7 @@ async function main() {
   await Promise.all(writes)
 
   // Copy media files (images, etc.) from content/ to public/content/
-  await copyMediaFiles()
+  await copyAssetFiles(assets)
   if (config.features.search) {
     await writeSearchIndex(rendered.map(({ file, result }) => ({
       slug: file.slug,

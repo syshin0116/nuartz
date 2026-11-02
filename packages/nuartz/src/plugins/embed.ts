@@ -13,17 +13,12 @@ export function embedContent(content: string, heading?: string): string | undefi
   const body = matter(content).content
   if (!heading) return body
   const tree = unified().use(remarkParse).use(remarkGfm).parse(body)
+  if (heading.startsWith("^")) return blockContent(body, tree, heading)
   const slugger = new GithubSlugger()
   let start: RootContent | undefined
   let end: number | undefined
   for (const node of tree.children) {
-    const raw = body.slice(node.position?.start.offset, node.position?.end.offset)
-    if (heading.startsWith("^")) {
-      if (raw.trimEnd().endsWith(heading)) {
-        const block = raw.trim() === heading ? tree.children[tree.children.indexOf(node) - 1] : node
-        return block ? body.slice(block.position?.start.offset, block.position?.end.offset).replace(/\s*\^[\w-]+\s*$/, "") : undefined
-      }
-    } else if (node.type === "heading") {
+    if (node.type === "heading") {
       let text = ""
       visit(node, (child) => { if (child.type === "text" || child.type === "inlineCode") text += child.value })
       const id = slugger.slug(text)
@@ -32,6 +27,39 @@ export function embedContent(content: string, heading?: string): string | undefi
     }
   }
   return start ? body.slice(start.position?.start.offset, end) : undefined
+}
+
+const BLOCK_ID = /\s*\^[\w-]+\s*$/
+
+/**
+ * Markdown for the block marked `^id`, searched at any depth: a list item
+ * (with its nested items), a paragraph, or the block preceding a standalone
+ * `^id` line (tables, quotes, callouts, code).
+ */
+function blockContent(body: string, tree: Root, id: string): string | undefined {
+  const source = (node: { position?: { start: { offset?: number }; end: { offset?: number } } }) =>
+    body.slice(node.position?.start.offset, node.position?.end.offset)
+  const endsWithId = (node: Parameters<typeof source>[0]) => source(node).trimEnd().endsWith(id)
+  let found: string | undefined
+  visit(tree, (node, index, parent) => {
+    if (found !== undefined) return false
+    if (node.type === "listItem") {
+      const first = node.children[0]
+      if (first?.type === "paragraph" && endsWithId(first)) {
+        // Remove the id from the item's first line, keep nested content and the list marker.
+        const text = source(node)
+        const firstEnd = (first.position?.end.offset ?? 0) - (node.position?.start.offset ?? 0)
+        found = text.slice(0, firstEnd).replace(BLOCK_ID, "") + text.slice(firstEnd)
+        return false
+      }
+    } else if (node.type === "paragraph" && endsWithId(node) && parent?.type !== "listItem") {
+      const standalone = source(node).trim() === id
+      const block = standalone && parent && index !== undefined ? parent.children[index - 1] : node
+      found = block ? source(block).replace(BLOCK_ID, "") : ""
+      return false
+    }
+  })
+  return found || undefined
 }
 
 export const remarkEmbed: Plugin<[{ render: (target: string, heading?: string) => Promise<{ html: string; href: string } | undefined> }], Root> = ({ render }) => {
@@ -64,8 +92,10 @@ export const remarkBlockIds: Plugin<[], Root> = () => tree => {
     if (last?.type !== "text") return
     const match = last.value.match(/(?:^|\s)\^([\w-]+)\s*$/)
     if (!match) return
-    const target = node.children.length === 1 && last.value.trim() === `^${match[1]}` && parent && index
-      ? parent.children[index - 1] : node
+    const standalone = node.children.length === 1 && last.value.trim() === `^${match[1]}` && parent && index
+    // An id on a list item's first line names the whole item, as in Obsidian.
+    const target = standalone ? parent.children[index - 1]
+      : parent?.type === "listItem" && parent.children[0] === node ? parent : node
     target.data = { ...target.data, hProperties: { ...target.data?.hProperties, id: match[1] } }
     last.value = last.value.slice(0, match.index)
   })

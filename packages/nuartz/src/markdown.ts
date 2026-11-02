@@ -123,7 +123,7 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
         return { html: result.html, href: resolveLink?.(target, heading, filePath) ?? noteHref(normalizeNotePath(target), heading, baseUrl) }
       } })
       .use(remarkBlockIds)
-      .use(remarkWikilink, { baseUrl, resolve: resolveLink ? (target, heading) => resolveLink(target, heading, filePath) : undefined, knownSlugs, fileDir, resolveAsset: options.resolveAsset })
+      .use(remarkWikilink, { baseUrl, resolve: resolveLink ? (target, heading) => resolveLink(target, heading, filePath) : undefined, knownSlugs, fileDir, resolveAsset: options.resolveAsset && (target => options.resolveAsset!(target, filePath)) })
   }
 
   processor.use(remarkBreaks)
