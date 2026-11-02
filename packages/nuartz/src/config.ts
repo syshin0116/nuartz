@@ -18,6 +18,9 @@ export interface NuartzConfig {
   /** Markdown rendering options */
   markdown?: RenderOptions
 
+  /** Colour scheme before the reader picks one. Default: "system". */
+  theme?: { defaultMode?: "system" | "light" | "dark" }
+
   /** Features to enable/disable */
   features?: {
     wikilinks?: boolean

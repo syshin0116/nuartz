@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 - `draft: "true"` and `published: "false"` written as strings hide notes like their boolean forms.
 
 ### Added
+- `RenderResult.excerpt`: plain text of the leading paragraphs, used when a note has no `description`.
+- `theme.defaultMode` config (`"system"`, `"light"`, `"dark"`).
 - Obsidian embeds: image size (`![[img.png|300]]`, `|300x200`, `![alt|300](img.png)`), video, audio and PDF embeds, YouTube and external video URLs, download links for other files, and a visible marker for missing attachments.
 - Standard Markdown links to notes (`[x](note.md)`, `[x](note#heading)`) resolve like wikilinks and count as backlinks; relative Markdown images and file links resolve as attachments.
 - Foldable callouts (`[!type]-` closed, `[!type]+` open) render as `<details>`/`<summary>`; any callout type is accepted, and `[!type|metadata]` is exposed as `data-callout-metadata`.

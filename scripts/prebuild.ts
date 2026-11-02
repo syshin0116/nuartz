@@ -28,7 +28,7 @@ import {
   defaultTagHref,
 } from "nuartz"
 import { renderMarkdown } from "nuartz/markdown"
-import type { Frontmatter, TocEntry } from "nuartz"
+import type { Frontmatter, MarkdownFile, TocEntry } from "nuartz"
 import config from "../apps/web/nuartz.config"
 import * as pagefind from "pagefind"
 
@@ -50,12 +50,16 @@ interface PageData {
     next: { slug: string; title: string } | null
   }
   readingTime: number
+  /** Meta description: frontmatter, else summary, else the generated excerpt. */
+  description: string | null
   mtime: string | null
   date: string | null
   modifiedDate: string | null
 }
 
 interface FolderData {
+  /** The folder's own index.md, shown above the listing. */
+  index: { title: string; html: string } | null
   files: {
     slug: string
     title: string
@@ -77,10 +81,53 @@ interface GraphLink {
   target: string
 }
 
+// CJK text has no spaces between words, so it is counted by character.
+const CJK = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu
+
 function readingTime(raw: string): number {
   const body = raw.replace(/^---[\s\S]*?---\n?/, "")
-  const words = body.trim().split(/\s+/).filter(Boolean).length
-  return Math.max(1, Math.ceil(words / 200))
+  const cjkChars = body.match(CJK)?.length ?? 0
+  const words = body.replace(CJK, " ").trim().split(/\s+/).filter(Boolean).length
+  return Math.max(1, Math.ceil(words / 200 + cjkChars / 500))
+}
+
+const noteTitle = (file: MarkdownFile) => String(file.frontmatter.title ?? file.slug.split("/").pop() ?? file.slug)
+
+const text = (value: unknown) => (typeof value === "string" && value.trim() ? value.trim() : undefined)
+
+function toDate(value: unknown): Date | undefined {
+  if (!(typeof value === "string" || typeof value === "number" || value instanceof Date)) return undefined
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date
+}
+
+const isoDay = (date: Date | undefined) => date?.toISOString().slice(0, 10) ?? null
+
+type GitDates = Map<string, { created: Date; modified: Date }>
+
+/**
+ * First and last commit time per content file, so dates survive fresh clones
+ * where every file has the same mtime. Empty when git or history is missing
+ * (shallow CI clones only see their own commits).
+ */
+async function readGitDates(dir: string): Promise<GitDates> {
+  const dates: GitDates = new Map()
+  try {
+    const proc = Bun.spawn(["git", "-c", "core.quotePath=false", "log", "--format=%x00%ct", "--name-only", "--relative", "--no-renames", "--", "."], { cwd: dir, stdout: "pipe", stderr: "ignore" })
+    const output = await new Response(proc.stdout).text()
+    if (await proc.exited !== 0) return dates
+    for (const commit of output.split("\0").slice(1)) {
+      const [time, ...paths] = commit.trim().split("\n")
+      const at = new Date(Number(time) * 1000)
+      for (const file of paths.filter(Boolean)) {
+        const known = dates.get(file)
+        // Newest commits come first.
+        if (known) known.created = at
+        else dates.set(file, { created: at, modified: at })
+      }
+    }
+  } catch { /* no git */ }
+  return dates
 }
 
 async function ensureDir(dir: string) {
@@ -189,6 +236,23 @@ async function main() {
     })
   )
   const resultsBySlug = new Map(rendered.map(({ file, result }) => [file.slug, result]))
+
+  // Titles, dates and descriptions shared by every listing below.
+  const gitDates = await readGitDates(CONTENT_DIR)
+  const noteMeta = new Map(rendered.map(({ file, result }) => {
+    const fm = file.frontmatter
+    const git = gitDates.get(`${file.slug}.md`)
+    const excerpt = result.excerpt || null
+    return [file.slug, {
+      title: noteTitle(file),
+      created: toDate(fm.date) ?? toDate(fm.created) ?? git?.created,
+      modified: toDate(fm.modified ?? fm.updated ?? fm.lastmod) ?? git?.modified ?? file.mtime,
+      // Meta tags prefer `description`; cards prefer the shorter `summary`.
+      description: text(fm.description) ?? text(fm.summary) ?? excerpt,
+      summary: text(fm.summary) ?? text(fm.description) ?? excerpt,
+    }]
+  }))
+  const metaOf = (slug: string) => noteMeta.get(slug)!
 
   // 4. Build backlink index (reverse link map)
   console.log("prebuild: building backlink index...")
@@ -305,17 +369,12 @@ async function main() {
   // tags.json - tag → list of files with that tag
   const tagIndex: Record<string, { slug: string; title: string; description: string | null; date: string | null }[]> = {}
   for (const { file, result } of rendered) {
-    const fileTags = result.tags
+    // A nested tag also lists its notes under every parent: #a/b appears on /tags/a.
+    const fileTags = new Set(result.tags.flatMap(tag => tag.split("/").map((_, i, parts) => parts.slice(0, i + 1).join("/"))))
+    const meta = metaOf(file.slug)
     for (const tag of fileTags) {
       if (!tagIndex[tag]) tagIndex[tag] = []
-      tagIndex[tag].push({
-        slug: file.slug,
-        title: (file.frontmatter.title as string) ?? file.slug.split("/").pop() ?? file.slug,
-        description: (file.frontmatter.description as string) ?? (file.frontmatter.summary as string) ?? null,
-        date: file.frontmatter.date
-          ? new Date(file.frontmatter.date as string).toLocaleDateString("en-CA")
-          : null,
-      })
+      tagIndex[tag].push({ slug: file.slug, title: meta.title, description: meta.summary, date: isoDay(meta.created) })
     }
   }
   // Sort each tag's files by date descending
@@ -325,27 +384,25 @@ async function main() {
   writes.push(writeJSON(path.join(OUT_DIR, "tags.json"), tagIndex))
 
   // sitemap-data.json - minimal data for sitemap generation
-  const sitemapData = files
-    .filter((f) => !f.frontmatter.draft)
-    .map((f) => ({
-      slug: f.slug,
-      mtime: f.mtime?.toISOString() ?? null,
-    }))
+  const sitemapData = files.map((f) => ({ slug: f.slug, mtime: metaOf(f.slug).modified?.toISOString() ?? null }))
   writes.push(writeJSON(path.join(OUT_DIR, "sitemap-data.json"), sitemapData))
 
   // notes-list.json - sorted list of all notes with metadata (for homepage, RSS, llms.txt)
   const notesList = files
     .filter((f) => f.slug !== "index")
-    .map((f) => ({
-      slug: f.slug,
-      title: (f.frontmatter.title as string) ?? f.slug.split("/").pop() ?? f.slug,
-      description: (f.frontmatter.description as string) ?? null,
-      summary: (f.frontmatter.summary as string) ?? null,
-      date: f.frontmatter.date ? new Date(f.frontmatter.date as string).toLocaleDateString("en-CA") : null,
-      dateRaw: f.frontmatter.date ? new Date(f.frontmatter.date as string).toISOString() : null,
-      tags: resultsBySlug.get(f.slug)?.tags ?? [],
-      draft: f.frontmatter.draft === true,
-    }))
+    .map((f) => {
+      const meta = metaOf(f.slug)
+      return {
+        slug: f.slug,
+        title: meta.title,
+        description: meta.description,
+        summary: meta.summary,
+        date: isoDay(meta.created),
+        dateRaw: meta.created?.toISOString() ?? null,
+        tags: resultsBySlug.get(f.slug)?.tags ?? [],
+        draft: f.frontmatter.draft === true,
+      }
+    })
     .sort((a, b) => (b.dateRaw ?? "").localeCompare(a.dateRaw ?? ""))
   writes.push(writeJSON(path.join(OUT_DIR, "notes-list.json"), notesList))
 
@@ -380,13 +437,7 @@ async function main() {
     const prev = idx > 0 ? siblings[idx - 1] : null
     const next = idx < siblings.length - 1 ? siblings[idx + 1] : null
 
-    const date = result.frontmatter.date
-      ? new Date(result.frontmatter.date as string).toLocaleDateString("en-CA")
-      : null
-
-    const modifiedDate = file.mtime
-      ? file.mtime.toLocaleDateString("en-CA")
-      : null
+    const meta = metaOf(slugStr)
 
     const pageData: PageData = {
       html: result.html,
@@ -397,16 +448,17 @@ async function main() {
       backlinks: backlinkIndex.get(slugStr) ?? [],
       prevNext: {
         prev: prev
-          ? { slug: prev.slug, title: (prev.frontmatter.title as string) ?? prev.slug.split("/").pop()! }
+          ? { slug: prev.slug, title: noteTitle(prev) }
           : null,
         next: next
-          ? { slug: next.slug, title: (next.frontmatter.title as string) ?? next.slug.split("/").pop()! }
+          ? { slug: next.slug, title: noteTitle(next) }
           : null,
       },
       readingTime: readingTime(file.raw),
-      mtime: file.mtime?.toISOString() ?? null,
-      date,
-      modifiedDate,
+      mtime: meta.modified?.toISOString() ?? null,
+      date: isoDay(meta.created),
+      modifiedDate: isoDay(meta.modified),
+      description: meta.description,
     }
 
     writes.push(writeJSON(path.join(OUT_DIR, "pages", `${slugStr}.json`), pageData))
@@ -415,28 +467,26 @@ async function main() {
   // Folder listing JSON files
   for (const folderPath of folderPaths) {
     const prefix = folderPath + "/"
+    const indexSlug = `${folderPath}/index`
     const folderFiles = files
-      .filter((f) => f.slug.startsWith(prefix))
-      .sort((a, b) => {
-        const da = a.frontmatter.date ? new Date(a.frontmatter.date as string).getTime() : 0
-        const db = b.frontmatter.date ? new Date(b.frontmatter.date as string).getTime() : 0
-        return db - da
-      })
+      .filter((f) => f.slug.startsWith(prefix) && f.slug !== indexSlug)
+      .sort((a, b) => (metaOf(b.slug).created?.getTime() ?? 0) - (metaOf(a.slug).created?.getTime() ?? 0))
+    const indexResult = resultsBySlug.get(indexSlug)
 
     const folderData: FolderData = {
-      files: folderFiles.map((f) => ({
-        slug: f.slug,
-        title: (f.frontmatter.title as string) ?? f.slug.split("/").pop() ?? f.slug,
-        description: (f.frontmatter.description as string) ?? null,
-        date: f.frontmatter.date
-          ? new Date(f.frontmatter.date as string).toLocaleDateString("en-CA")
-          : null,
-        tags: resultsBySlug.get(f.slug)?.tags ?? [],
-      })),
+      index: indexResult ? { title: metaOf(indexSlug).title, html: indexResult.html } : null,
+      files: folderFiles.map((f) => {
+        const meta = metaOf(f.slug)
+        return { slug: f.slug, title: meta.title, description: meta.summary, date: isoDay(meta.created), tags: resultsBySlug.get(f.slug)?.tags ?? [] }
+      }),
     }
 
     writes.push(writeJSON(path.join(OUT_DIR, "folders", `${folderPath}.json`), folderData))
   }
+
+  // folder path -> title of its index.md, for the sidebar and breadcrumbs
+  const folderTitles = Object.fromEntries([...folderPaths].filter(f => noteMeta.has(`${f}/index`)).map(f => [f, metaOf(`${f}/index`).title]))
+  writes.push(writeJSON(path.join(OUT_DIR, "folder-titles.json"), folderTitles))
 
   await Promise.all(writes)
 

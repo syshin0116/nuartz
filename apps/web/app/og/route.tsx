@@ -1,12 +1,13 @@
 import { ImageResponse } from "next/og"
 import type { NextRequest } from "next/server"
+import config from "@/nuartz.config"
 
 export const runtime = "nodejs"
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
-  const title = searchParams.get("title") ?? "Nuartz"
-  const description = searchParams.get("description") ?? ""
+  const title = (searchParams.get("title") ?? config.site.title).slice(0, 120)
+  const description = (searchParams.get("description") ?? "").slice(0, 300)
 
   return new ImageResponse(
     (
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
         }}
       >
         <div style={{ display: "flex", fontSize: 28, fontWeight: 700, color: "#a1a1aa" }}>
-          Nuartz
+          {config.site.title}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
             color: "#71717a",
           }}
         >
-          <span>Nuartz.dev</span>
+          <span>{new URL(config.site.baseUrl).host}</span>
         </div>
       </div>
     ),

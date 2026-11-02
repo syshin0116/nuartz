@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import config from "@/nuartz.config"
 import notesList from "@/.generated/notes-list.json"
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? config.site.baseUrl ?? "https://nuartz.vercel.app"
+const SITE_URL = config.site.baseUrl
 const SITE_TITLE = config.site.title
 const SITE_DESCRIPTION = config.site.description ?? ""
 
@@ -19,7 +19,7 @@ export async function GET() {
     <title>${escapeXml(SITE_TITLE)}</title>
     <link>${SITE_URL}</link>
     <description>${escapeXml(SITE_DESCRIPTION)}</description>
-    <language>ko</language>
+    <language>${escapeXml(config.site.locale ?? "en")}</language>
     <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml"/>
     ${items.map((f) => {
       const url = `${SITE_URL}/${f.slug}`

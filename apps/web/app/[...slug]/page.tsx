@@ -22,6 +22,7 @@ import { GiscusComments } from "@/components/giscus"
 import config from "@/nuartz.config"
 import { isStaticExport, withBasePath } from "@/lib/base-path"
 import allSlugsData from "@/.generated/all-slugs.json"
+import folderTitles from "@/.generated/folder-titles.json"
 
 const GENERATED_DIR = path.join(process.cwd(), ".generated")
 
@@ -55,12 +56,14 @@ interface PageData {
     next: { slug: string; title: string } | null
   }
   readingTime: number
+  description: string | null
   mtime: string | null
   date: string | null
   modifiedDate: string | null
 }
 
 interface FolderData {
+  index: { title: string; html: string } | null
   files: {
     slug: string
     title: string
@@ -92,7 +95,7 @@ export async function generateMetadata({
   if (!pageData) return {}
 
   const title = pageData.frontmatter.title ?? slug[slug.length - 1]
-  const description = pageData.frontmatter.description ?? ""
+  const description = pageData.description ?? ""
   const ogParams = new URLSearchParams({ title, ...(description && { description }) })
   // Static exports have no /og route; pages then inherit the site-wide opengraph-image.
   const images = isStaticExport ? undefined : [withBasePath(`/og?${ogParams.toString()}`)]
@@ -134,12 +137,15 @@ export default async function NotePage({
       return (
         <div className="max-w-6xl mx-auto w-full px-6 py-10">
           <div className="mb-6">
-            <Breadcrumb slug={slug} />
+            <Breadcrumb slug={slug} titles={folderTitles} />
           </div>
           <div className="mb-6">
-            <h1 className="text-2xl font-semibold tracking-tight">{slug[slug.length - 1]}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{folderData.index?.title ?? slug[slug.length - 1]}</h1>
             <p className="mt-1 text-sm text-muted-foreground">{folderData.files.length} notes</p>
           </div>
+          {folderData.index?.html && (
+            <article data-pagefind-body className="prose max-w-none mb-8" dangerouslySetInnerHTML={{ __html: folderData.index.html }} />
+          )}
           <Separator className="mb-6" />
           <div className="space-y-2">
             {folderData.files.map((file) => (
@@ -179,16 +185,19 @@ export default async function NotePage({
   }
 
   const { html, frontmatter, toc, tags, backlinks, prevNext, readingTime: rt, date, modifiedDate, mtime } = pageData
+  // Per-note switches: `toc: false` (or Quartz's `enableToc: false`) and `comments: false`.
+  const pageToc = config.features.toc && frontmatter.toc !== false && frontmatter.enableToc !== false ? toc : []
+  const cssClasses = Array.isArray(frontmatter.cssclasses) ? frontmatter.cssclasses.filter((c): c is string => typeof c === "string") : []
 
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: frontmatter.title,
-    description: frontmatter.description ?? "",
+    description: pageData.description ?? "",
     url: `${config.site.baseUrl}/${slugStr}`,
   }
-  if (frontmatter.date) {
-    jsonLd.datePublished = new Date(frontmatter.date).toISOString()
+  if (date) {
+    jsonLd.datePublished = date
   }
   if (mtime) {
     jsonLd.dateModified = mtime
@@ -204,7 +213,7 @@ export default async function NotePage({
       <div className="reading-column min-w-0 flex-1">
         {slug.length > 1 && (
           <div className="mb-6">
-            <Breadcrumb slug={slug} />
+            <Breadcrumb slug={slug} titles={{ ...folderTitles, [slugStr]: frontmatter.title ?? slug[slug.length - 1] }} />
           </div>
         )}
 
@@ -240,13 +249,13 @@ export default async function NotePage({
         </header>
 
         <Separator className="mb-8" />
-        <TableOfContents toc={config.features.toc ? toc : []} mobile><GraphView currentSlug={slugStr} /></TableOfContents>
+        <TableOfContents toc={pageToc} mobile><GraphView currentSlug={slugStr} /></TableOfContents>
 
         <HeadingAnchors />
         <PopoverPreview />
         <article
           data-pagefind-body
-          className="prose max-w-none"
+          className={["prose max-w-none", ...cssClasses].join(" ")}
           dangerouslySetInnerHTML={{ __html: html }}
         />
         <MermaidRenderer />
@@ -258,11 +267,11 @@ export default async function NotePage({
         {/* Previous / Next navigation */}
         <PrevNextNav prevNext={prevNext} />
 
-        <GiscusComments />
+        {frontmatter.comments !== false && <GiscusComments />}
       </div>
 
       {/* Right sidebar */}
-      <TableOfContents toc={config.features.toc ? toc : []}>
+      <TableOfContents toc={pageToc}>
         <GraphView currentSlug={slugStr} />
       </TableOfContents>
     </div>

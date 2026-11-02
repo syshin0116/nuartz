@@ -143,6 +143,7 @@ Content with #beta and #gamma`
       links: [],
       tags: [],
       inlineTags: [],
+      excerpt: "",
     })
   })
 
@@ -154,5 +155,15 @@ Content with #beta and #gamma`
     expect(result.inlineTags).toEqual(["inline"])
     expect(result.html).toContain('<a href="/blog/tags/inline" class="tag" data-tag="inline">#inline</a>')
     expect(result.html.match(/class="tag"/g)).toHaveLength(1)
+  })
+})
+
+describe("renderMarkdown excerpt", () => {
+  it("collects leading paragraph text, skipping headings and code, and cuts at a word", async () => {
+    const long = "word ".repeat(80)
+    const { excerpt } = await renderMarkdown(`# Title\n\nFirst **bold** paragraph.\n\n\`\`\`\ncode\n\`\`\`\n\n${long}`)
+    expect(excerpt.startsWith("First bold paragraph. word word")).toBe(true)
+    expect(excerpt.endsWith("word…")).toBe(true)
+    expect(excerpt.length).toBeLessThanOrEqual(201)
   })
 })

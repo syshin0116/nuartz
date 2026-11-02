@@ -3,11 +3,13 @@ import { ChevronRight, Home } from "lucide-react"
 
 interface BreadcrumbProps {
   slug: string[]
+  /** Display titles by path, e.g. a folder's index.md title. */
+  titles?: Record<string, string>
 }
 
-export function Breadcrumb({ slug }: BreadcrumbProps) {
+export function Breadcrumb({ slug, titles = {} }: BreadcrumbProps) {
   const crumbs = slug.map((part, i) => ({
-    label: part.replace(/-/g, " "),
+    label: titles[decodeURIComponent(slug.slice(0, i + 1).join("/"))] ?? decodeURIComponent(part).replace(/-/g, " "),
     href: "/" + slug.slice(0, i + 1).join("/"),
     isLast: i === slug.length - 1,
   }))
