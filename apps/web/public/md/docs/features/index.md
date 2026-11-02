@@ -38,6 +38,7 @@ Nuartz includes a rich set of features for publishing and navigating your digita
 - [private-pages](https://nuartz.vercel.app/docs/features/private-pages) - Draft and private page support
 - [rss-feed](https://nuartz.vercel.app/docs/features/rss-feed) - RSS feed generation
 - [social-images](https://nuartz.vercel.app/docs/features/social-images) - Open Graph image generation
+- [ai-agents](https://nuartz.vercel.app/docs/features/ai-agents) - Markdown versions of every note, llms.txt, and an MCP server for AI tools
 - [spa-routing](https://nuartz.vercel.app/docs/features/spa-routing) - Client-side navigation
 
 ## Planned

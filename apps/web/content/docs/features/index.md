@@ -40,6 +40,7 @@ Nuartz includes a rich set of features for publishing and navigating your digita
 - [[private-pages]] - Draft and private page support
 - [[rss-feed]] - RSS feed generation
 - [[social-images]] - Open Graph image generation
+- [[ai-agents]] - Markdown versions of every note, llms.txt, and an MCP server for AI tools
 - [[spa-routing]] - Client-side navigation
 
 ## Planned

@@ -27,5 +27,5 @@ If you prefer standard Markdown behaviour (single newlines = space), remove `rem
 
 ## Source
 
-- [`packages/nuartz/src/markdown.ts`](https://github.com/your-user/nuartz/blob/main/packages/nuartz/src/markdown.ts)
+- [`packages/nuartz/src/markdown.ts`](https://github.com/syshin0116/nuartz/blob/main/packages/nuartz/src/markdown.ts)
 - [remark-breaks](https://github.com/remarkjs/remark-breaks)

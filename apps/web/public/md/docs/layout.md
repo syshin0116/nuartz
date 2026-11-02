@@ -8,19 +8,19 @@ nuartz pages are composed of several sections that you can customize by rearrang
 
 A typical nuartz page includes:
 
-- **Header** -- site title, navigation, search, and dark mode toggle
-- **Left sidebar** -- explorer, breadcrumbs
-- **Content area** -- the main page body with rendered Markdown
-- **Right sidebar** -- table of contents, graph view, backlinks
+- **Header**: site title, search, `nav` links, reader mode and dark mode toggles
+- **Left sidebar**: Home, All notes, and the [explorer](https://nuartz.vercel.app/docs/features/explorer)
+- **Content area**: breadcrumbs, title and dates, the rendered note, backlinks, previous/next links, and comments
+- **Right sidebar**: table of contents and graph view
 
 ## Responsive behavior
 
 nuartz adapts its layout based on screen width:
 
-- **Desktop** (> 1200px): full three-column layout with both sidebars
-- **Tablet** (800px--1200px): content with collapsible sidebars
-- **Mobile** (< 800px): single-column, stacked layout
+- **1280px and wider** (`xl`): both sidebars
+- **1024px to 1279px** (`lg`): left sidebar and content; the table of contents and graph move into an **On this page** panel above the note
+- **Below 1024px**: content only, with the explorer and links in the mobile menu
 
 ## Customization
 
-Layout configuration is handled through your site's layout settings. You can control which components appear in each section and their order. See individual component docs for per-component configuration options.
+There is no layout config: the shell is `apps/web/app/layout.tsx` and note pages are `apps/web/app/[...slug]/page.tsx`. Edit them to add, remove, or reorder components. See [Layout & Components](https://nuartz.vercel.app/docs/layout-components).

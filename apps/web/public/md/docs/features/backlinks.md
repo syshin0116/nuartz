@@ -9,22 +9,23 @@ Backlinks appear at the bottom of every note page and show you which other notes
 
 ## How it works
 
-When nuartz builds your site, it scans every note for `[[wikilinks]]` and standard Markdown links. For each link it finds, it registers a backlink on the target page. At render time, the backlinks panel is assembled from that index and displayed below the note body.
+When `bun run generate` runs, it collects every note's outgoing links: `[[wikilinks]]`, note embeds, and standard Markdown links to notes (`[text](note.md)`). Each link registers a backlink on the page it resolves to. The **Linked from** panel below the note body is built from that index.
 
 If a page has no backlinks, the panel is hidden automatically.
 
 ## Behaviour
 
-- Backlinks are collected at build time — no client-side work needed.
-- The panel shows the title and a short excerpt from each linking page.
+- Backlinks are collected at build time, with no client-side work.
+- The panel shows the title and a short excerpt (the line containing the wikilink) from each linking page. The first four are listed; the rest sit behind **Show more references**.
 - Clicking a backlink navigates to the source note.
-- Only published pages (not `draft: true`) appear as backlinks. See [Private Pages](https://nuartz.vercel.app/docs/features/private-pages).
+- Only published pages appear as backlinks. See [Private Pages](https://nuartz.vercel.app/docs/features/private-pages).
+- `features.backlinks: false` in the [configuration](https://nuartz.vercel.app/docs/configuration) removes the panel.
 
 > [!note]
-> Backlinks reflect the state of the content at the last build. In development mode (`bun dev`), they update on every hot reload.
+> Backlinks reflect the content at the last `generate`. With `bun dev`, run `bun run generate` again (or restart `bun dev`) after editing notes.
 
 ## Related
 
-- [Wikilinks](https://nuartz.vercel.app/docs/features/wikilinks) — the link syntax that generates backlinks
-- [Graph View](https://nuartz.vercel.app/docs/features/graph-view) — visual map of all connections
-- [Tags](https://nuartz.vercel.app/docs/features/tags) — another way to group related notes
+- [Wikilinks](https://nuartz.vercel.app/docs/features/wikilinks) - the link syntax that generates backlinks
+- [Graph View](https://nuartz.vercel.app/docs/features/graph-view) - visual map of all connections
+- [Tags](https://nuartz.vercel.app/docs/features/tags) - another way to group related notes

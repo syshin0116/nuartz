@@ -31,6 +31,7 @@ Drop your Markdown files into `apps/web/content/` and start writing.
 - [Reader mode](https://nuartz.vercel.app/docs/features/reader-mode) for distraction-free reading
 - [Comments](https://nuartz.vercel.app/docs/features/comments) via Giscus
 - [Draft / private pages](https://nuartz.vercel.app/docs/features/private-pages) filtering
+- [AI agent access](https://nuartz.vercel.app/docs/features/ai-agents): Markdown per note, `llms.txt`, and an MCP server
 
 For a full list, visit the [features page](https://nuartz.vercel.app/docs/features/index).
 

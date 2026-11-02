@@ -6,7 +6,7 @@ nuartz is a Next.js application that supports both static export (GitHub Pages) 
 
 > [!info] Prerequisites
 > - Your nuartz project is pushed to a GitHub repository.
-> - The `content/` directory is committed to the repo (not gitignored).
+> - The `apps/web/content/` directory is committed to the repo (not gitignored).
 
 ## Deploy to Vercel
 
@@ -25,21 +25,21 @@ git push
 1. Go to [vercel.com/new](https://vercel.com/new) and click **Add New Project**.
 2. Select **Import Git Repository** and choose your nuartz repo.
 3. Vercel auto-detects Next.js - leave the framework preset as **Next.js**.
-4. Leave the root directory as `./` (or `apps/web` if you use the monorepo layout).
+4. Set the root directory to `apps/web`. The install and build commands come from `apps/web/vercel.json` (`cd ../.. && bun run build`).
 
-### 3. Set the environment variable
+### 3. Set the site URL
 
-In the **Environment Variables** section before deploying, add:
+Set `site.baseUrl` in `apps/web/nuartz.config.ts` to your production URL, or add an environment variable before deploying:
 
 | Name | Value |
 |------|-------|
-| `NEXT_PUBLIC_SITE_URL` | `https://your-domain.vercel.app` |
+| `NUARTZ_SITE_URL` | `https://your-domain.vercel.app` |
 
-Update this to your custom domain once you have one.
+It is used for canonical URLs, the sitemap, RSS, and OG tags. Update it to your custom domain once you have one.
 
 ### 4. Deploy
 
-Click **Deploy**. Vercel builds the project with `next build` and publishes it. Your site is live at `<project>.vercel.app` within a minute or two.
+Click **Deploy**. Vercel runs `bun run build` (package build, `generate`, then `next build`) and publishes it. Your site is live at `<project>.vercel.app` within a minute or two.
 
 > [!tip] Automatic deploys
 > Every push to the `main` branch triggers a new production deployment automatically. Pull requests get preview deployments at unique URLs.
@@ -48,15 +48,15 @@ Click **Deploy**. Vercel builds the project with `next build` and publishes it. 
 
 1. Go to your project in the Vercel dashboard and open **Settings > Domains**.
 2. Enter your domain and follow the DNS instructions.
-3. Update `NEXT_PUBLIC_SITE_URL` to match the new domain and redeploy.
+3. Update `site.baseUrl` (or `NUARTZ_SITE_URL`) to match the new domain and redeploy.
 
 ## Content updates
 
-Because `content/` is part of the repo, updating your notes is just a git push:
+Because `apps/web/content/` is part of the repo, updating your notes is just a git push:
 
 ```bash
-# edit content/notes/my-note.md
-git add content/
+# edit apps/web/content/notes/my-note.md
+git add apps/web/content/
 git commit -m "update notes"
 git push
 ```
@@ -64,7 +64,7 @@ git push
 Vercel picks up the push and rebuilds automatically.
 
 > [!warning] Keep content/ in the repo
-> nuartz reads content files from disk at build time. If `content/` is gitignored, the build will produce an empty site.
+> nuartz reads content files from disk at build time (`bun run generate`). If `apps/web/content/` is gitignored, the build will produce an empty site.
 
 ## Local production preview
 
@@ -72,7 +72,7 @@ Test the production build locally before deploying:
 
 ```bash
 bun run build
-bun run start
+bun run --cwd apps/web start
 ```
 
 Open `http://localhost:3000` to verify everything looks correct.
