@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- A `published` value other than a boolean, such as a publish date, is kept instead of being replaced with `true`.
+- Markdown links and images to attachments keep their query and fragment (`[p.3](paper.pdf#page=3)`), and the file is looked up without them.
+
 ## [0.5.0] - 2026-11-03
 
 ### Security

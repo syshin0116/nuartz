@@ -32,6 +32,12 @@ export interface WikilinkOptions {
 
 const EXTERNAL = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i
 
+/** Splits `img.png?v=2#zoom` so the file can be looked up while the query and fragment are kept. */
+function splitUrlSuffix(url: string): { path: string; suffix: string } {
+  const at = url.search(/[?#]/)
+  return at < 0 ? { path: url, suffix: "" } : { path: url.slice(0, at), suffix: url.slice(at) }
+}
+
 export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) => {
   const { baseUrl = "/", resolve, knownSlugs, fileDir } = options
   const resolveAsset = options.resolveAsset ?? ((target: string) =>
@@ -92,20 +98,22 @@ export const remarkWikilink: Plugin<[WikilinkOptions?], Root> = (options = {}) =
           else if (size) Object.assign(item, { alt, data: { ...item.data, hProperties: { ...item.data?.hProperties, ...size } } })
           return
         }
-        const url = resolveAsset(safeDecode(item.url))
+        const { path, suffix } = splitUrlSuffix(item.url)
+        const url = resolveAsset(safeDecode(path))
         if (!url) return
-        parent.children[index] = mediaNode(kind ?? "image", url, { alt, size, source: item.url })
+        parent.children[index] = mediaNode(kind ?? "image", url + suffix, { alt, size, source: item.url })
         return
       }
       if (EXTERNAL.test(item.url)) return
-      const [rawPath, rawHeading] = item.url.split("#")
-      const target = safeDecode(rawPath)
-      const extension = fileExtension(target)
+      const { path, suffix } = splitUrlSuffix(item.url)
+      const extension = fileExtension(path)
       if (extension && extension !== "md") {
-        const url = resolveAsset(target)
-        if (url) item.url = url
+        const url = resolveAsset(safeDecode(path))
+        if (url) item.url = url + suffix
         return
       }
+      const [rawPath, rawHeading] = item.url.split("#")
+      const target = safeDecode(rawPath)
       const noteTarget = target.replace(/\.md$/i, "")
       const heading = rawHeading ? safeDecode(rawHeading) : undefined
       outgoingLinks.push(noteTarget)

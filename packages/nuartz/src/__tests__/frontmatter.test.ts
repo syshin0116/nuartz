@@ -24,6 +24,12 @@ describe("normalizeFrontmatter", () => {
     expect(isUnpublished(normalizeFrontmatter({}))).toBe(false)
   })
 
+  it("keeps a publish date in published", () => {
+    const frontmatter = normalizeFrontmatter({ published: "2023-11-30 20:58 +0900" })
+    expect(frontmatter.published).toBe("2023-11-30 20:58 +0900")
+    expect(isUnpublished(frontmatter)).toBe(false)
+  })
+
   it("leaves unrelated keys untouched", () => {
     expect(normalizeFrontmatter({ title: "T", order: 3 })).toEqual({ title: "T", order: 3 })
   })

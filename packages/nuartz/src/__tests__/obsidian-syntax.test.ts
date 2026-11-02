@@ -52,6 +52,12 @@ describe("Markdown links and images", () => {
     expect(html).toContain('<a href="/content/docs/paper.pdf">Report</a>')
   })
 
+  it("keeps the query and fragment of attachment links and images", async () => {
+    const { html } = await render("![Photo](local.png?v=2) [Page 3](paper.pdf#page=3)")
+    expect(html).toContain('src="/content/notes/local.png?v=2"')
+    expect(html).toContain('<a href="/content/docs/paper.pdf#page=3">Page 3</a>')
+  })
+
   it("embeds YouTube and external video URLs, and leaves other external links alone", async () => {
     const { html } = await render("![](https://youtu.be/dQw4w9WgXcQ?t=42)\n\n![|320](https://example.com/v.webm)\n\n[site](https://example.com/page.md) ![x](https://example.com/a.png)")
     expect(html).toContain('<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?start=42"')
