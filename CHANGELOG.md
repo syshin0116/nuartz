@@ -8,7 +8,12 @@ All notable changes to this project will be documented in this file.
 - `getAllMarkdownFiles` skips dot-folders such as `.trash` and `.obsidian`, so notes deleted in Obsidian are no longer published.
 - `getMarkdownBySlug` returns `null` for slugs that leave the content directory or point at hidden paths.
 
+### Fixed
+- Frontmatter `tags` and `aliases` written as a comma-separated string (`tags: a, b`) or with the singular keys `tag` / `alias` are read as lists; leading `#` is stripped. Previously the string was split into characters.
+- `draft: "true"` and `published: "false"` written as strings hide notes like their boolean forms.
+
 ### Added
+- `normalizeFrontmatter` and `isUnpublished`, used by `getAllMarkdownFiles`, `getMarkdownBySlug`, and `renderMarkdown`.
 - `isHiddenContentPath` for applying the same visibility rule to assets.
 - `site.verification` config for search engine ownership tokens.
 

@@ -1,7 +1,7 @@
 export const revalidate = false
 
-import { notFound } from "next/navigation"
-import type { TocEntry } from "nuartz"
+import { notFound, permanentRedirect } from "next/navigation"
+import { normalizeNotePath, noteHref, type TocEntry } from "nuartz"
 import fs from "node:fs/promises"
 import path from "node:path"
 import type { Metadata } from "next"
@@ -76,7 +76,7 @@ export async function generateStaticParams() {
       .filter((slug: string[]) => slug.join("/") !== config.homePage)
       .map((slug: string[]) => ({ slug })),
     ...folders.map((slug: string[]) => ({ slug })),
-    ...aliases.map((slug: string[]) => ({ slug })),
+    ...Object.keys(aliases).map(alias => ({ slug: alias.split("/") })),
   ]
 }
 
@@ -164,7 +164,9 @@ export default async function NotePage({
       )
     }
 
-    // Alias pages without generated data are not resolved to their target yet.
+    const aliasMap: Record<string, string> = allSlugsData.aliases
+    const aliasTarget = aliasMap[slugStr] ?? aliasMap[normalizeNotePath(slugStr)]
+    if (aliasTarget) permanentRedirect(noteHref(aliasTarget))
     notFound()
   }
 

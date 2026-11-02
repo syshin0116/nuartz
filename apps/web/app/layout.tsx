@@ -7,6 +7,7 @@ import { Header } from "@/components/layout/header"
 import { NavSidebar } from "@/components/layout/nav-sidebar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CommandPaletteDynamic } from "@/components/command-palette-dynamic"
+import { ContentLinkNavigation } from "@/components/content-link-navigation"
 import config from "@/nuartz.config"
 import fileTree from "@/.generated/file-tree.json"
 import type { FileTreeNode } from "nuartz"
@@ -55,6 +56,7 @@ export default async function RootLayout({
             </div>
           </div>
           {config.features.search && <CommandPaletteDynamic />}
+          <ContentLinkNavigation />
         </ThemeProvider>
         <Analytics />
       </body>

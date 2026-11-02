@@ -2,6 +2,7 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import matter from "gray-matter"
 import type { Frontmatter } from "./types.js"
+import { isUnpublished, normalizeFrontmatter } from "./frontmatter.js"
 
 export interface MarkdownFile {
   slug: string        // relative path without .md, e.g. "notes/foo"
@@ -58,10 +59,8 @@ export async function getAllMarkdownFiles(
         await walk(fullPath)
       } else if (entry.name.endsWith(".md")) {
         const raw = await fs.readFile(fullPath, "utf-8")
-        const { data } = matter(raw)
-
-        // Skip draft or unpublished files
-        if (data.draft === true || data.published === false) continue
+        const frontmatter = normalizeFrontmatter(matter(raw).data)
+        if (isUnpublished(frontmatter)) continue
 
         const relative = path.relative(contentDir, fullPath)
         const slug = relative.replace(/\.md$/, "").replace(/\\/g, "/")
@@ -78,7 +77,7 @@ export async function getAllMarkdownFiles(
         results.push({
           slug,
           filePath: fullPath,
-          frontmatter: data as Frontmatter,
+          frontmatter,
           raw,
           mtime,
         })
@@ -104,7 +103,7 @@ export async function getMarkdownBySlug(
   if (relative.startsWith("..") || path.isAbsolute(relative) || isHiddenContentPath(relative)) return null
   try {
     const raw = await fs.readFile(filePath, "utf-8")
-    const { data } = matter(raw)
+    const frontmatter = normalizeFrontmatter(matter(raw).data)
     let mtime: Date | undefined
     try {
       const stat = await fs.stat(filePath)
@@ -112,7 +111,7 @@ export async function getMarkdownBySlug(
     } catch {
       mtime = undefined
     }
-    return { slug, filePath, frontmatter: data as Frontmatter, raw, mtime }
+    return { slug, filePath, frontmatter, raw, mtime }
   } catch {
     return null
   }

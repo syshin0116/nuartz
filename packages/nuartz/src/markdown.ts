@@ -27,7 +27,8 @@ import { remarkObsidianComment } from "./plugins/comment.js"
 import { remarkArrows } from "./plugins/arrows.js"
 import { embedContent, remarkEmbed, remarkBlockIds } from "./plugins/embed.js"
 import { noteHref, normalizeNotePath } from "./links.js"
-import type { Frontmatter, RenderResult, RenderOptions, TocEntry } from "./types.js"
+import { isUnpublished, normalizeFrontmatter } from "./frontmatter.js"
+import type { RenderResult, RenderOptions, TocEntry } from "./types.js"
 
 // Rehype plugin that extracts headings into vfile.data.toc
 const rehypeExtractToc: Plugin<[], HastRoot> = () => {
@@ -96,9 +97,11 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
   const fileDir = filePath?.includes("/") ? filePath.substring(0, filePath.lastIndexOf("/")) : undefined
 
   // Parse frontmatter with gray-matter
-  const { data: frontmatter, content: body } = matter(content)
-  if (options.stripDrafts && (frontmatter.draft === true || frontmatter.published === false)) {
-    return { html: "", frontmatter: frontmatter as Frontmatter, toc: [], links: [], tags: [], inlineTags: [] }
+  const parsed = matter(content)
+  const body = parsed.content
+  const frontmatter = normalizeFrontmatter(parsed.data)
+  if (options.stripDrafts && isUnpublished(frontmatter)) {
+    return { html: "", frontmatter, toc: [], links: [], tags: [], inlineTags: [] }
   }
 
   const processor = unified()
@@ -158,11 +161,11 @@ async function render(content: string, options: RenderOptions, ancestors: Set<st
 
   return {
     html: String(file),
-    frontmatter: frontmatter as Frontmatter,
+    frontmatter,
     toc: (file.data.toc as TocEntry[]) ?? [],
     links: (file.data.links as string[]) ?? [],
     tags: features.tags ? [
-      ...((frontmatter.tags as string[]) ?? []),
+      ...(frontmatter.tags ?? []),
       ...((file.data.tags as string[]) ?? []),
     ].filter((t, i, a) => a.indexOf(t) === i) : [],
     inlineTags: features.tags ? ((file.data.tags as string[]) ?? []) : [],

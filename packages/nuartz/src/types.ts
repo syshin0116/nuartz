@@ -5,7 +5,9 @@ export interface Frontmatter {
   description?: string
   summary?: string
   draft?: boolean
+  published?: boolean
   aliases?: string[]
+  cssclasses?: string[]
   order?: number
   [key: string]: unknown
 }
