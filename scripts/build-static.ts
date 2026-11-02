@@ -5,7 +5,7 @@
  *
  * Output: apps/web/out. Routes that need a server are moved aside for the
  * build and always restored: /api/preview (external link previews) and /og
- * (per-page social images).
+ * (per-page social images). The Pagefind index is written by `generate`.
  */
 import fs from "node:fs/promises"
 import path from "node:path"
@@ -38,7 +38,6 @@ try {
     moved.push(route)
   }
   await run(["bunx", "next", "build", "--webpack"], APP_DIR, env)
-  await run(["bunx", "pagefind", "--site", "out", "--output-path", "out/pagefind"], APP_DIR, env)
 } finally {
   for (const route of moved) await fs.rename(path.join(BACKUP_DIR, route), path.join(APP_DIR, route))
   await fs.rm(BACKUP_DIR, { recursive: true, force: true })

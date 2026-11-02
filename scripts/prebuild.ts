@@ -29,6 +29,7 @@ import {
 import { renderMarkdown } from "nuartz/markdown"
 import type { Frontmatter, TocEntry } from "nuartz"
 import config from "../apps/web/nuartz.config"
+import * as pagefind from "pagefind"
 
 const CONTENT_DIR = path.resolve(config.contentDir)
 const OUT_DIR = path.join(import.meta.dir, "../apps/web/.generated")
@@ -113,6 +114,24 @@ async function copyMediaFiles() {
   }
   await walk(CONTENT_DIR)
   console.log(`prebuild: copied ${count} media files`)
+}
+
+/**
+ * Builds the Pagefind index from rendered notes instead of Next's output, whose
+ * HTML location differs between `next build`, Vercel, and static export.
+ */
+async function writeSearchIndex(pages: { slug: string; title: string; html: string }[]) {
+  const { index, errors } = await pagefind.createIndex({ forceLanguage: config.site.locale ?? "en" })
+  if (!index) throw new AggregateError(errors, "Pagefind index failed")
+  for (const page of pages) {
+    const url = page.slug === "index" ? "/" : `/${page.slug.split("/").map(encodeURIComponent).join("/")}`
+    const escapedTitle = page.title.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    await index.addHTMLFile({ url, content: `<html><body><main data-pagefind-body><h1>${escapedTitle}</h1>${page.html}</main></body></html>` })
+  }
+  const outputPath = path.join(PUBLIC_DIR, "pagefind")
+  await fs.rm(outputPath, { recursive: true, force: true })
+  await index.writeFiles({ outputPath })
+  await pagefind.close()
 }
 
 async function main() {
@@ -411,6 +430,14 @@ async function main() {
 
   // Copy media files (images, etc.) from content/ to public/content/
   await copyMediaFiles()
+  if (config.features.search) {
+    await writeSearchIndex(rendered.map(({ file, result }) => ({
+      slug: file.slug,
+      title: String(result.frontmatter.title ?? file.slug.split("/").pop()),
+      html: result.html,
+    })))
+    console.log("prebuild: wrote Pagefind index")
+  }
 
   const viewerDir = path.join(PUBLIC_DIR, "graph-viewer")
   const viewerSource = path.join(import.meta.dir, "../apps/web/graph-viewer")

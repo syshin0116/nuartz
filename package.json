@@ -24,6 +24,7 @@
     "eslint-config-next": "16.4.4",
     "gray-matter": "^4.0.3",
     "nuartz": "workspace:*",
+    "pagefind": "^1.5.2",
     "typescript": "npm:typescript@^6.0.2"
   },
   "version": "0.0.1",
