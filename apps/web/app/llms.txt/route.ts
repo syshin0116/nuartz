@@ -11,14 +11,14 @@ export async function GET() {
     "",
     `> ${config.site.description ?? ""}`,
     "",
-    config.site.baseUrl ?? "",
+    `Each note is linked as Markdown. All notes in one file: ${config.site.baseUrl}/llms-full.txt`,
     "",
     "## Notes",
     "",
   ]
 
   for (const file of published) {
-    const url = `${config.site.baseUrl}/${file.slug}`
+    const url = `${config.site.baseUrl}/md/${file.slug.split("/").map(encodeURIComponent).join("/")}.md`
     lines.push(`- [${file.title}](${url})${file.description ? `: ${file.description}` : ""}`)
   }
 

@@ -17,6 +17,9 @@ export default defineConfig([
     "**/dist/**",
     "**/coverage/**",
     "refs/**",
+    // Local tool workspaces (git worktrees for agents, editors).
+    ".claude/**",
+    ".superset/**",
     "apps/web/.generated/**",
     "apps/web/public/**",
     "apps/web/next-env.d.ts",
