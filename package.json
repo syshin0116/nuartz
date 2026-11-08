@@ -20,7 +20,7 @@
     "test:coverage": "bun run --cwd packages/nuartz test:coverage"
   },
   "devDependencies": {
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "16.4.4",
     "gray-matter": "^4.0.3",
     "nuartz": "workspace:*",
