@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "3d-force-graph": "^1.80.0",
+    "3d-force-graph": "^1.80.2",
     "3d-force-graph-ar": "^1.10.0",
     "3d-force-graph-vr": "^3.1.2",
     "@ar-js-org/ar.js": "^3.4.8",
@@ -24,11 +24,11 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
-    "d3": "^7.9.0",
-    "lucide-react": "^1.28.0",
+    "d3": "^7.9.2",
+    "lucide-react": "^1.70.0",
     "medium-zoom": "^1.1.0",
-    "mermaid": "^12.0.0",
-    "next": "16.4.4",
+    "mermaid": "^12.3.0",
+    "next": "16.4.5",
     "next-themes": "^0.4.6",
     "nuartz": "workspace:*",
     "radix-ui": "^1.6.7",
@@ -38,7 +38,7 @@
     "zod": "^4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.3.3",
+    "@tailwindcss/postcss": "^4.3.5",
     "@types/d3": "^7.4.3",
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
